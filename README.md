@@ -107,7 +107,7 @@ internet](http://bigg.ucsd.edu/models/e_coli_core) and perform a
 flux balance analysis as follows:
 
 ```julia
-using COBREXA   # loads the package
+using COBREXA   # loads the main package
 using Tulip     # loads the optimization solver
 
 # download the model
@@ -117,24 +117,24 @@ download("http://bigg.ucsd.edu/static/models/e_coli_core.xml", "e_coli_core.xml"
 model = load_model("e_coli_core.xml")
 
 # run a FBA
-fluxes = flux_balance_dict(model, Tulip.Optimizer)
+result = flux_balance_analysis(model, optimizer = Tulip.Optimizer)
 ```
 
-The variable `fluxes` will now contain a dictionary of the computed optimal
-flux of each reaction in the model:
+`result.fluxes` will now contain the computed optimal flux for each reaction in
+the model:
 ```
-Dict{String,Float64} with 95 entries:
-  "R_EX_fum_e"    => 0.0
-  "R_ACONTb"      => 6.00725
-  "R_TPI"         => 7.47738
-  "R_SUCOAS"      => -5.06438
-  "R_GLNS"        => 0.223462
-  "R_EX_pi_e"     => -3.2149
-  "R_PPC"         => 2.50431
-  "R_O2t"         => 21.7995
-  "R_G6PDH2r"     => 4.95999
-  "R_TALA"        => 1.49698
-  ⋮               => ⋮
+Tree{Float64} with 95 entries:
+  :R_EX_fum_e  => 0.0
+  :R_ACONTb    => 6.00725
+  :R_TPI       => 7.47738
+  :R_SUCOAS    => -5.06438
+  :R_GLNS      => 0.223462
+  :R_EX_pi_e   => -3.2149
+  :R_PPC       => 2.50431
+  :R_O2t       => 21.7995
+  :R_G6PDH2r   => 4.95999
+  :R_TALA      => 1.49698
+  ⋮            => ⋮
 ```
 <!--quickstart_end-->
 
