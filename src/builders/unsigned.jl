@@ -17,27 +17,8 @@
 """
 $(TYPEDSIGNATURES)
 
-A constraint tree that bound the values present in `signed` to be sums of pairs
-of `positive` and `negative` contributions to the individual values.
-
-Keys in the result are the same as the keys of `signed` constraints.
-
-Typically, this can be used to create "unidirectional" fluxes
-together with [`unsigned_negative_contribution_variables`](@ref) and
-[`unsigned_positive_contribution_variables`](@ref).
+TODO
 """
-sign_split_constraints(;
-    positive::C.ConstraintTree,
-    negative::C.ConstraintTree,
-    signed::C.ConstraintTree,
-) =
-    C.zip(positive, negative, signed, C.Constraint) do p, n, s
-        equal_value_constraint(s.value + n.value, p.value)
-    end
-#TODO the construction needs an example in the docs.
-
-export sign_split_constraints
-
 positive_bound_contribution(b::C.EqualTo) = b.equal_to >= 0 ? b : C.EqualTo(0.0)
 positive_bound_contribution(b::C.Between) =
     b.lower >= 0 && b.upper >= 0 ? b :
@@ -48,12 +29,68 @@ positive_bound_contribution(b::Switch) =
         upper_bound > 0 ? C.Between(0.0, upper_bound) : C.EqualTo(0.0)
     end
 
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
 unsigned_positive_contribution_variables(cs::C.ConstraintTree) =
     C.variables_for(c -> positive_bound_contribution(c.bound), cs)
 
 export unsigned_positive_contribution_variables
 
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
 unsigned_negative_contribution_variables(cs::C.ConstraintTree) =
     C.variables_for(c -> positive_bound_contribution(-c.bound), cs)
 
 export unsigned_negative_contribution_variables
+
+"""
+$(TYPEDSIGNATURES)
+
+Shortcut for making a pair of named variable groups created by
+[`unsigned_positive_contribution_variables`](@ref) and
+[`unsigned_negative_contribution_variables`](@ref), in subtrees named by
+`positive` and `negative`.
+
+Use [`sign_split_constraints`](@ref) to bind the new variables to existing
+values.
+"""
+sign_split_variables(
+    constraints::C.ConstraintTree;
+    positive::Symbol = :positive,
+    negative::Symbol = :negative,
+)::C.ConstraintTree =
+    forward^unsigned_positive_contribution_variables(constraints) +
+    reverse^unsigned_negative_contribution_variables(constraints)
+
+export sign_split_variables
+
+"""
+$(TYPEDSIGNATURES)
+
+A constraint tree that bound the values present in `signed` to be sums of pairs
+of `positive` and `negative` contributions to the individual values.
+
+Keys in the result are the same as the keys of `signed` constraints.
+
+Typically, this can be used to create "unidirectional" fluxes
+together with [`unsigned_negative_contribution_variables`](@ref) and
+[`unsigned_positive_contribution_variables`](@ref).
+
+Use [`sign_split_variables`](@ref) to allocate the variables easily.
+"""
+sign_split_constraints(;
+    positive::C.ConstraintTree,
+    negative::C.ConstraintTree,
+    signed::C.ConstraintTree,
+) =
+    C.zip(positive, negative, signed, C.Constraint) do p, n, s
+        equal_value_constraint(s.value + n.value, p.value)
+    end
+
+export sign_split_constraints
