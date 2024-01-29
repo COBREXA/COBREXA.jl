@@ -52,7 +52,6 @@ t = @elapsed @everywhere begin
 end
 
 # load the test models
-run_test_file("data_static.jl")
 run_test_file("data_downloaded.jl")
 
 # TODO data_static and data_downloaded need to be interned into the demos.
