@@ -15,7 +15,7 @@
 # limitations under the License.
 
 using Documenter
-using Literate, JSON
+using Literate
 using COBREXA
 
 # testing constants
