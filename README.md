@@ -8,25 +8,25 @@
 # COnstraint-Based Reconstruction and EXascale Analysis
 
 [docs-img-stable]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-url-stable]: https://lcsb-biocore.github.io/COBREXA.jl
+[docs-url-stable]: https://cobrexa.github.io/COBREXA.jl
 
 [docs-img-dev]: https://img.shields.io/badge/docs-latest-0af.svg
-[docs-url-dev]: https://lcsb-biocore.github.io/COBREXA.jl/dev/
+[docs-url-dev]: https://cobrexa.github.io/COBREXA.jl/dev/
 
-[docs-url-quickstart]: https://lcsb-biocore.github.io/COBREXA.jl/stable/quickstart/
-[docs-url-examples]: https://lcsb-biocore.github.io/COBREXA.jl/stable/examples/
+[docs-url-quickstart]: https://cobrexa.github.io/COBREXA.jl/stable/quickstart/
+[docs-url-examples]: https://cobrexa.github.io/COBREXA.jl/stable/examples/
 
 [docker-url]: https://hub.docker.com/r/lcsbbiocore/cobrexa.jl
 [docker-img]: https://img.shields.io/docker/image-size/lcsbbiocore/cobrexa.jl
 
-[ci-img]: https://github.com/LCSB-BioCore/COBREXA.jl/actions/workflows/ci.yml/badge.svg?branch=master
-[ci-url]: https://github.com/LCSB-BioCore/COBREXA.jl/actions/workflows/ci.yml
+[ci-img]: https://github.com/COBREXA/COBREXA.jl/actions/workflows/ci.yml/badge.svg?branch=master
+[ci-url]: https://github.com/COBREXA/COBREXA.jl/actions/workflows/ci.yml
 
-[cov-img]: https://codecov.io/gh/LCSB-BioCore/COBREXA.jl/branch/master/graph/badge.svg?token=H3WSWOBD7L
-[cov-url]: https://codecov.io/gh/LCSB-BioCore/COBREXA.jl
+[cov-img]: https://codecov.io/gh/COBREXA/COBREXA.jl/branch/master/graph/badge.svg?token=H3WSWOBD7L
+[cov-url]: https://codecov.io/gh/COBREXA/COBREXA.jl
 
 [contrib-img]: https://img.shields.io/badge/contributions-start%20here-green
-[contrib-url]: https://lcsb-biocore.github.io/COBREXA.jl/stable/howToContribute/
+[contrib-url]: https://cobrexa.github.io/COBREXA.jl/stable/howToContribute/
 
 [repostatus-url]: https://www.repostatus.org/#active
 [repostatus-img]: https://www.repostatus.org/badges/latest/active.svg
@@ -163,7 +163,7 @@ Download and use them as usual with docker:
 docker run -ti --rm lcsbbiocore/cobrexa.jl:latest
 
 # or alternatively from ghcr.io
-docker run -ti --rm ghcr.io/lcsb-biocore/docker/cobrexa.jl:latest
+docker run -ti --rm ghcr.io/cobrexa/docker/cobrexa.jl:latest
 ```
 
 In the container, you should get a `julia` shell with the important packages
@@ -173,7 +173,7 @@ already installed, and you may immediately continue the above tutorial from
 Apptainer (aka Singularity) images are available from GitHub container
 repository. To start one, run:
 ```sh
-singularity run oras://ghcr.io/lcsb-biocore/apptainer/cobrexa.jl:latest
+singularity run oras://ghcr.io/cobrexa/apptainer/cobrexa.jl:latest
 ```
 ...which gives you a running Julia session with COBREXA.jl loaded.
 
@@ -198,5 +198,5 @@ citation format (also available as BibTeX in [cobrexa.bib](cobrexa.bib)):
 > Miroslav Kratochvíl, Laurent Heirendt, St Elmo Wilken, Taneli Pusa, Sylvain Arreckx, Alberto Noronha, Marvin van Aalst, Venkata P Satagopam, Oliver Ebenhöh, Reinhard Schneider, Christophe Trefois, Wei Gu, *COBREXA.jl: constraint-based reconstruction and exascale analysis*, Bioinformatics, Volume 38, Issue 4, 15 February 2022, Pages 1171–1172, https://doi.org/10.1093/bioinformatics/btab782
 
 <!--ack_logos_begin-->
-<img src="https://lcsb-biocore.github.io/COBREXA.jl/stable/assets/cobrexa.svg" alt="COBREXA logo" height="64px" style="height:64px; width:auto">   <img src="https://lcsb-biocore.github.io/COBREXA.jl/stable/assets/unilu.svg" alt="Uni.lu logo" height="64px" style="height:64px; width:auto">   <img src="https://lcsb-biocore.github.io/COBREXA.jl/stable/assets/lcsb.svg" alt="LCSB logo" height="64px" style="height:64px; width:auto">   <img src="https://lcsb-biocore.github.io/COBREXA.jl/stable/assets/hhu.svg" alt="HHU logo" height="64px" style="height:64px; width:auto">   <img src="https://lcsb-biocore.github.io/COBREXA.jl/stable/assets/qtb.svg" alt="QTB logo" height="64px" style="height:64px; width:auto">   <img src="https://lcsb-biocore.github.io/COBREXA.jl/stable/assets/permedcoe.svg" alt="PerMedCoE logo" height="64px" style="height:64px; width:auto">
+<img src="https://cobrexa.github.io/COBREXA.jl/stable/assets/cobrexa.svg" alt="COBREXA logo" height="64px" style="height:64px; width:auto">   <img src="https://cobrexa.github.io/COBREXA.jl/stable/assets/unilu.svg" alt="Uni.lu logo" height="64px" style="height:64px; width:auto">   <img src="https://cobrexa.github.io/COBREXA.jl/stable/assets/lcsb.svg" alt="LCSB logo" height="64px" style="height:64px; width:auto">   <img src="https://cobrexa.github.io/COBREXA.jl/stable/assets/hhu.svg" alt="HHU logo" height="64px" style="height:64px; width:auto">   <img src="https://cobrexa.github.io/COBREXA.jl/stable/assets/qtb.svg" alt="QTB logo" height="64px" style="height:64px; width:auto">   <img src="https://cobrexa.github.io/COBREXA.jl/stable/assets/permedcoe.svg" alt="PerMedCoE logo" height="64px" style="height:64px; width:auto">
 <!--ack_logos_end-->
