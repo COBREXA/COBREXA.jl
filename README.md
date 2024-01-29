@@ -1,3 +1,5 @@
+# THIS REPOSITORY IS UNDER DEVELOPMENT. USE https://github.com/LCSB-BioCore/COBREXA.jl INSTEAD.
+
 <br>
 <div align="center">
     <img src="docs/src/assets/header.svg?maxAge=0" width="80%">
