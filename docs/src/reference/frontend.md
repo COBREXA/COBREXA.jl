@@ -22,6 +22,13 @@ Modules = [COBREXA]
 Pages = ["src/frontend/parsimonious.jl"]
 ```
 
+## Minimization of metabolic adjustment
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/frontend/moma.jl"]
+```
+
 ## Enzyme-mass-constrained models
 
 ```@autodocs
@@ -65,6 +72,7 @@ Pages = ["src/frontend/mmdf.jl"]
 ```
 
 ## Sampling
+
 ```@autodocs
 Modules = [COBREXA]
 Pages = ["src/frontend/sample.jl"]
