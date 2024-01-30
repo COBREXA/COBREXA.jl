@@ -134,16 +134,21 @@ mmdf_solution = max_min_driving_force_analysis(
 
 using CairoMakie
 
-glycolysis_reaction_order = ["GLCpts", "PGI", "PFK",  "FBA", "TPI", "GAPD",  "PGK", "PGM", "ENO", "PYK", "LDH_D",]
+glycolysis_reaction_order =
+    ["GLCpts", "PGI", "PFK", "FBA", "TPI", "GAPD", "PGK", "PGM", "ENO", "PYK", "LDH_D"]
 
-glycolysis_thermo = cumsum(reference_flux[rid] * mmdf_solution.reaction_gibbs_free_energies[Symbol(rid)] for rid in glycolysis_reaction_order)
+glycolysis_thermo = cumsum(
+    reference_flux[rid] * mmdf_solution.reaction_gibbs_free_energies[Symbol(rid)] for
+    rid in glycolysis_reaction_order
+)
 
 lines(
-    1:length(glycolysis_reaction_order), 
+    1:length(glycolysis_reaction_order),
     glycolysis_thermo,
-    axis=(
+    axis = (
         xlabel = "Reactions",
         ylabel = "Cumulative ΔG [kJ/mol]",
-        xticks = (1:length(glycolysis_reaction_order), glycolysis_reaction_order)
-    ))
+        xticks = (1:length(glycolysis_reaction_order), glycolysis_reaction_order),
+    ),
+)
 
