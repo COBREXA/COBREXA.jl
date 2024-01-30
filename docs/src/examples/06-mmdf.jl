@@ -83,16 +83,16 @@ reaction_standard_gibbs_free_energies = Dict{String,Float64}(
 # other reactions.
 
 reference_flux = Dict(
-    "ENO" => 1.0,
+    "ENO" => 2.0,
     "FBA" => 1.0,
-    "GAPD" => 1.0,
+    "GAPD" => 2.0,
     "GLCpts" => 1.0,
-    "LDH_D" => -1.0,
+    "LDH_D" => -2.0,
     "PFK" => 1.0,
     "PGI" => 1.0,
-    "PGK" => -1.0,
-    "PGM" => -1.0,
-    "PYK" => 1.0,
+    "PGK" => -2.0,
+    "PGM" => -2.0,
+    "PYK" => 2.0,
     "TPI" => 1.0,
 )
 
@@ -108,9 +108,10 @@ mmdf_solution = max_min_driving_force_analysis(
     model,
     reaction_standard_gibbs_free_energies,
     reference_flux;
+    constant_concentrations = Dict("lac__D_c" => 1e-1, "nad_c" => 2.6e-3),
     concentration_ratios = Dict(
         "atp" => ("atp_c", "adp_c", 10.0),
-        "nadh" => ("nadh_c", "nad_c", 0.13),
+        "nadh" => ("nadh_c", "nad_c", 0.1),
     ),
     proton_metabolites = ["h_c", "h_e"],
     water_metabolites = ["h2o_c", "h2o_e"],
@@ -122,4 +123,27 @@ mmdf_solution = max_min_driving_force_analysis(
 )
 
 # TODO verify correctness
-@test isapprox(mmdf_solution.min_driving_force, -2.79911, atol = TEST_TOLERANCE) #src
+@test isapprox(mmdf_solution.min_driving_force, -2.4739129, atol = TEST_TOLERANCE) #src
+
+# ## Plot the results
+# We can see that the ΔG bottleneck is 2.5 kJ/mol, and that there is a
+# precipitous increase in driving force near the end of glycolysis. The overall
+# ΔG for the optimized pathway, under the restrictions in the model, is -158
+# kJ/mol, which compares favourably with the estimated ΔG under standard
+# biological conditions: -133 kJ/mol.
+
+using CairoMakie
+
+glycolysis_reaction_order = ["GLCpts", "PGI", "PFK",  "FBA", "TPI", "GAPD",  "PGK", "PGM", "ENO", "PYK", "LDH_D",]
+
+glycolysis_thermo = cumsum(reference_flux[rid] * mmdf_solution.reaction_gibbs_free_energies[Symbol(rid)] for rid in glycolysis_reaction_order)
+
+lines(
+    1:length(glycolysis_reaction_order), 
+    glycolysis_thermo,
+    axis=(
+        xlabel = "Reactions",
+        ylabel = "Cumulative ΔG [kJ/mol]",
+        xticks = (1:length(glycolysis_reaction_order), glycolysis_reaction_order)
+    ))
+
