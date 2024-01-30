@@ -29,7 +29,7 @@ locally](2_parallel.md) and [running distributed analysis in HPC clusters](3_slu
 As of COBREXA 1.3, the list of functions that accept the `worker` argument is
 as follows:
 
-- `affine_hit_and_run`](@ref) sampling, together with [`warmup_from_variability`
+- `affine_hit_and_run` sampling, together with `warmup_from_variability`
 - `flux_variability_analysis`
 - `max_min_driving_force`
 - `objective_envelope`
@@ -40,12 +40,10 @@ Notably, the screening functions are reused to run many other kinds of analyses
 which, in turn, inherit the parallelizability. This includes a wide range of
 functionality, including analyses such as:
 
-- [single and multiple gene deletions](../examples/07_gene_deletion.md) (and other
-  genetic modifications),
-- [modifications of the reaction
-  spectrum](../examples/07_restricting_reactions.md) (e.g., disabling reactions)
-- advanced envelope-scanning analyses,
-- [growth media exploration](../examples/11_growth.md) (e.g., metabolite depletion)
+- single and multiple gene deletions (and other genetic modifications)
+- modifications of the reaction spectrum (e.g., disabling reactions)
+- advanced envelope-scanning analyses
+- growth media exploration (e.g., metabolite depletion)
 
 ## Mitigating parallel inefficiencies
 

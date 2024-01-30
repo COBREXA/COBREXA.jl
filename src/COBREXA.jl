@@ -31,7 +31,7 @@ by copy-pastable examples.
 
 To start quickly, load your favorite JuMP-compatible solver, use
 [`load_model`](@ref) to read a metabolic model from the disk, and solve it with
-[`flux_balance`](@ref).
+[`flux_balance_analysis`](@ref).
 """
 module COBREXA
 
@@ -65,7 +65,7 @@ include("builders/compare.jl")
 include("builders/enzymes.jl")
 include("builders/fbc.jl")
 include("builders/interface.jl")
-include("builders/knockouts.jl")
+include("builders/knockout.jl")
 include("builders/loopless.jl")
 include("builders/objectives.jl")
 include("builders/scale.jl")
