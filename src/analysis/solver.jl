@@ -23,7 +23,7 @@ the model, and return either `nothing` if the optimization failed, or `output`
 substituted with the solved values (`output` defaults to `constraints`.
 
 For a "nice" version for simpler finding of metabolic model optima, use
-[`flux_balance`](@ref).
+[`flux_balance_analysis`](@ref).
 """
 function optimized_values(
     constraints::C.ConstraintTree;

@@ -55,10 +55,10 @@ end
 $(TYPEDSIGNATURES)
 
 A slightly easier-to-use version of
-[`minimization_of_metabolic_adjustment`](@ref) that computes the
-reference flux as the optimal solution of the [`reference_model`](@ref). The
-reference flux is calculated using `reference_optimizer` and
-`reference_modifications`, which default to the `optimizer` and `settings`.
+[`minimization_of_metabolic_adjustment`](@ref) that computes the reference flux
+as the optimal solution of the `reference_model`. The reference flux is
+calculated using `reference_optimizer` and `reference_modifications`, which
+default to the `optimizer` and `settings`.
 
 Leftover arguments are passed to the overload of
 [`minimization_of_metabolic_adjustment`](@ref) that accepts the
@@ -95,10 +95,10 @@ export minimization_of_metabolic_adjustment
 """
 $(TYPEDSIGNATURES)
 
-Like [`minimization_of_metabolic_adjustment`](@ref) but optimizes the
-L1 norm. This typically produces a sufficiently good result with less
-resources, depending on the situation. See documentation of
-[`linear_parsimonious_flux_balance`](@ref) for some of the
+Like [`minimization_of_metabolic_adjustment`](@ref) but optimizes the L1 norm.
+This typically produces a sufficiently good result with less resources,
+depending on the situation. See documentation of
+[`linear_parsimonious_flux_balance_analysis`](@ref) for some of the
 considerations.
 """
 function linear_minimization_of_metabolic_adjustment(

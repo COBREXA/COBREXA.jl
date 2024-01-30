@@ -1,21 +1,53 @@
 
-## Constraint system building
+# Constraint system builders
+
+## Generic constraints
+
+### Comparisons
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/builders/core.jl"]
+Pages = ["src/builders/compare.jl"]
 ```
 
-### Genetic constraints
+### Constraint scaling
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/builders/genes.jl"]
+Pages = ["src/builders/scale.jl"]
 ```
 
-### Objective function helpers
+### Sign splitting
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/builders/unsigned.jl"]
+```
+
+### Objectives
 
 ```@autodocs
 Modules = [COBREXA]
 Pages = ["src/builders/objectives.jl"]
+```
+
+## FBC constraint systems
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/builders/fbc.jl"]
+```
+
+## Analysis-specific constriants
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/builders/loopless.jl", "src/builders/knockout.jl", "src/builders/enzymes.jl"]
+```
+
+## Interfacing of constraint systems
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/builders/interface.jl"]
 ```

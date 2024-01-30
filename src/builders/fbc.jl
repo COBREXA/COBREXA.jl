@@ -27,7 +27,7 @@ function of the model.
 
 Optionally if `interface` is specified, an "interface block" will be created
 within the constraint tree for later use as a "module" in creating bigger
-models (such as communities) using [`join_module_constraints`](@ref). The
+models (such as communities) using [`interface_constraints`](@ref). The
 possible parameter values include:
 - `nothing` -- default, no interface is created
 - `:sbo` -- the interface gets created from model's SBO annotations)

@@ -68,7 +68,7 @@ ecoli2.fluxes.ACALD.bound = C.Between(-5.0, 5.0)
 # Because we created the trees with interfaces, we can connect them easily to
 # form a new model with the interface. For simplicity, we use the
 # interface-scaling functionality of [`interface_constraints`](@ref
-# ConstraintTrees.interface_constraints) to bring in cFBA-like community member
+# COBREXA.interface_constraints) to bring in cFBA-like community member
 # abundances:
 
 cc = interface_constraints(

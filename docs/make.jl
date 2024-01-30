@@ -50,14 +50,10 @@ makedocs(
     modules = [COBREXA],
     sitename = "COBREXA.jl",
     format = Documenter.HTML(
-        # Use clean URLs, unless built as a "local" build
-        prettyurls = !("local" in ARGS),
-        assets = ["assets/favicon.ico"],
-        highlights = ["yaml"],
+        ansicolor = true,
+        canonical = "https://cobrexa.github.io/COBREXA.jl/stable/",
     ),
-    authors = "The developers of COBREXA.jl",
-    linkcheck = !("skiplinks" in ARGS),
-    warnonly = true, # TODO: remove later
+    linkcheck = false,
     pages = [
         "Home" => "index.md",
         "Examples" => [
@@ -72,11 +68,10 @@ makedocs(
             "Contents" => "concepts.md"
             find_mds("concepts")
         ],
-        "Reference" => "reference.md",
-        #[ # TODO re-add this when the reference gets bigger
-        #"Contents" => "reference.md"
-        #find_mds("reference")
-        #],
+        "API reference" => [
+            "Contents" => "reference.md"
+            find_mds("reference")
+        ],
     ],
 )
 
