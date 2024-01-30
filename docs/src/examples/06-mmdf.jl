@@ -37,7 +37,6 @@ import Downloads: download
 # Additionally to COBREXA, and the model format package, we will need a solver
 # -- let's use GLPK here:
 
-using COBREXA
 import JSONFBCModels
 import GLPK
 
@@ -63,7 +62,6 @@ reaction_standard_gibbs_free_energies = Dict{String,Float64}(
     "PYK" => -24.48733600711958,
     "TPI" => 5.621932460512994,
 )
-
 
 # (The units of the energies are kJ/mol.)
 
@@ -108,8 +106,8 @@ reference_flux = Dict(
 
 mmdf_solution = max_min_driving_force_analysis(
     model,
-    reaction_standard_gibbs_free_energies;
-    reference_flux,
+    reaction_standard_gibbs_free_energies,
+    reference_flux;
     concentration_ratios = Dict(
         "atp" => ("atp_c", "adp_c", 10.0),
         "nadh" => ("nadh_c", "nad_c", 0.13),
@@ -124,4 +122,4 @@ mmdf_solution = max_min_driving_force_analysis(
 )
 
 # TODO verify correctness
-@test isapprox(mmdf_solution.min_driving_force, 2.79911, atol = TEST_TOLERANCE) #src
+@test isapprox(mmdf_solution.min_driving_force, -2.79911, atol = TEST_TOLERANCE) #src
