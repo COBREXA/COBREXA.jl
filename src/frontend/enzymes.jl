@@ -129,6 +129,15 @@ function enzyme_constrained_flux_balance_analysis(
             )
         )
 
+    constraints += enzyme_variables(constraints; reaction_isozymes)
+
+    constraints *= enzyme_constraints(
+        constraints;
+        reaction_isozymes,
+        gene_product_molar_masses,
+        capacity,
+    )
+
     optimized_constraints(
         constraints;
         objective = constraints.objective.value,
@@ -138,3 +147,67 @@ function enzyme_constrained_flux_balance_analysis(
 end
 
 export enzyme_constrained_flux_balance_analysis
+
+"""
+$(TYPEDSIGNATURES)
+
+Run a basic simplified enzyme-constrained flux balance analysis on `model`.
+Requires `reaction_isozymes`, which is a mapping of reaction identifiers to
+[`Isozyme`](@ref) descriptions, and `gene_product_molar_masses` which is a
+mapping of gene products to their molar masses.
+
+`capacity` is a single number that sets the total enzyme mass capacity of the
+model.
+
+The constraint system is internally created by
+[`simplified_enzyme_constraints`](@ref).
+"""
+function simplified_enzyme_constrained_flux_balance_analysis(
+    model::A.AbstractFBCModel;
+    reaction_isozymes::Dict{String,Isozyme},
+    gene_product_molar_masses::Dict{String,Float64},
+    capacity::Float64,
+    optimizer,
+    settings = [],
+)
+    constraints = flux_balance_constraints(model)
+
+    constraints += sign_split_variables(
+        constraints.fluxes,
+        forward = :fluxes_forward,
+        reverse = :fluxes_reverse,
+    )
+    constraints *= sign_split_constraints(
+        constraints.fluxes,
+        positive = constraints.fluxes_forward,
+        negative = constraints.fluxes_reverse,
+    )
+
+    constraints *=
+        :enzyme_capacity^simplified_enzyme_constraint(;
+            fluxes_forward = constraints.fluxes_forward,
+            fluxes_reverse = constraints.fluxes_reverse,
+            kcat_forward = k -> gets(reaction_isozymes, String(k), nothing) do i
+                i.kcat_forward
+            end,
+            kcat_reverse = k -> gets(reaction_isozymes, String(k), nothing) do i
+                i.kcat_reverse
+            end,
+            enzyme_molar_mass = k -> gets(reaction_isozymes, String(k), nothing) do i
+                sum(
+                    get(gene_product_molar_masses, gp, 0) * stoi for
+                    (gp, stoi) in i.gene_product_stoichiometry
+                )
+            end,
+            capacity,
+        )
+
+    optimized_constraints(
+        constraints;
+        objective = constraints.objective.value,
+        optimizer,
+        settings,
+    )
+end
+
+export simplified_enzyme_constrained_flux_balance_analysis

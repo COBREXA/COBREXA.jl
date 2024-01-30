@@ -68,7 +68,7 @@ function max_min_driving_force_analysis(
     T = 298.15, # Kelvin
     R = 8.31446261815324e-3, # kJ/K/mol
     reference_flux_atol = 1e-6,
-    check_ignored_reactions = missing,
+    check_ignored_reactions = nothing,
     settings = [],
     optimizer,
 )
@@ -127,7 +127,7 @@ function max_min_driving_force_analysis(
             "unknown metabolites referenced by ignored_metabolites",
         ),
     )
-    if !ismissing(check_ignored_reactions) && (
+    if !isnothing(check_ignored_reactions) && (
         all(
             x -> !haskey(reaction_standard_gibbs_free_energies, x),
             check_ignored_reactions,
