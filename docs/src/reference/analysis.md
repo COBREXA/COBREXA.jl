@@ -26,3 +26,10 @@ Pages = ["src/analysis/screen.jl", "src/analysis/variability.jl", "src/analysis/
 Modules = [COBREXA]
 Pages = ["src/analysis/sample.jl"]
 ```
+
+## Analysis front-end API helpers
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/analysis/frontend.jl"]
+```
