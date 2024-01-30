@@ -25,7 +25,7 @@ sense, optimizer, and adding more settings).
 For efficiency, everything is performed on a single instance of JuMP model.
 
 A simpler version suitable for direct work with metabolic models is available
-in [`parsimonious_flux_balance`](@ref).
+in [`parsimonious_flux_balance_analysis`](@ref).
 """
 function parsimonious_optimized_values(
     constraints::C.ConstraintTreeElem;

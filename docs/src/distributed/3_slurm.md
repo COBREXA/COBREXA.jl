@@ -29,7 +29,7 @@ Adding of the Slurm-provided is done as follows:
 
 After adding the Slurm workers, you may continue as if the workers were added
 using normal `addprocs` --- typically you load the model and (for example) run
-the [`flux_variability_analysis`](@ref) as if you would use the [local
+the `flux_variability_analysis` as if you would use the [local
 workers](2_parallel.md).
 
 The Julia script that does a parallel analysis in a Slurm cluster may look as follows:

@@ -14,10 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function flux_sampling_achr(model::A.AbstractFBCModel; optimizer, kwargs...)
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
+function achr_flux_sample(model::A.AbstractFBCModel; optimizer, kwargs...)
     #TODO
 end
 
-function flux_sampling_affine_hr(model::A.AbstractFBCModel; optimizer, kwargs...)
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
+function affine_hr_flux_sample(model::A.AbstractFBCModel; optimizer, kwargs...)
     #TODO probably share a lot of the frontend with the above thing
 end

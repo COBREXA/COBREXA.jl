@@ -14,8 +14,8 @@ You may run your analyses in parallel to gain speed-ups. The usual workflow in
 
 1. Import the `Distributed` package and add worker processes, e.g. using
    `addprocs`.
-2. Pick an analysis function that can be parallelized (such as [`screen`](@ref)
-   or [`flux_variability_analysis`](@ref)) and prepare it to work on your data.
+2. Pick an analysis function that can be parallelized (such as `screen`
+   or `flux_variability_analysis`) and prepare it to work on your data.
 3. Pass the desired set of worker IDs to the function using `workers=` argument,
    in the simplest form using e.g. `screen(...,  workers=workers())`.
 4. Worker communication will be managed automatically, and you will get results
@@ -29,12 +29,12 @@ locally](2_parallel.md) and [running distributed analysis in HPC clusters](3_slu
 As of COBREXA 1.3, the list of functions that accept the `worker` argument is
 as follows:
 
-- [`affine_hit_and_run`](@ref) sampling, together with [`warmup_from_variability`](@ref)
-- [`flux_variability_analysis`](@ref)
-- [`max_min_driving_force`](@ref)
-- [`objective_envelope`](@ref)
-- [`screen`](@ref)
-- [`screen_optmodel_modifications`](@ref)
+- `affine_hit_and_run`](@ref) sampling, together with [`warmup_from_variability`
+- `flux_variability_analysis`
+- `max_min_driving_force`
+- `objective_envelope`
+- `screen`
+- `screen_optmodel_modifications`
 
 Notably, the screening functions are reused to run many other kinds of analyses
 which, in turn, inherit the parallelizability. This includes a wide range of
@@ -57,7 +57,7 @@ that reduce the parallel efficiency, which can be summarized as follows:
   supported (and if it is, it may be inefficient for usual problem sizes). You
   usually want to parallelize the analyzes that comprise multiple independent
   runs of the solvers.
-- Some analysis function, such as [`flux_variability_analysis`](@ref), have
+- Some analysis function, such as `flux_variability_analysis`, have
   serial parts that can not be parallelized by default. Usually, you may avoid
   the inefficiency by precomputing the serial analysis parts without involving
   the cluster of the workers.
