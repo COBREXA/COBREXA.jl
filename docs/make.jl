@@ -50,13 +50,10 @@ makedocs(
     modules = [COBREXA],
     sitename = "COBREXA.jl",
     format = Documenter.HTML(
-        # Use clean URLs, unless built as a "local" build
-        prettyurls = !("local" in ARGS),
-        assets = ["assets/favicon.ico"],
-        highlights = ["yaml"],
+        ansicolor = true,
+        canonical = "https://cobrexa.github.io/COBREXA.jl/stable/",
     ),
-    authors = "The developers of COBREXA.jl",
-    linkcheck = !("skiplinks" in ARGS),
+    linkcheck = false,
     pages = [
         "Home" => "index.md",
         "Examples" => [
