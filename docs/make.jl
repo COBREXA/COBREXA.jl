@@ -57,7 +57,6 @@ makedocs(
     ),
     authors = "The developers of COBREXA.jl",
     linkcheck = !("skiplinks" in ARGS),
-    warnonly = true, # TODO: remove later
     pages = [
         "Home" => "index.md",
         "Examples" => [
@@ -72,11 +71,10 @@ makedocs(
             "Contents" => "concepts.md"
             find_mds("concepts")
         ],
-        "Reference" => "reference.md",
-        #[ # TODO re-add this when the reference gets bigger
-        #"Contents" => "reference.md"
-        #find_mds("reference")
-        #],
+        "API reference" => [
+            "Contents" => "reference.md"
+            find_mds("reference")
+        ],
     ],
 )
 
