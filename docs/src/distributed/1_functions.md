@@ -66,9 +66,7 @@ that reduce the parallel efficiency, which can be summarized as follows:
   parallelization for small tasks.
 - Transferring large amounts of data among workers may hamper parallel
   efficiency. Use [the system of model variants](../concepts/1_screen.md) to avoid
-  transferring many similar models to the workers, and [model serialization
-  functionality](4_serialized.md) to quickly distribute share large models to the
-  workers.
+  transferring many similar models to the workers.
 
 !!! note "Cost of the distribution and parallelization overhead"
     Before allocating extra resources into the distributed execution, always
