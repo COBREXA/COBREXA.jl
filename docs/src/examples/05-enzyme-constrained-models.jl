@@ -146,7 +146,7 @@ end
 #md #!!! warning "Turnover number units"
 #md #    Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting that you should rescale the turnover numbers to 1/h if you want to use the conventional flux units.
 
-### Enzyme molar masses
+# ## Enzyme molar masses
 
 # We also require the mass of each enzyme, to properly weight the contribution
 # of each flux/isozyme in the capacity bound(s). These data can typically be
@@ -309,14 +309,14 @@ ecoli_core_gene_product_masses
 #md # !!! warning "Molar mass units"
 #md #    Take care with the units of the molar masses. In literature they are usually reported in Da or kDa (g/mol). However, as noted above, flux units are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e`, where `k` is the turnover number, it suggests that the enzyme variable will have units of mmol/gDW. The molar masses come into play when setting the capacity limitations, e.g. usually a sum over all enzymes weighted by their molar masses: `e * mm`. Thus, if your capacity limitation has units of g/gDW, then the molar masses must have units of g/mmol (= kDa).
 
-### Capacity limitation
+# ## Capacity limitation
 
 # The capacity limitation usually denotes an upper bound of protein available to
 # the cell.
 
 total_enzyme_capacity = 50.0 # mg of enzyme/gDW
 
-### Running a basic enzyme constrained model
+# ## Running a basic enzyme constrained model
 
 # With all the parameters specified, we can directly use the enzyme constrained
 # convenience function to run enzyme constrained FBA in one shot:
