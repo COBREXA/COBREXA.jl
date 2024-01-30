@@ -33,7 +33,7 @@ for example in examples
     Literate.markdown(
         example,
         examples_outdir;
-        repo_root_url = "https://github.com/LCSB-BioCore/COBREXA.jl/blob/master",
+        repo_root_url = "https://github.com/COBREXA/COBREXA.jl/blob/master",
     )
     Literate.notebook(example, examples_outdir)
 end
@@ -101,7 +101,7 @@ end
 
 # deploy the result
 deploydocs(
-    repo = "github.com/LCSB-BioCore/COBREXA.jl.git",
+    repo = "github.com/COBREXA/COBREXA.jl.git",
     target = "build",
     branch = "gh-pages",
     devbranch = "master",
