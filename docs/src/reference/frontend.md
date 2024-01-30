@@ -5,67 +5,67 @@
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/balance.jl"]
+Pages = ["src/frontend/balance.jl"]
 ```
 
 ## Flux variability analysis
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/variability.jl"]
+Pages = ["src/frontend/variability.jl"]
 ```
 
 ## Parsimonious flux balance analysis
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/parsimonious.jl"]
+Pages = ["src/frontend/parsimonious.jl"]
 ```
 
 ## Enzyme-mass-constrained models
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/enzymes.jl"]
+Pages = ["src/frontend/enzymes.jl"]
 ```
 
 ## Community models
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/community.jl"]
+Pages = ["src/frontend/community.jl"]
 ```
 
 ## Production envelopes
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/envelope.jl"]
+Pages = ["src/frontend/envelope.jl"]
 ```
 
 ## Knockout models
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/knockout.jl"]
+Pages = ["src/frontend/knockout.jl"]
 ```
 
 ## Loopless flux balance analysis
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/loopless.jl"]
+Pages = ["src/frontend/loopless.jl"]
 ```
 
 ## Max-Min Driving Force analysis
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/mmdf.jl"]
+Pages = ["src/frontend/mmdf.jl"]
 ```
 
 ## Sampling
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/sample.jl"]
+Pages = ["src/frontend/sample.jl"]
 ```
