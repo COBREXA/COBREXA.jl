@@ -19,14 +19,14 @@ $(TYPEDSIGNATURES)
 
 Compute an optimal objective-optimizing solution of the given `model`.
 
-Most arguments are forwarded to [`optimized_constraints`](@ref).
+Most arguments are forwarded to [`optimized_values`](@ref).
 
 Returns a tree with the optimization solution of the same shape as
 given by [`flux_balance_constraints`](@ref).
 """
 function flux_balance_analysis(model::A.AbstractFBCModel, optimizer; kwargs...)
     constraints = flux_balance_constraints(model)
-    optimized_constraints(
+    optimized_values(
         constraints;
         objective = constraints.objective.value,
         optimizer,

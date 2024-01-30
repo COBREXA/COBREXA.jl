@@ -25,7 +25,7 @@ substituted with the solved values (`output` defaults to `constraints`.
 For a "nice" version for simpler finding of metabolic model optima, use
 [`flux_balance`](@ref).
 """
-function optimized_constraints(
+function optimized_values(
     constraints::C.ConstraintTree;
     settings = [],
     output::C.ConstraintTreeElem = constraints,
@@ -39,4 +39,4 @@ function optimized_constraints(
     optimized_model(om; output)
 end
 
-export optimized_constraints
+export optimized_values

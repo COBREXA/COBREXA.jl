@@ -137,7 +137,7 @@ export Feasible
 """
 $(TYPEDSIGNATURES)
 
-Like [`optimized_constraints`](@ref), but works directly with a given JuMP
+Like [`optimized_values`](@ref), but works directly with a given JuMP
 model `om` without applying any settings or creating the optimization model.
 
 To run the process manually, you can use [`optimization_model`](@ref) to

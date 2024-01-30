@@ -88,7 +88,7 @@ cc *=
 # Now we can simulate the community growth by optimizing the new "interfaced"
 # biomass:
 
-optimized_cc = optimized_constraints(
+optimized_cc = optimized_values(
     cc,
     objective = cc.interface.biomass.BIOMASS_Ecoli_core_w_GAM.value,
     optimizer = GLPK.Optimizer,

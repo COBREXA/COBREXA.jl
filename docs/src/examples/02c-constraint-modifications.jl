@@ -58,7 +58,7 @@ fermentation = ctmodel.fluxes.EX_ac_e.value + ctmodel.fluxes.EX_etoh_e.value
 forced_mixed_fermentation =
     ctmodel * :fermentation^C.Constraint(fermentation, (10.0, 1000.0)) # new modified model is created
 
-vt = optimized_constraints(
+vt = optimized_values(
     forced_mixed_fermentation,
     objective = forced_mixed_fermentation.objective.value,
     optimizer = GLPK.Optimizer,
@@ -73,7 +73,7 @@ ctmodel.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
 
 #TODO explicitly show here how false sharing looks like
 
-vt = optimized_constraints(
+vt = optimized_values(
     ctmodel,
     objective = ctmodel.objective.value,
     optimizer = GLPK.Optimizer,
@@ -84,7 +84,7 @@ vt = optimized_constraints(
 # Models can also be piped into the analysis functions
 
 ctmodel.fluxes.ATPM.bound = C.Between(8.39, 10000.0) # revert
-vt = optimized_constraints(
+vt = optimized_values(
     ctmodel,
     objective = ctmodel.objective.value,
     optimizer = GLPK.Optimizer,

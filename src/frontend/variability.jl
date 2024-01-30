@@ -24,7 +24,7 @@ optimality tolerance can be specified with objective_bound using e.g.
 default is 99% relative tolerance.
 
 Parameters `optimizer` and `settings` are used as with
-[`optimized_constraints`](@ref). `workers` may be used to enable parallel or
+[`optimized_values`](@ref). `workers` may be used to enable parallel or
 distributed processing; the execution defaults to all available workers.
 """
 function flux_variability_analysis(
@@ -38,7 +38,7 @@ function flux_variability_analysis(
 
     objective = constraints.objective_value
 
-    objective_flux = optimized_constraints(
+    objective_flux = optimized_values(
         constraints;
         objective = constraints.objective.value,
         output = constraints.objective,

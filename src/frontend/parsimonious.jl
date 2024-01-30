@@ -25,7 +25,7 @@ parsimonious flux thus represents the "minimum energy" one, thus arguably more
 realistic. The optimized squared distance is present in the result as
 `parsimonious_objective`.
 
-Most arguments are forwarded to [`parsimonious_optimized_constraints`](@ref),
+Most arguments are forwarded to [`parsimonious_optimized_values`](@ref),
 with some (objectives) filled in automatically to fit the common processing of
 FBC models, and some (`tolerances`) provided with more practical defaults.
 
@@ -40,7 +40,7 @@ function parsimonious_flux_balance_analysis(
 )
     constraints = flux_balance_constraints(model)
     parsimonious_objective = squared_sum_value(constraints.fluxes)
-    parsimonious_optimized_constraints(
+    parsimonious_optimized_values(
         constraints * :parsimonious_objective^C.Constraint(parsimonious_objective);
         optimizer,
         objective = constraints.objective.value,
@@ -84,7 +84,7 @@ function linear_parsimonious_flux_balance_analysis(
 
     parsimonious_objective = sum_value(ct.fluxes_forward, ct.fluxes_reverse)
 
-    parsimonious_optimized_constraints(
+    parsimonious_optimized_values(
         constraints * :parsimonious_objective^C.Constraint(parsimonious_objective);
         optimizer,
         objective = constraints.objective.value,

@@ -66,7 +66,7 @@ function loopless_flux_balance_analysis(
             driving_force_infinity_bound,
         )
 
-    optimized_constraints(
+    optimized_values(
         constraints;
         objective = constraints.objective.value,
         optimizer,

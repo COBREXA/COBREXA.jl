@@ -27,7 +27,7 @@ For efficiency, everything is performed on a single instance of JuMP model.
 A simpler version suitable for direct work with metabolic models is available
 in [`parsimonious_flux_balance`](@ref).
 """
-function parsimonious_optimized_constraints(
+function parsimonious_optimized_values(
     constraints::C.ConstraintTreeElem;
     objective::C.Value,
     settings = [],
@@ -78,4 +78,4 @@ function parsimonious_optimized_constraints(
     return nothing
 end
 
-export parsimonious_optimized_constraints
+export parsimonious_optimized_values

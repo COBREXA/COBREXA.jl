@@ -194,7 +194,7 @@ function max_min_driving_force_analysis(
             ) for (cid, (m1, m2, ratio)) in concentration_ratios
         )
 
-    optimized_constraints(
+    optimized_values(
         constraints;
         objective = constraints.min_driving_force.value,
         optimizer,

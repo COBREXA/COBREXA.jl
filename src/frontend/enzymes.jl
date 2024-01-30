@@ -129,7 +129,7 @@ function enzyme_constrained_flux_balance_analysis(
             )
         )
 
-    optimized_constraints(
+    optimized_values(
         constraints;
         objective = constraints.objective.value,
         optimizer,
