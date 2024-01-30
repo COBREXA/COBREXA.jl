@@ -24,9 +24,9 @@ front-end analysis function.
 function frontend_optimized_values(
     builder,
     args...;
-    objective = identity,
+    objective,
     output = identity,
-    sense,
+    sense = Maximal,
     optimizer,
     settings = [],
     kwargs...,
@@ -39,8 +39,8 @@ function frontend_optimized_values(
         objective = objective(constraints),
         output = output(constraints),
         sense,
-        settings,
         optimizer,
+        settings,
     )
 end
 
