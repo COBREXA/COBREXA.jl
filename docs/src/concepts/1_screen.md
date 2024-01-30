@@ -5,12 +5,12 @@ A major goal of COBREXA.jl is to make exploring of many model variants easy and
 fast.
 
 One main concept that can be utilized for doing that is implemented in the
-function [`screen`](@ref), which takes your model, a list of model _variants_
+function `screen`, which takes your model, a list of model _variants_
 that you want to explore by some specified _analysis_, and schedules the
 analysis of the model variants parallelly on the available distributed workers.
 
 In its most basic form, the "screening" may use the slightly simplified variant
-of [`screen`](@ref) that is called [`screen_variants`](@ref), which works as
+of `screen` that is called `screen_variants`, which works as
 follows:
 
 ```julia
@@ -128,8 +128,8 @@ This may be easily used for e.g. scrutinizing all possible reaction pairs, to
 find the ones that are redundant and not.
 
 There are many other variant "specifications" to choose from. You may use
-[`with_added_reactions`](@ref), [`with_removed_reactions`](@ref),
-[`with_removed_metabolites`](@ref), and others. Function reference contains a
+`with_added_reactions`, `with_removed_reactions`,
+`with_removed_metabolites`, and others. Function reference contains a
 complete list; as a convention, names of the specifications all start with
 `with_`.
 
@@ -137,7 +137,7 @@ complete list; as a convention, names of the specifications all start with
 
 It is actually very easy to create custom specifications that do any
 modification that you can implement, to be later used with
-[`screen_variants`](@ref) and [`screen`](@ref).
+`screen_variants` and `screen`.
 
 Generally, the "specifications" are supposed to return a _function_ that
 creates a modified copy of the model. The copy of the model may be shallow, but
@@ -146,7 +146,7 @@ the functions should always prevent modifying the original model structure --
 prevent unnecessary bulk data transport, and if that is changed in-place, all
 following analyses of the model will work on inconsistent data, usually
 returning wrong results (even randomly changing ones, because of the
-asynchronous nature of [`screen`](@ref) execution).
+asynchronous nature of `screen` execution).
 
 Despite of that, writing a modification is easy. The simplest modification that
 "does nothing" (isomorphic to standard `identity`) can be formatted as follows:
@@ -188,8 +188,8 @@ with_disabled_reaction(reaction_id) = (model::ObjectModel) -> begin
 end
 ```
 
-In turn, these variants can be used in [`screen_variants`](@ref) just as we
-used [`with_changed_bound`](@ref) above:
+In turn, these variants can be used in `screen_variants` just as we
+used `with_changed_bound` above:
 
 ```julia
 screen_variants(
@@ -222,10 +222,10 @@ That should get you the results for all new variants of the model:
 
 Some analysis functions may take additional arguments, which you might want to
 vary for the analysis. `modifications` argument of
-[`flux_balance_dict`](@ref) is one example of such argument, allowing
+`flux_balance_dict` is one example of such argument, allowing
 you to specify details of the optimization procedure.
 
-[`screen`](@ref) function allows you to do precisely that -- apart from
+`screen` function allows you to do precisely that -- apart from
 `variants`, you may also specify an array of `args` of the same shape as
 `variants`, the entries of which will get passed together with the generated
 model variants to your specified analysis function. If either of the arguments
