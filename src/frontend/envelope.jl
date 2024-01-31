@@ -20,12 +20,13 @@ $(TYPEDSIGNATURES)
 Find the objective production envelope of the `model` in the dimensions given
 by `reactions`.
 
-This runs a variability analysis of constraints to determine an applicable
-range for the dimensions, then splits the dimensions to equal-sized breaks (of
-count `breaks` for each dimension, i.e. total `breaks ^ length(reactions)`
-individual "multidimensional breaks") thus forming a grid, and returns an array
-of fluxes through the model objective with the individual reactions fixed to
-flux as given by the grid.
+This runs a variability analysis of the fluxes given by
+[`flux_balance_constraints`](@ref) to determine an applicable range for the
+dimensions, then splits the dimensions to equal-sized breaks (of count `breaks`
+for each dimension, i.e. total `breaks ^ length(reactions)` individual
+"multidimensional breaks") thus forming a grid, and returns an array of fluxes
+through the model objective with the individual reactions fixed to flux as
+given by the grid.
 
 `optimizer` and `settings` are used to construct the optimization models.
 
