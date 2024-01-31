@@ -24,6 +24,7 @@ front-end analysis function.
 function frontend_optimized_values(
     builder,
     args...;
+    builder_kwargs = NamedTuple(),
     objective,
     output = identity,
     sense = Maximal,
@@ -31,7 +32,7 @@ function frontend_optimized_values(
     settings = [],
     kwargs...,
 )
-    constraints = builder(args...; kwargs...)
+    constraints = builder(args...; builder_kwargs..., kwargs...)
 
     # arguments need to be kept in sync
     optimized_values(
@@ -58,6 +59,7 @@ Like [`frontend_optimized_values`](@ref), but internally calls
 function frontend_parsimonious_optimized_values(
     builder,
     args...;
+    builder_kwargs = NamedTuple(),
     objective = identity,
     output = identity,
     sense = Maximal,
@@ -70,7 +72,7 @@ function frontend_parsimonious_optimized_values(
     tolerances = [absolute_tolerance_bound(0)],
     kwargs...,
 )
-    constraints = builder(args...; kwargs...)
+    constraints = builder(args...; builder_kwargs..., kwargs...)
 
     # arguments need to be kept in sync
     parsimonious_optimized_values(
