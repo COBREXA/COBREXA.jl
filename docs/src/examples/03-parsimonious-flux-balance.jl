@@ -16,9 +16,8 @@
 
 # # Parsimonious flux balance analysis
 
-# We will use [`parsimonious_flux_balance_analysis`](@ref) and
-# [`metabolic_adjustment_minimization`](@ref) to find the optimal flux
-# distribution in the *E. coli* "core" model.
+# We will use [`parsimonious_flux_balance_analysis`](@ref) to find the optimal
+# flux distribution in the *E. coli* "core" model.
 #
 # TODO pFBA citation
 

@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO might be nice to rethink this a bit and actually go for the "minimal
+# distance between 2 model solutions" kind of moma.
+
 """
 $(TYPEDSIGNATURES)
 
