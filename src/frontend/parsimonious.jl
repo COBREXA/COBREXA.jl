@@ -17,57 +17,59 @@
 """
 $(TYPEDSIGNATURES)
 
-Compute a parsimonious flux solution for the given `model`. In short, the
-objective value of the parsimonious solution should be the same as the one from
-[`flux_balance_analysis`](@ref), except the squared sum of reaction fluxes is minimized.
-If there are multiple possible fluxes that achieve a given objective value,
-parsimonious flux thus represents the "minimum energy" one, thus arguably more
-realistic. The optimized squared distance is present in the result as
-`parsimonious_objective`.
-
-Most arguments are forwarded to [`parsimonious_optimized_values`](@ref),
-with some (objectives) filled in automatically to fit the common processing of
-FBC models, and some (`tolerances`) provided with more practical defaults.
-
-Similarly to the [`flux_balance_analysis`](@ref), returns a tree with the optimization
-solutions of the shape as given by [`flux_balance_constraints`](@ref).
+A constraint system like from [`flux_balance_constraints`](@ref), but with the
+parsimonious objective present under key `parsimonious_objective`. Best used
+via [`parsimonious_flux_balance_analysis`](@ref).
 """
-function parsimonious_flux_balance_analysis(
-    model::A.AbstractFBCModel,
-    optimizer;
+function parsimonious_flux_balance_constraints(model::A.AbstractFBCModel)
+    constraints = flux_balance_constraints(model)
+
+    constraints *
+    :parsimonious_objective^C.Constraint(squared_sum_value(constraints.fluxes))
+end
+
+export parsimonious_flux_balance_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Compute a parsimonious flux solution for the `model`, using the constraints
+given by [`parsimonious_flux_balance_constraints`](@ref).
+
+In short, the objective value of the parsimonious solution should be the same
+as the one from [`flux_balance_analysis`](@ref), except the squared sum of
+reaction fluxes is minimized. If there are multiple possible fluxes that
+achieve a given objective value, parsimonious flux thus represents the "minimum
+energy" one, which is arguably more realistic.
+
+Solver configuration arguments are forwarded to
+[`parsimonious_optimized_values`](@ref).
+"""
+parsimonious_flux_balance_analysis(
+    model::A.AbstractFBCModel;
     tolerances = relative_tolerance_bound.(1 .- [0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]),
     kwargs...,
+) = frontend_parsimonious_optimized_values(
+    parsimonious_flux_balance_constraints,
+    model;
+    objective = x -> x.objective.value,
+    parsimonious_objective = x -> x.parsimonious_objective.value,
+    tolerances,
+    kwargs...,
 )
-    constraints = flux_balance_constraints(model)
-    parsimonious_objective = squared_sum_value(constraints.fluxes)
-    parsimonious_optimized_values(
-        constraints * :parsimonious_objective^C.Constraint(parsimonious_objective);
-        optimizer,
-        objective = constraints.objective.value,
-        parsimonious_objective,
-        tolerances,
-        kwargs...,
-    )
-end
 
 export parsimonious_flux_balance_analysis
 
 """
 $(TYPEDSIGNATURES)
 
-Like [`parsimonious_flux_balance_analysis`](@ref), but uses a L1 metric for
-solving the parsimonious problem.
-
-In turn, the solution is often faster, does not require a solver capable of
-quadratic objectives, and has many beneficial properties of the usual
-parsimonious solutions (such as the general lack of unnecessary loops). On the
-other hand, like with plain flux balance analysis there is no strong guarantee
-of uniqueness of the solution.
+Like [`parsimonious_flux_balance_constraints`](@ref), but uses a L1 metric for
+solving the parsimonious problem. The `parsimonious_objective` constraint is
+thus linear.
 """
-function linear_parsimonious_flux_balance_analysis(
+function linear_parsimonious_flux_balance_constraints(
     model::A.AbstractFBCModel,
     optimizer;
-    tolerances = relative_tolerance_bound.(1 .- [0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]),
     kwargs...,
 )
     constraints = flux_balance_constraints(model)
@@ -93,5 +95,36 @@ function linear_parsimonious_flux_balance_analysis(
         kwargs...,
     )
 end
+
+export linear_parsimonious_flux_balance_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Like [`parsimonious_flux_balance_analysis`](@ref), but uses the L1-metric
+parsimonious system given by
+[`linear_parsimonious_flux_balance_constraints`](@ref).
+
+In turn, the solution is often faster, does not require a solver capable of
+quadratic objectives, and has many beneficial properties of the usual
+parsimonious solutions (such as the general lack of unnecessary loops). On the
+other hand, like with plain flux balance analysis there is no strong guarantee
+of uniqueness of the solution.
+
+Solver configuration arguments are forwarded to
+[`parsimonious_optimized_values`](@ref).
+"""
+linear_parsimonious_flux_balance_analysis(
+    model::A.AbstractFBCModel;
+    tolerances = relative_tolerance_bound.(1 .- [0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]),
+    kwargs...,
+) = frontend_parsimonious_optimized_values(
+    linear_parsimonious_flux_balance_constraints,
+    model;
+    objective = x -> x.objective.value,
+    parsimonious_objective = x -> x.parsimonious_objective.value,
+    tolerances,
+    kwargs...,
+)
 
 export linear_parsimonious_flux_balance_analysis

@@ -22,15 +22,15 @@
 #
 # TODO pFBA citation
 
-# If it is not already present, download the model and load the package:
-import Downloads: download
+using COBREXA
 
-!isfile("e_coli_core.json") &&
-    download("http://bigg.ucsd.edu/static/models/e_coli_core.json", "e_coli_core.json")
+download_model(
+    "http://bigg.ucsd.edu/static/models/e_coli_core.json",
+    "e_coli_core.json",
+    "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
+)
 
 # next, load the necessary packages
-
-using COBREXA
 
 import JSONFBCModels
 import Clarabel # can solve QPs
@@ -39,7 +39,11 @@ model = load_model("e_coli_core.json") # load the model
 
 # Use the convenience function to run standard pFBA on
 
-vt = parsimonious_flux_balance_analysis(model, Clarabel.Optimizer; settings = [silence])
+vt = parsimonious_flux_balance_analysis(
+    model;
+    optimizer = Clarabel.Optimizer,
+    settings = [silence],
+)
 
 @test isapprox(vt.objective, 0.87392; atol = TEST_TOLERANCE) #src
 @test sum(x^2 for x in values(vt.fluxes)) < 15000 #src
