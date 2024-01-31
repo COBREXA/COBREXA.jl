@@ -17,11 +17,12 @@
 """
 $(TYPEDSIGNATURES)
 
-Perform a flux balance analysis with added quasi-thermodynamic constraints that
-ensure that thermodynamically infeasible internal cycles can not occur. The
-method is closer described by: Schellenberger, Lewis, and, Palsson.
-"Elimination of thermodynamically infeasible loops in steady-state metabolic
-models.", Biophysical journal, 2011`.
+Construct a flux-balance constraint system from `model` with added
+quasi-thermodynamic constraints that ensure that thermodynamically infeasible
+internal cycles can not occur. The method is closer described by:
+*Schellenberger, Lewis, and, Palsson.  "Elimination of thermodynamically
+infeasible loops in steady-state metabolic models.", Biophysical journal,
+2011`*.
 
 The loopless condition comes with a performance overhead: the computation needs
 to find the null space of the stoichiometry matrix (essentially inverting it);
@@ -29,17 +30,18 @@ and the subsequently created optimization problem contains binary variables for
 each internal reaction, thus requiring a MILP solver and a potentially
 exponential solving time.
 
+Internally, the system is constructed by combining
+[`flux_balance_constraints`](@ref) and [`loopless_constraints`](@ref).
+
 The arguments `driving_force_max_bound` and `driving_force_nonzero_bound` set
 the bounds (possibly negated ones) on the virtual "driving forces" (G_i in the
 paper).
 """
-function loopless_flux_balance_analysis(
+function loopless_flux_balance_constraints(
     model::A.AbstractFBCModel;
     flux_infinity_bound = 10000.0,
     driving_force_nonzero_bound = 1.0,
     driving_force_infinity_bound = 1000.0,
-    settings = [],
-    optimizer,
 )
 
     constraints = flux_balance_constraints(model)
@@ -54,24 +56,37 @@ function loopless_flux_balance_analysis(
         :loopless_directions^C.variables(keys = internal_reactions, bounds = Switch(0, 1)) +
         :loopless_driving_forces^C.variables(keys = internal_reactions)
 
-    constraints *=
-        :loopless_constraints^loopless_constraints(;
-            fluxes = constraints.fluxes,
-            loopless_direction_indicators = constraints.loopless_directions,
-            loopless_driving_forces = constraints.loopless_driving_forces,
-            internal_reactions,
-            internal_nullspace = LinearAlgebra.nullspace(Matrix(stoi[:, internal_mask])),
-            flux_infinity_bound,
-            driving_force_nonzero_bound,
-            driving_force_infinity_bound,
-        )
-
-    optimized_values(
-        constraints;
-        objective = constraints.objective.value,
-        optimizer,
-        settings,
+    constraints *
+    :loopless_constraints^loopless_constraints(;
+        fluxes = constraints.fluxes,
+        loopless_direction_indicators = constraints.loopless_directions,
+        loopless_driving_forces = constraints.loopless_driving_forces,
+        internal_reactions,
+        internal_nullspace = LinearAlgebra.nullspace(Matrix(stoi[:, internal_mask])),
+        flux_infinity_bound,
+        driving_force_nonzero_bound,
+        driving_force_infinity_bound,
     )
 end
+
+export loopless_flux_balance_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Perform the loopless flux balance analysis on the `model`, returning the solved
+constraint system.
+
+Arguments are forwarded to [`loopless_flux_balance_constraints`](@ref) (see the
+documentation for the description of the constraint system); solver
+configuration arguments are forwarded to [`optimized_values`](@ref).
+"""
+loopless_flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) =
+    frontend_optimized_values(
+        loopless_flux_balance_constraints,
+        model;
+        objective = x -> x.objective.value,
+        kwargs...,
+    )
 
 export loopless_flux_balance_analysis
