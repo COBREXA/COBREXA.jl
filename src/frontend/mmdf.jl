@@ -55,8 +55,8 @@ Following arguments are set optionally:
   forces.
 """
 function max_min_driving_force_analysis(
-    model::A.AbstractFBCModel,
-    reaction_standard_gibbs_free_energies::Dict{String,Float64};
+    model::A.AbstractFBCModel;
+    reaction_standard_gibbs_free_energies::Dict{String,Float64},
     reference_flux = Dict{String,Float64}(),
     concentration_ratios = Dict{String,Tuple{String,String,Float64}}(),
     constant_concentrations = Dict{String,Float64}(),
