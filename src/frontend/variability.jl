@@ -31,7 +31,7 @@ Parameter `workers` may be used to enable parallel or distributed processing;
 the execution defaults to all available workers. Other parameters (esp.
 `optimizer`) are internally forwarded to [`optimized_values`](@ref).
 
-Use [`constraint_variability`](@ref) to customize the FVA execution.
+Use [`constraints_variability`](@ref) to customize the FVA execution.
 """
 function flux_variability_analysis(
     model::A.AbstractFBCModel;
@@ -55,7 +55,7 @@ function flux_variability_analysis(
 
     isnothing(objective_flux) && return nothing
 
-    constraint_variability(
+    constraints_variability(
         constraints *
         :objective_bound^C.Constraint(objective, objective_bound(objective_flux)),
         isnothing(reaction_subset) ? constraints.fluxes :
