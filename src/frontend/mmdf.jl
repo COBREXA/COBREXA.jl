@@ -17,21 +17,22 @@
 """
 $(TYPEDSIGNATURES)
 
-Perform a max-min driving force analysis using `optimizer` on the `model` with
-supplied reaction standard Gibbs energies in `reaction_standard_gibbs_free_energies`.
+Create max-min driving force constraint system from `model`, using the supplied
+reaction standard Gibbs free energies in `reaction_standard_gibbs_free_energies`.
 
-The method was described by by: Noor, et al., "Pathway thermodynamics highlights
-kinetic obstacles in central metabolism.", PLoS computational biology, 2014.
+The method is described by: *Noor, et al., "Pathway thermodynamics highlights
+kinetic obstacles in central metabolism.", PLoS computational biology, 2014.*
 
 `reference_flux` sets the directions of each reaction in `model`. The scale of
 the values is not important, only the direction is examined (w.r.t.
 `reference_flux_atol` tolerance). Ideally, the supplied `reference_flux` should
 be completely free of internal cycles, which enables the thermodynamic
 consistency. To get the cycle-free flux, you can use
-[`loopless_flux_balance_analysis`](@ref) (computationally complex but gives
-very good fluxes), [`parsimonious_flux_balance_analysis`](@ref) or
-[`linear_parsimonious_flux_balance_analysis`](@ref) (computationally simplest
-but the consistency is not guaranteed).
+[`loopless_flux_balance_analysis`](@ref) (computationally demanding, but gives
+thermodynamically consistent solutions),
+[`parsimonious_flux_balance_analysis`](@ref) or
+[`linear_parsimonious_flux_balance_analysis`](@ref) (which is computationally
+simple, but the consistency is not guaranteed).
 
 Internally, [`log_concentration_constraints`](@ref) is used to lay out the
 base structure of the problem.
@@ -54,7 +55,7 @@ Following arguments are set optionally:
   log-concentrations to obtain the actual Gibbs energies and thus driving
   forces.
 """
-function max_min_driving_force_analysis(
+function max_min_driving_force_constraints(
     model::A.AbstractFBCModel;
     reaction_standard_gibbs_free_energies::Dict{String,Float64},
     reference_flux = Dict{String,Float64}(),
@@ -69,8 +70,6 @@ function max_min_driving_force_analysis(
     R = 8.31446261815324e-3, # kJ/K/mol
     reference_flux_atol = 1e-6,
     check_ignored_reactions = missing,
-    settings = [],
-    optimizer,
 )
 
     # First let's just check if all the identifiers are okay because we use
@@ -152,6 +151,9 @@ function max_min_driving_force_analysis(
         Set(Symbol.(ignored_metabolites)),
     )
 
+    # TODO it might be quite viable to only create a system with the
+    # metabolites and reactions actually required for the MMDF.
+
     constraints =
         log_concentration_constraints(
             model,
@@ -180,26 +182,38 @@ function max_min_driving_force_analysis(
         end for (rid, dGr0) in reaction_standard_gibbs_free_energies
     )
 
-    constraints =
-        constraints *
-        :driving_forces^driving_forces *
-        :min_driving_force_thresholds^C.map(driving_forces) do c
-            less_or_equal_constraint(constraints.min_driving_force, c)
-        end *
-        :concentration_ratio_constraints^C.ConstraintTree(
-            Symbol(cid) => difference_constraint(
-                constraints.log_concentrations[Symbol(m1)],
-                constraints.log_concentrations[Symbol(m2)],
-                log(ratio),
-            ) for (cid, (m1, m2, ratio)) in concentration_ratios
-        )
-
-    optimized_values(
-        constraints;
-        objective = constraints.min_driving_force.value,
-        optimizer,
-        settings,
+    constraints *
+    :driving_forces^driving_forces *
+    :min_driving_force_thresholds^C.map(driving_forces) do c
+        less_or_equal_constraint(constraints.min_driving_force, c)
+    end *
+    :concentration_ratio_constraints^C.ConstraintTree(
+        Symbol(cid) => difference_constraint(
+            constraints.log_concentrations[Symbol(m1)],
+            constraints.log_concentrations[Symbol(m2)],
+            log(ratio),
+        ) for (cid, (m1, m2, ratio)) in concentration_ratios
     )
 end
+
+export max_min_driving_force_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Perform the max-min driving force analysis on the `model`, returning the solved
+constraint system.
+
+Arguments are forwarded to [`max_min_driving_force_constraints`](@ref) (see the
+documentation for the description of the constraint system); solver
+configuration arguments are forwarded to [`optimized_values`](@ref).
+"""
+max_min_driving_force_analysis(model::A.AbstractFBCModel; kwargs...) =
+    frontend_optimized_values(
+        max_min_driving_force_constraints,
+        model;
+        objective = x -> x.min_driving_force.value,
+        kwargs...,
+    )
 
 export max_min_driving_force_analysis
