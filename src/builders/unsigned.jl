@@ -17,13 +17,18 @@
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Returns the positive portion of bound `b`. Used in
+[`unsigned_positive_contribution_variables`](@ref) and
+[`unsigned_negative_contribution_variables`](@ref) to allocate unidirectional
+variables.
 """
 positive_bound_contribution(b::C.EqualTo) = b.equal_to >= 0 ? b : C.EqualTo(0.0)
+
 positive_bound_contribution(b::C.Between) =
     b.lower >= 0 && b.upper >= 0 ? b :
     b.lower <= 0 && b.upper <= 0 ? C.EqualTo(0) :
     C.Between(max(0, b.lower), max(0, b.upper))
+
 positive_bound_contribution(b::Switch) =
     let upper_bound = max(b.a, b.b)
         upper_bound > 0 ? C.Between(0.0, upper_bound) : C.EqualTo(0.0)
@@ -32,7 +37,7 @@ positive_bound_contribution(b::Switch) =
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Return a constraint tree of the positive contribution of variables in `cs`.
 """
 unsigned_positive_contribution_variables(cs::C.ConstraintTree) =
     C.variables_for(c -> positive_bound_contribution(c.bound), cs)
@@ -42,7 +47,7 @@ export unsigned_positive_contribution_variables
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Return a constraint tree of the negative contribution of variables in `cs`.
 """
 unsigned_negative_contribution_variables(cs::C.ConstraintTree) =
     C.variables_for(c -> positive_bound_contribution(-c.bound), cs)
@@ -65,8 +70,8 @@ sign_split_variables(
     positive::Symbol = :positive,
     negative::Symbol = :negative,
 )::C.ConstraintTree =
-    forward^unsigned_positive_contribution_variables(constraints) +
-    reverse^unsigned_negative_contribution_variables(constraints)
+    positive^unsigned_positive_contribution_variables(constraints) +
+    negative^unsigned_negative_contribution_variables(constraints)
 
 export sign_split_variables
 
