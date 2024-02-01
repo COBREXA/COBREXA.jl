@@ -25,7 +25,7 @@ metabolite in `model` if `subset_metabolites` is true for the respective
 metabolite id. The substree is called `log_concentrations`. The output
 constraint tree also contains a reaction metabolite stoichiometry constraints
 for reach reaction in `model` `subset_reactions` is true for the respective
-reaction id. The substree is called `reaction_stoichiometry`. 
+reaction id. The substree is called `reaction_stoichiometry`.
 
 The keyword arguments are functions:
 - `subset_reactions` takes a reaction ID as its argument, and returns true if

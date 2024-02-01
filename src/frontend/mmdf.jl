@@ -76,7 +76,7 @@ function max_min_driving_force_constraints(
     subset of the full model, because thermodynamic data is usually not
     available for all the reactions/metabolites. Missing data may cause subtle
     problems, and is usually best to restrict your model to reactions where
-    thermodynamic data exists.  
+    thermodynamic data exists.
     =#
 
     model_reactions =
