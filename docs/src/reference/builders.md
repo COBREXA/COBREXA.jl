@@ -42,7 +42,7 @@ Pages = ["src/builders/fbc.jl"]
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/builders/loopless.jl", "src/builders/knockout.jl", "src/builders/enzymes.jl"]
+Pages = ["src/builders/loopless.jl", "src/builders/knockout.jl", "src/builders/enzymes.jl", "src/builders/mmdf.jl"]
 ```
 
 ## Interfacing of constraint systems
