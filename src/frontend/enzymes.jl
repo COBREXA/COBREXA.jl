@@ -54,76 +54,32 @@ function enzyme_constrained_flux_balance_constraints(
     gene_product_molar_masses::Dict{String,Float64},
     capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
 )
-    constraints = flux_balance_constraints(model)
-
-    # might be nice to omit some conditionally (e.g. slash the direction if one
-    # kcat is nothing)
-    isozyme_amounts = isozyme_amount_variables(
-        Symbol.(keys(reaction_isozymes)),
-        rid -> Symbol.(keys(reaction_isozymes[string(rid)])),
+    # these functions should not fail gracefully to prevent user footguns
+    # they take strings and but cts use symbols internally, hence lots of conversions are required - kind of annoying
+    isozyme_ids(rid) =
+        haskey(reaction_isozymes, String(rid)) ?
+        Symbol.(keys(reaction_isozymes[String(rid)])) : nothing
+    kcat_forward(rid, iso_id) = reaction_isozymes[String(rid)][String(iso_id)].kcat_forward
+    kcat_reverse(rid, iso_id) = reaction_isozymes[String(rid)][String(iso_id)].kcat_reverse
+    isozyme_subunit_stoichiometry(rid, iso_id) = Dict(
+        Symbol(k) => v for (k, v) in
+        reaction_isozymes[String(rid)][String(iso_id)].gene_product_stoichiometry
     )
+    gene_product_molar_mass(gid) = gene_product_molar_masses[String(gid)]
 
-    # allocate variables for everything (nb. += wouldn't associate right here)
-    constraints =
-        constraints +
-        :fluxes_forward^unsigned_positive_contribution_variables(constraints.fluxes) +
-        :fluxes_reverse^unsigned_negative_contribution_variables(constraints.fluxes) +
-        :isozyme_forward_amounts^isozyme_amounts +
-        :isozyme_reverse_amounts^isozyme_amounts +
-        :gene_product_amounts^C.variables(
-            keys = Symbol.(A.genes(model)),
-            bounds = C.Between(0, Inf),
-        )
+    capacity_limits =
+        capacity isa Real ? [("totalcapacity", Symbol.(A.genes(model)), capacity)] :
+        capacity
 
-    # connect all parts with constraints
-    constraints *
-    :directional_flux_balance^sign_split_constraints(
-        positive = constraints.fluxes_forward,
-        negative = constraints.fluxes_reverse,
-        signed = constraints.fluxes,
-    ) *
-    :isozyme_flux_forward_balance^isozyme_flux_constraints(
-        constraints.isozyme_forward_amounts,
-        constraints.fluxes_forward,
-        (rid, isozyme) -> maybemap(
-            x -> x.kcat_forward,
-            maybeget(reaction_isozymes, string(rid), string(isozyme)),
-        ),
-    ) *
-    :isozyme_flux_reverse_balance^isozyme_flux_constraints(
-        constraints.isozyme_reverse_amounts,
-        constraints.fluxes_reverse,
-        (rid, isozyme) -> maybemap(
-            x -> x.kcat_reverse,
-            maybeget(reaction_isozymes, string(rid), string(isozyme)),
-        ),
-    ) *
-    :gene_product_isozyme_balance^gene_product_isozyme_constraints(
-        constraints.gene_product_amounts,
-        (constraints.isozyme_forward_amounts, constraints.isozyme_reverse_amounts),
-        (rid, isozyme) -> maybemap(
-            x -> [(Symbol(k), v) for (k, v) in x.gene_product_stoichiometry],
-            maybeget(reaction_isozymes, string(rid), string(isozyme)),
-        ),
-    ) *
-    :gene_product_capacity^(
-        capacity isa Float64 ?
-        C.Constraint(
-            value = sum(
-                gpa.value * gene_product_molar_masses[String(gp)] for
-                (gp, gpa) in constraints.gene_product_amounts
-            ),
-            bound = C.Between(0, capacity),
-        ) :
-        C.ConstraintTree(
-            Symbol(id) => C.Constraint(
-                value = sum(
-                    constraints.gene_product_amounts[Symbol(gp)].value *
-                    gene_product_molar_masses[gp] for gp in gps
-                ),
-                bound = C.Between(0, limit),
-            ) for (id, gps, limit) in capacity_limits
-        )
+    enzyme_constraints(
+        flux_balance_constraints(model);
+        gene_ids = Symbol.(A.genes(model)),
+        isozyme_ids,
+        kcat_forward,
+        kcat_reverse,
+        isozyme_subunit_stoichiometry,
+        gene_product_molar_mass,
+        capacity_limits,
     )
 end
 
