@@ -25,7 +25,7 @@ Pages = ["src/solver.jl"]
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/builders/core.jl", "src/builders/mmdf.jl"]
+Pages = ["src/builders/core.jl"]
 ```
 
 ### Genetic constraints
