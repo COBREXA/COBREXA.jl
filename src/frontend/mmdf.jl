@@ -64,29 +64,43 @@ function max_min_driving_force_constraints(
     ignored_metabolites = [],
     proton_metabolites = [],
     water_metabolites = [],
-    concentration_lower_bound = 1e-9, # M
-    concentration_upper_bound = 1e-1, # M
+    concentration_lower_bound = 1e-9, # Molar
+    concentration_upper_bound = 1e-1, # Molar
     T = 298.15, # Kelvin
     R = 8.31446261815324e-3, # kJ/K/mol
     reference_flux_atol = 1e-6,
-    check_ignored_reactions = missing,
 )
+
+    #=
+    For MMDF, one is almost always interested in running the analysis on a
+    subset of the full model, because thermodynamic data is usually not
+    available for all the reactions/metabolites. Missing data may cause subtle
+    problems, and is usually best to restrict your model to reactions where
+    thermodynamic data exists.  
+    =#
+
+    model_reactions =
+        isempty(reference_flux) ? A.reactions(model) :
+        collect(k for (k, v) in reference_flux if abs(v) >= reference_flux_atol)
+
+    model_metabolites =
+        isempty(reference_flux) ? A.metabolites(model) :
+        unique(
+            mid for rid in model_reactions for
+            mid in keys(A.reaction_stoichiometry(model, string(rid)))
+        )
 
     # First let's just check if all the identifiers are okay because we use
     # quite a lot of these; the rest of the function may be a bit cleaner with
     # this checked properly.
 
-    model_reactions = Set(A.reactions(model))
-    model_metabolites = Set(A.metabolites(model))
 
-    all(in(model_reactions), keys(reaction_standard_gibbs_free_energies)) || throw(
+    all(in(keys(reaction_standard_gibbs_free_energies)), model_reactions) || throw(
         DomainError(
             reaction_standard_gibbs_free_energies,
-            "unknown reactions referenced by reaction_standard_gibbs_free_energies",
+            "missing reaction in reaction_standard_gibbs_free_energies",
         ),
     )
-    all(x -> haskey(reaction_standard_gibbs_free_energies, x), keys(reference_flux)) ||
-        throw(DomainError(reference_flux, "some reactions have no reference flux"))
     all(in(model_reactions), keys(reference_flux)) || throw(
         DomainError(
             reaction_standard_gibbs_free_energies,
@@ -126,19 +140,6 @@ function max_min_driving_force_constraints(
             "unknown metabolites referenced by ignored_metabolites",
         ),
     )
-    if !ismissing(check_ignored_reactions) && (
-        all(
-            x -> !haskey(reaction_standard_gibbs_free_energies, x),
-            check_ignored_reactions,
-        ) || (
-            union(
-                Set(check_ignored_reactions),
-                Set(keys(reaction_standard_gibbs_free_energies)),
-            ) != model_reactions
-        )
-    )
-        throw(AssertionError("check_ignored_reactions validation failed"))
-    end
 
     # that was a lot of checking.
 
@@ -157,12 +158,13 @@ function max_min_driving_force_constraints(
     constraints =
         log_concentration_constraints(
             model,
-            concentration_bound = met -> if met in no_concentration_metabolites
+            subset_reactions = rxn -> rxn in model_reactions,
+            subset_metabolites = met -> met in model_metabolites,
+            concentration_bound = met -> if Symbol(met) in no_concentration_metabolites
                 C.EqualTo(0)
             else
-                mid = String(met)
-                if haskey(constant_concentrations, mid)
-                    C.EqualTo(log(constant_concentrations[mid]))
+                if haskey(constant_concentrations, met)
+                    C.EqualTo(log(constant_concentrations[met]))
                 else
                     default_concentration_bound
                 end
@@ -172,14 +174,12 @@ function max_min_driving_force_constraints(
     driving_forces = C.ConstraintTree(
         let r = Symbol(rid),
             rf = reference_flux[rid],
-            df = dGr0 + R * T * constraints.reactant_log_concentrations[r].value
+            dGr0 = reaction_standard_gibbs_free_energies[rid],
+            df = dGr0 + R * T * constraints.reaction_stoichiometry[r].value
 
-            r => if isapprox(rf, 0.0, atol = reference_flux_atol)
-                C.Constraint(df, C.EqualTo(0))
-            else
-                C.Constraint(rf > 0 ? -df : df, C.Between(0, Inf))
-            end
-        end for (rid, dGr0) in reaction_standard_gibbs_free_energies
+            r => C.Constraint(rf >= 0 ? -df : df, C.Between(0, Inf))
+
+        end for rid in model_reactions
     )
 
     constraints *
