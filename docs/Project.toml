@@ -9,6 +9,7 @@ InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 JSONFBCModels = "475c1105-d6ed-49c1-9b32-c11adca6d3e8"
 Literate = "98b081ad-f1c9-55d3-8b20-4c87d4299306"
 Tulip = "6dd1b50a-3aae-11e9-10b5-ef983d2400fa"
+UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
 Documenter = "1"
