@@ -17,34 +17,55 @@
 """
 $(TYPEDSIGNATURES)
 
-Build log-concentration-stoichiometry constraints for the `model`, as used e.g.
+Return log-concentration-stoichiometry constraints for the `model`, as used e.g.
 by [`max_min_driving_force_analysis`](@ref).
 
 The output constraint tree contains a log-concentration variable for each
-metabolite in subtree `log_concentrations`. Individual reactions' total
-reactant log concentrations (i.e., all log concentrations of actual reactants
-minus all log concentrations of products) have their own variables in
-`reactant_log_concentrations`.
+metabolite in `model` if `subset_metabolites` is true for the respective
+metabolite id. The substree is called `log_concentrations`. The output
+constraint tree also contains a reaction metabolite stoichiometry constraints
+for reach reaction in `model` `subset_reactions` is true for the respective
+reaction id. The substree is called `reaction_stoichiometry`. 
 
-Function `concentration_bound` may return a bound for the log-concentration of
-a given metabolite (compatible with `ConstraintTrees.Bound`), or `nothing`.
+The keyword arguments are functions:
+- `subset_reactions` takes a reaction ID as its argument, and returns true if
+  the reaction should be included in the `reaction_stoichiometry` substree.
+- `subset_metabolites` takes a metaboilte ID as its argument, and returns true
+  if the metabolite should be allocated as a variable in `log_concentrations`.
+- `concentration_bound` takes a metabolite ID as its argument, may return either
+  a bound for the log-concentration of a given metabolite (compatible with
+  `ConstraintTrees.Bound`), or `nothing` if no bound is associated with the
+  metabolite log concentration.
 """
 function log_concentration_constraints(
     model::A.AbstractFBCModel;
+    subset_reactions = _ -> true,
+    subset_metabolites = _ -> true,
     concentration_bound = _ -> nothing,
 )
-    rxns = Symbol.(A.reactions(model))
-    mets = Symbol.(A.metabolites(model))
+    rxns = Dict(
+        idx => rid for (idx, rid) in enumerate(A.reactions(model)) if subset_reactions(rid)
+    )
+    mets = Dict(
+        idx => mid for
+        (idx, mid) in enumerate(A.metabolites(model)) if subset_metabolites(mid)
+    )
     stoi = A.stoichiometry(model)
 
+    # these are the only variables
     constraints =
-        :log_concentrations^C.variables(keys = mets, bounds = concentration_bound.(mets))
+        :log_concentrations^C.variables(
+            keys = Symbol.(values(mets)),
+            bounds = concentration_bound.(values(mets)),
+        )
 
     cs = C.ConstraintTree()
 
     for (midx, ridx, coeff) in zip(SparseArrays.findnz(stoi)...)
-        rid = rxns[ridx]
-        value = constraints.log_concentrations[mets[midx]].value * coeff
+        haskey(rxns, ridx) || continue
+        rid = Symbol(rxns[ridx])
+        mid = Symbol(mets[midx])
+        value = constraints.log_concentrations[mid].value * coeff
         if haskey(cs, rid)
             cs[rid].value += value
         else
@@ -52,7 +73,7 @@ function log_concentration_constraints(
         end
     end
 
-    return constraints * :reactant_log_concentrations^cs
+    return constraints * :reaction_stoichiometry^cs
 end
 
 export log_concentration_constraints
