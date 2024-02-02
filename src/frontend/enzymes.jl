@@ -125,13 +125,13 @@ reaction identifiers to [`Isozyme`](@ref) descriptions. For each gene product in
 `reaction_isozymes`, a corresponding entry in `gene_product_molar_masses` must
 be present, which is a mapping of gene products to their molar masses.
 Internally, the cheapest/fastest isozyme (minimum of MW/kcat for each isozyme)
-is used in the capacity bound. 
+is used in the capacity bound.
 
 `capacity` may be a single number, which sets the limit of protein required for
 all the fluxes in `reaction_isozymes` (mass/mass DW units). Alternatively,
 `capacity` may be a vector of identifier-fluxes-limit triples that make a
 constraint (identified by the given identifier) that limits the enzyme
-requirements of the listed fluxes to the given limit (mass/mass DW units). 
+requirements of the listed fluxes to the given limit (mass/mass DW units).
 
 ## Note
 [`simplified_enzyme_constrained_flux_balance_constraints`](@ref) and
