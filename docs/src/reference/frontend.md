@@ -29,6 +29,13 @@ Modules = [COBREXA]
 Pages = ["src/frontend/moma.jl"]
 ```
 
+### Constraint systems for metabolite concentrations
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/frontend/concentrations.jl"]
+```
+
 ## Enzyme-mass-constrained models
 
 ```@autodocs
