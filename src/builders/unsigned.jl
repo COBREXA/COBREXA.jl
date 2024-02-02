@@ -17,7 +17,8 @@
 """
 $(TYPEDSIGNATURES)
 
-Returns the positive portion of bound `b`. Used in
+Clamp all negative values in the bound to zero, leaving only the "positive
+contribution" to the overall value of the constraint. Used in
 [`unsigned_positive_contribution_variables`](@ref) and
 [`unsigned_negative_contribution_variables`](@ref) to allocate unidirectional
 variables.
@@ -37,7 +38,7 @@ positive_bound_contribution(b::Switch) =
 """
 $(TYPEDSIGNATURES)
 
-Return a constraint tree of the positive contribution of variables in `cs`.
+A constraint tree of variables with positive contributions to the values in `cs`.
 """
 unsigned_positive_contribution_variables(cs::C.ConstraintTree) =
     C.variables_for(c -> positive_bound_contribution(c.bound), cs)
@@ -47,7 +48,7 @@ export unsigned_positive_contribution_variables
 """
 $(TYPEDSIGNATURES)
 
-Return a constraint tree of the negative contribution of variables in `cs`.
+A constraint tree of variables with negative contributions to the values in `cs`.
 """
 unsigned_negative_contribution_variables(cs::C.ConstraintTree) =
     C.variables_for(c -> positive_bound_contribution(-c.bound), cs)
