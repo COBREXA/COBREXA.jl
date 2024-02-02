@@ -133,6 +133,8 @@ all the fluxes in `reaction_isozymes` (mass/mass DW units). Alternatively,
 constraint (identified by the given identifier) that limits the enzyme
 requirements of the listed fluxes to the given limit (mass/mass DW units).
 
+`interface` and `interface_name` are forwarded to [`flux_balance_constraints`](@ref).
+
 ## Note
 [`simplified_enzyme_constrained_flux_balance_constraints`](@ref) and
 [`enzyme_constrained_flux_balance_constraints`](@ref) differ in how the capacity
@@ -144,6 +146,8 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     reaction_isozymes::Dict{String,Dict{String,Isozyme}},
     gene_product_molar_masses::Dict{String,Float64},
     capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+    interface::Maybe{Symbol} = nothing,
+    interface_name = :interface,
 )
 
     # setup: get fastest isozyme for each reaction (flux * MW/kcat = isozyme
@@ -172,8 +176,8 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     capacity_limits =
         capacity isa Real ? [("totalcapacity", keys(enzyme_speeds), capacity)] : capacity
 
-    c = simplified_enzyme_constraints(
-        flux_balance_constraints(model);
+    simplified_enzyme_constraints(
+        flux_balance_constraints(model; interface, interface_name);
         fastest_isozyme_forward,
         fastest_isozyme_reverse,
         capacity_limits,
