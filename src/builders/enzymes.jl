@@ -200,3 +200,55 @@ function enzyme_constraints(
 end
 
 export enzyme_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Returns a constraint tree, built from `constraints`, with simplified enzyme
+constraints added based on reactions in `fluxes`.
+
+Inputs:
+- `fastest_isozyme_forward` and `fastest_isozyme_reverse` are functions that
+  take a reaction ID and return the smallest MW/kcat for all isozymes that can
+  catalyze the reaction.
+- `capacity_limits`
+
+Returns simplified enzyme constraints using the variables. Only reactions in
+`reaction_isozymes`, which is a mapping of reaction identifiers to
+[`Isozyme`](@ref) descriptions are included in the constraints. 
+"""
+function simplified_enzyme_constraints(
+    constraints::C.ConstraintTree;
+    fluxes = constraints.fluxes,
+    fastest_isozyme_forward = _ -> 0.0,
+    fastest_isozyme_reverse = _ -> 0.0,
+    capacity_limits = [],
+)
+
+    # allocate variables for everything (nb. += wouldn't associate right here)
+    constraints =
+        constraints +
+        sign_split_variables(fluxes; positive = :fluxes_forward, negative = :fluxes_reverse)
+
+    # connect all parts with constraints
+    constraints *
+    :directional_flux_balance^sign_split_constraints(
+        positive = constraints.fluxes_forward,
+        negative = constraints.fluxes_reverse,
+        signed = constraints.fluxes,
+    ) * 
+    :capacity_bounds^C.ConstraintTree(
+        Symbol(id) => C.Constraint(
+            value = sum(
+                C.value(constraints.fluxes_forward[rid]) * fastest_isozyme_forward(rid)
+                for rid in flxs
+            ) + sum(
+                C.value(constraints.fluxes_reverse[rid]) * fastest_isozyme_reverse(rid)
+                for rid in flxs
+            ),
+            bound = C.Between(0, limit),
+        ) for (id, flxs, limit) in capacity_limits
+    )
+end
+
+export simplified_enzyme_constraints
