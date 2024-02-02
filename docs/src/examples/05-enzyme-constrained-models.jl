@@ -338,3 +338,22 @@ ec_solution = enzyme_constrained_flux_balance_analysis(
     0.011875920383431717, #src
     atol = TEST_TOLERANCE, #src
 ) #src
+
+# ## Running a simplified enzyme constrained model
+# We can also simplify the normal enzyme constrained model, by only considering
+# the fastest isozyme, hence obviating the need to create variables for each
+# isozyme, and the actual gene products.
+
+simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses = ecoli_core_gene_product_masses,
+    capacity = total_enzyme_capacity,
+    optimizer = GLPK.Optimizer,
+)
+
+@test isapprox(
+    ec_solution.objective,
+    simplified_ec_solution.objective,
+    atol = TEST_TOLERANCE,
+) #src
