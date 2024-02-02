@@ -18,18 +18,25 @@
 $(TYPEDSIGNATURES)
 
 Perform a Flux Variability Analysis (FVA) on the `model`, and return a
-dictionary of flux ranges where the model is able to perform optimally. The
-optimality tolerance can be specified with objective_bound using e.g.
-[`relative_tolerance_bound`](@ref) or [`absolute_tolerance_bound`](@ref); the
-default is 99% relative tolerance.
+dictionary of flux ranges where the model is able to perform optimally.
 
-Parameters `optimizer` and `settings` are used as with
-[`optimized_values`](@ref). `workers` may be used to enable parallel or
-distributed processing; the execution defaults to all available workers.
+The constraint system is constructed using [`flux_balance_constraints`](@ref),
+and the variability is examined on all reaction's fluxes, or on the subset
+given optionally in `reaction_subset` (e.g., `reaction_subset = ["PFK",
+"ACALD"]`). The optimality tolerance can be specified with objective_bound
+using e.g. [`relative_tolerance_bound`](@ref) or
+[`absolute_tolerance_bound`](@ref); the default is 99% relative tolerance.
+
+Parameter `workers` may be used to enable parallel or distributed processing;
+the execution defaults to all available workers. Other parameters (esp.
+`optimizer`) are internally forwarded to [`optimized_values`](@ref).
+
+Use [`constraints_variability`](@ref) to customize the FVA execution.
 """
 function flux_variability_analysis(
     model::A.AbstractFBCModel;
     objective_bound = relative_tolerance_bound(0.99),
+    reaction_subset = nothing,
     optimizer,
     settings,
     workers = D.workers(),
@@ -48,10 +55,13 @@ function flux_variability_analysis(
 
     isnothing(objective_flux) && return nothing
 
-    constraint_variability(
+    constraints_variability(
         constraints *
         :objective_bound^C.Constraint(objective, objective_bound(objective_flux)),
-        constraints.fluxes;
+        isnothing(reaction_subset) ? constraints.fluxes :
+        let s = Set(Symbol.(reaction_subset))
+            C.ConstraintTree(k => v for (k, v) in constraints.fluxes if k in s)
+        end;
         optimizer,
         settings,
         workers,
