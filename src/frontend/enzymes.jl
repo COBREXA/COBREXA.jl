@@ -50,12 +50,16 @@ the whole model.
 enzymes". Alternatively, `capacity` may be a vector of identifier-genes-limit
 triples that make a constraint (identified by the given identifier) that limits
 the listed genes to the given limit.
+
+`interface` and `interface_name` are forwarded to [`flux_balance_constraints`](@ref).
 """
 function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
     reaction_isozymes::Dict{String,Dict{String,Isozyme}},
     gene_product_molar_masses::Dict{String,Float64},
     capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+    interface::Maybe{Symbol} = nothing,
+    interface_name = :interface,
 )
     # these functions should not fail gracefully to prevent user footguns
     # they take strings and but cts use symbols internally, hence lots of conversions are required - kind of annoying
@@ -75,7 +79,7 @@ function enzyme_constrained_flux_balance_constraints(
         capacity
 
     enzyme_constraints(
-        flux_balance_constraints(model);
+        flux_balance_constraints(model; interface, interface_name);
         gene_ids = Symbol.(A.genes(model)),
         isozyme_ids,
         kcat_forward,
