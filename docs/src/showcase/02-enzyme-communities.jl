@@ -2,6 +2,9 @@
 using COBREXA, JSON, GLPK
 using JSONFBCModels
 import AbstractFBCModels as A
+import ConstraintTrees as C
+
+using Gurobi
 
 # get model
 download_model(
@@ -75,3 +78,40 @@ mut1.fluxes[ko_rxn1].bound = C.EqualTo(0.0) # knockout
 mut1.fluxes[aa1_id].bound = C.Between(-1000,1000)
 mut1.fluxes[aa2_id].bound = C.Between(-1000,1000)
 
+mut2 = simplified_enzyme_constrained_flux_balance_constraints(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses,
+    capacity = 400.0, # mg/gDW
+    interface = :identifier_prefixes,
+)
+mut2.fluxes.EX_glc__D_e.bound = C.Between(-1000, 1000)
+mut2.fluxes[ko_rxn2].bound = C.EqualTo(0.0) # knockout
+mut2.fluxes[aa1_id].bound = C.Between(-1000,1000)
+mut2.fluxes[aa2_id].bound = C.Between(-1000,1000)
+
+# create bound function to constrain interface
+boundf(id) = begin
+    ex_id = first(id)
+    if ex_id == aa1_id || ex_id == aa2_id
+        C.EqualTo(0.0)
+    else
+        mut1.interface.exchanges[ex_id].bound # have same interface, so easy
+    end
+end
+
+a = 0.80
+x = interface_constraints(
+    :mut1 => (mut1, mut1.interface.exchanges, a),
+    :mut2 => (mut2, mut2.interface.exchanges, 1-a);
+    bound = boundf
+)
+
+x *= :equalgrowth^equal_value_constraint(x.mut1.fluxes.BIOMASS_Ec_iML1515_core_75p37M, x.mut2.fluxes.BIOMASS_Ec_iML1515_core_75p37M)
+    
+sol = optimized_values(
+    x;
+    optimizer = Gurobi.Optimizer,
+    objective = x.mut1.objective.value,
+    settings = [silence,]
+)
