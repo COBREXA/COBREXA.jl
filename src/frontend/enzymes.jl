@@ -35,13 +35,16 @@ export Isozyme
 """
 $(TYPEDSIGNATURES)
 
-Construct a enzyme-constrained flux-balance constraint system. The model is
-parameterized by `reaction_isozymes`, which is a mapping of reaction
-identifiers to [`Isozyme`](@ref) descriptions.
+Construct a enzyme-constrained flux-balance constraint system. Based on the
+algorithm used in GECKO in *Sánchez, Benjamín J., et al. "Improving the
+phenotype predictions of a yeast genome‐scale metabolic model by incorporating
+enzymatic constraints." Molecular systems biology 13.8 (2017): 935*.
 
-Additionally, the computation requires `gene_product_molar_masses` to describe
-the weights of enzyme building material, and `capacity`, which limits the mass
-of enzymes in the whole model.
+The model is parameterized by `reaction_isozymes`, which is a mapping of
+reaction identifiers to [`Isozyme`](@ref) descriptions. Additionally, the
+computation requires `gene_product_molar_masses` to describe the weights of
+enzyme building material, and `capacity`, which limits the mass of enzymes in
+the whole model.
 
 `capacity` may be a single number, which sets the limit for "all described
 enzymes". Alternatively, `capacity` may be a vector of identifier-genes-limit

@@ -159,7 +159,7 @@ function enzyme_constraints(
     constraints =
         constraints +
         sign_split_variables(
-            constraints.fluxes;
+            fluxes;
             positive = :fluxes_forward,
             negative = :fluxes_reverse,
         ) +
