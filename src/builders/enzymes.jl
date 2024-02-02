@@ -272,7 +272,7 @@ function simplified_enzyme_constraints(
         positive = constraints.fluxes_forward,
         negative = constraints.fluxes_reverse,
         signed = constraints.fluxes,
-    ) * 
+    ) *
     :capacity_bounds^C.ConstraintTree(
         Symbol(id) => C.Constraint(
             value = sum(
