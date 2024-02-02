@@ -153,7 +153,8 @@ export enzyme_constrained_flux_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-Perform the enzyme-constrained flux balance analysis on the `model` and return the solved constraint system.
+Perform the enzyme-constrained flux balance analysis on the `model` and return
+the solved constraint system.
 
 Arguments are forwarded to
 [`enzyme_constrained_flux_balance_constraints`](@ref); solver configuration
@@ -172,14 +173,17 @@ export enzyme_constrained_flux_balance_analysis
 """
 $(TYPEDSIGNATURES)
 
-Construct a simplified enzyme-constrained flux-balance constraint system. The
-model is parameterized by `reaction_isozymes`, which is a mapping of reaction
-identifiers to [`Isozyme`](@ref) descriptions.
+Construct a simplified enzyme-constrained flux-balance constraint system. Based
+on the SMOMENT algorithm described in *Bekiaris, P.S., Klamt, S. Automatic
+construction of metabolic models with enzyme constraints. BMC Bioinformatics 21,
+19 (2020). https://doi.org/10.1186/s12859-019-3329-9*.
 
-For each gene product in `reaction_isozymes`, a corresponding entry in
-`gene_product_molar_masses` must be present, which is a mapping of gene products
-to their molar masses. Internally, the cheapest/fastest isozyme (minimum of
-MW/kcat for each isozyme) is used in the capacity bound. 
+The model is parameterized by `reaction_isozymes`, which is a mapping of
+reaction identifiers to [`Isozyme`](@ref) descriptions. For each gene product in
+`reaction_isozymes`, a corresponding entry in `gene_product_molar_masses` must
+be present, which is a mapping of gene products to their molar masses.
+Internally, the cheapest/fastest isozyme (minimum of MW/kcat for each isozyme)
+is used in the capacity bound. 
 
 `capacity` may be a single number, which sets the limit of protein required for
 all the fluxes in `reaction_isozymes` (mass/mass DW units). Alternatively,
@@ -239,11 +243,12 @@ export simplified_enzyme_constrained_flux_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-Perform the enzyme-constrained flux balance analysis on the `model` and return the solved constraint system.
+Perform the enzyme-constrained flux balance analysis on the `model` and return
+the solved constraint system.
 
 Arguments are forwarded to
-[`simplified_enzyme_constrained_flux_balance_constraints`](@ref); solver configuration
-arguments are forwarded to [`optimized_values`](@ref).
+[`simplified_enzyme_constrained_flux_balance_constraints`](@ref); solver
+configuration arguments are forwarded to [`optimized_values`](@ref).
 """
 simplified_enzyme_constrained_flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) =
     frontend_optimized_values(

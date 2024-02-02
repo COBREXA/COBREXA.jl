@@ -250,11 +250,8 @@ Inputs:
 - `fastest_isozyme_forward` and `fastest_isozyme_reverse` are functions that
   take a reaction ID and return the smallest MW/kcat for all isozymes that can
   catalyze the reaction.
-- `capacity_limits`
-
-Returns simplified enzyme constraints using the variables. Only reactions in
-`reaction_isozymes`, which is a mapping of reaction identifiers to
-[`Isozyme`](@ref) descriptions are included in the constraints. 
+- `capacity_limits` is an iterable container of triples `(capacity_id,
+    reaction_ids, capacity_bound)`, which creates capacity bound(s).
 """
 function simplified_enzyme_constraints(
     constraints::C.ConstraintTree;
