@@ -68,6 +68,7 @@ mut1 = simplified_enzyme_constrained_flux_balance_constraints(
     reaction_isozymes,
     gene_product_molar_masses,
     capacity = 400.0, # mg/gDW
+    interface = :identifier_prefixes,
 )
 mut1.fluxes.EX_glc__D_e.bound = C.Between(-1000, 1000)
 mut1.fluxes[ko_rxn1].bound = C.EqualTo(0.0) # knockout
