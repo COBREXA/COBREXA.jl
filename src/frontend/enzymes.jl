@@ -168,3 +168,89 @@ enzyme_constrained_flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) =
     )
 
 export enzyme_constrained_flux_balance_analysis
+
+"""
+$(TYPEDSIGNATURES)
+
+Construct a simplified enzyme-constrained flux-balance constraint system. The
+model is parameterized by `reaction_isozymes`, which is a mapping of reaction
+identifiers to [`Isozyme`](@ref) descriptions.
+
+For each gene product in `reaction_isozymes`, a corresponding entry in
+`gene_product_molar_masses` must be present, which is a mapping of gene products
+to their molar masses. Internally, the cheapest/fastest isozyme (minimum of
+MW/kcat for each isozyme) is used in the capacity bound. 
+
+`capacity` may be a single number, which sets the limit of protein required for
+all the fluxes in `reaction_isozymes` (mass/mass DW units). Alternatively,
+`capacity` may be a vector of identifier-fluxes-limit triples that make a
+constraint (identified by the given identifier) that limits the enzyme
+requirements of the listed fluxes to the given limit (mass/mass DW units). 
+
+## Note
+[`simplified_enzyme_constrained_flux_balance_constraints`](@ref) and
+[`enzyme_constrained_flux_balance_constraints`](@ref) differ in how the capacity
+bound(s) are formulated. For the former, fluxes are used, but for the latter,
+gene products are used directly.
+"""
+function simplified_enzyme_constrained_flux_balance_constraints(
+    model;
+    reaction_isozymes::Dict{String,Dict{String,Isozyme}},
+    gene_product_molar_masses::Dict{String,Float64},
+    capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+)
+
+    # setup: get fastest isozyme for each reaction (flux * MW/kcat = isozyme
+    # mass fraction required to catalyze reaction)
+    enzyme_speeds = Dict(
+        Symbol(rid) => (;
+            forward = minimum(
+                sum(
+                    stoich * gene_product_molar_masses[gid] for
+                    (gid, stoich) in iso.gene_product_stoichiometry
+                ) / iso.kcat_forward for iso in values(isos)
+            ),
+            reverse = minimum(
+                sum(
+                    stoich * gene_product_molar_masses[gid] for
+                    (gid, stoich) in iso.gene_product_stoichiometry
+                ) / iso.kcat_reverse for iso in values(isos)
+            ),
+        ) for (rid, isos) in reaction_isozymes
+    )
+
+    # fails ungracefully if rid is not in enzyme_speeds - prevents footguns
+    fastest_isozyme_forward(rid) = enzyme_speeds[rid].forward
+    fastest_isozyme_reverse(rid) = enzyme_speeds[rid].reverse
+
+    capacity_limits =
+        capacity isa Real ? [("totalcapacity", keys(enzyme_speeds), capacity)] : capacity
+
+    c = simplified_enzyme_constraints(
+        flux_balance_constraints(model);
+        fastest_isozyme_forward,
+        fastest_isozyme_reverse,
+        capacity_limits,
+    )
+end
+
+export simplified_enzyme_constrained_flux_balance_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Perform the enzyme-constrained flux balance analysis on the `model` and return the solved constraint system.
+
+Arguments are forwarded to
+[`simplified_enzyme_constrained_flux_balance_constraints`](@ref); solver configuration
+arguments are forwarded to [`optimized_values`](@ref).
+"""
+simplified_enzyme_constrained_flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) =
+    frontend_optimized_values(
+        simplified_enzyme_constrained_flux_balance_constraints,
+        model;
+        objective = x -> x.objective.value,
+        kwargs...,
+    )
+
+export simplified_enzyme_constrained_flux_balance_analysis
