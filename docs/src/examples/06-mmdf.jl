@@ -124,39 +124,3 @@ mmdf_solution = max_min_driving_force_analysis(
 
 # TODO verify correctness
 @test isapprox(mmdf_solution.min_driving_force, 2.79911, atol = TEST_TOLERANCE) #src
-
-# ## Investigating the glycolytic driving forces
-# MMDF finds metabolite concentrations that maximize the minimum thermodynamic
-# driving force across the model's reactions. In this case,
-# mmdf_solution.min_driving_force ≈ 2.8 kJ/mol. One may also plot the driving
-# force across all the reactions in the model, to get a better sense of where
-# the bottlenecks may be.
-
-using UnicodePlots #TODO will cause testing issues because can't hide from evaluation easily
-
-glycolysis_order =
-    ["GLCpts", "PGI", "PFK", "FBA", "TPI", "GAPD", "PGK", "PGM", "ENO", "PYK", "LDH_D"]
-
-# From the plot one can see that the overall ΔG across glycolysis is around -100
-# kJ/mol. This compares favourably with the literature value of around -122
-# kJ/mol.
-plt = lineplot(
-    1:length(glycolysis_order),
-    cumsum(
-        reaction_standard_gibbs_free_energies[rid] * reference_flux[rid] for
-        rid in glycolysis_order
-    ),
-    title = "Glycolysis",
-    name = "ΔG⁰",
-    xlabel = "Reaction index",
-    ylabel = "ΔG",
-    color = :red,
-)
-lineplot!(
-    plt,
-    1:length(glycolysis_order),
-    cumsum(-mmdf_solution.driving_forces[Symbol(rid)] for rid in glycolysis_order),
-    name = "Optimized ΔG",
-    color = :green,
-)
-plt
