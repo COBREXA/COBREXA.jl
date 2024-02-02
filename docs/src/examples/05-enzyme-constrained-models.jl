@@ -352,8 +352,8 @@ simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
     optimizer = GLPK.Optimizer,
 )
 
-@test isapprox(
-    ec_solution.objective,
-    simplified_ec_solution.objective,
-    atol = TEST_TOLERANCE,
+@test isapprox( #src
+    ec_solution.objective, #src
+    simplified_ec_solution.objective, #src
+    atol = TEST_TOLERANCE, #src
 ) #src
