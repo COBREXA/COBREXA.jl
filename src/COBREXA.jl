@@ -64,17 +64,16 @@ include("analysis/variability.jl")
 # conversion of various stuff to constraint trees
 include("builders/compare.jl")
 include("builders/enzymes.jl")
-include("builders/fbc.jl")
 include("builders/interface.jl")
 include("builders/knockout.jl")
 include("builders/loopless.jl")
 include("builders/objectives.jl")
 include("builders/scale.jl")
 include("builders/unsigned.jl")
-include("builders/mmdf.jl")
 
 # simplified front-ends for the above
 include("frontend/balance.jl")
+include("frontend/concentrations.jl")
 include("frontend/envelope.jl")
 include("frontend/enzymes.jl")
 include("frontend/knockout.jl")
