@@ -107,8 +107,8 @@ reference_flux = Dict(
 # ## Solving the MMDF problem
 
 mmdf_solution = max_min_driving_force_analysis(
-    model,
-    reaction_standard_gibbs_free_energies;
+    model;
+    reaction_standard_gibbs_free_energies,
     reference_flux,
     concentration_ratios = Dict(
         "atp" => ("atp_c", "adp_c", 10.0),

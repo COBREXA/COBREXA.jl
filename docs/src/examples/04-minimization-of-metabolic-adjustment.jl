@@ -18,12 +18,14 @@
 
 # TODO MOMA citation
 
-import Downloads: download
-
-!isfile("e_coli_core.json") &&
-    download("http://bigg.ucsd.edu/static/models/e_coli_core.json", "e_coli_core.json")
-
 using COBREXA
+
+download_model(
+    "http://bigg.ucsd.edu/static/models/e_coli_core.json",
+    "e_coli_core.json",
+    "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
+)
+
 import AbstractFBCModels.CanonicalModel as CM
 import JSONFBCModels
 import Clarabel
@@ -36,7 +38,7 @@ model = convert(CM.Model, load_model("e_coli_core.json"))
 reference_fluxes =
     parsimonious_flux_balance_analysis(
         model,
-        Clarabel.Optimizer,
+        optimizer = Clarabel.Optimizer,
         settings = [silence],
     ).fluxes
 

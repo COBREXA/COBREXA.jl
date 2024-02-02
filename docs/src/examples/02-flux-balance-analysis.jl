@@ -43,7 +43,7 @@ model = load_model("e_coli_core.json")
 # is captured in the default behavior of function
 # [`flux_balance_analysis`](@ref):
 
-solution = flux_balance_analysis(model, GLPK.Optimizer)
+solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
 
 @test isapprox(solution.objective, 0.8739, atol = TEST_TOLERANCE) #src
 

@@ -78,7 +78,7 @@ model.reactions["CS"].stoichiometry
 
 import GLPK
 
-base_solution = flux_balance_analysis(model, GLPK.Optimizer)
+base_solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
 base_solution.objective
 
 # Now, for example, we can limit the intake of glucose by the model:
@@ -91,7 +91,7 @@ model.reactions["EX_glc__D_e"].lower_bound = -5.0
 
 # ...and solve the modified model:
 #
-low_glucose_solution = flux_balance_analysis(model, GLPK.Optimizer)
+low_glucose_solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
 low_glucose_solution.objective
 
 @test isapprox(low_glucose_solution.objective, 0.41559777, atol = TEST_TOLERANCE) #src

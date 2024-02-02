@@ -31,6 +31,8 @@ function optimized_values(
     output::C.ConstraintTreeElem = constraints,
     kwargs...,
 )
+    # arguments need to be kept in sync with frontend_optimized_values
+
     om = optimization_model(constraints; kwargs...)
     for m in settings
         m(om)

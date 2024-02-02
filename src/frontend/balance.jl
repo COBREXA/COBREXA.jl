@@ -24,14 +24,11 @@ Most arguments are forwarded to [`optimized_values`](@ref).
 Returns a tree with the optimization solution of the same shape as
 given by [`flux_balance_constraints`](@ref).
 """
-function flux_balance_analysis(model::A.AbstractFBCModel, optimizer; kwargs...)
-    constraints = flux_balance_constraints(model)
-    optimized_values(
-        constraints;
-        objective = constraints.objective.value,
-        optimizer,
-        kwargs...,
-    )
-end
+flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) = frontend_optimized_values(
+    flux_balance_constraints,
+    model;
+    objective = x -> x.objective.value,
+    kwargs...,
+)
 
 export flux_balance_analysis

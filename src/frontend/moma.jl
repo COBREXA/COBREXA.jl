@@ -17,9 +17,9 @@
 """
 $(TYPEDSIGNATURES)
 
-Find a feasible solution of the "minimal metabolic adjustment analysis" (MOMA)
+Find a solution of the "minimization of metabolic adjustment" (MOMA) analysis
 for the `model`, which is the "closest" feasible solution to the given
-`reference_fluxes`, in the sense of squared-sum error distance. The minimized
+`reference_fluxes`, in the sense of squared-sum distance. The minimized
 squared distance (the objective) is present in the result tree as
 `minimal_adjustment_objective`.
 
@@ -33,21 +33,14 @@ objective is constructed via [`squared_sum_error_value`](@ref)).
 
 Additional parameters are forwarded to [`optimized_values`](@ref).
 """
-function minimization_of_metabolic_adjustment(
+function metabolic_adjustment_minimization_constraints(
     model::A.AbstractFBCModel,
-    reference_fluxes::Dict{Symbol,Float64},
-    optimizer;
-    kwargs...,
+    reference_fluxes::C.Tree,
 )
     constraints = flux_balance_constraints(model)
-    objective =
-        squared_sum_error_value(constraints.fluxes, x -> get(reference_fluxes, x, nothing))
-    optimized_values(
-        constraints * :minimal_adjustment_objective^C.Constraint(objective);
-        optimizer,
-        objective,
-        sense = Minimal,
-        kwargs...,
+    constraints *
+    :minimal_adjustment_objective^C.Constraint(
+        squared_sum_error_value(constraints.fluxes, reference_fluxes),
     )
 end
 
@@ -55,61 +48,85 @@ end
 $(TYPEDSIGNATURES)
 
 A slightly easier-to-use version of
-[`minimization_of_metabolic_adjustment`](@ref) that computes the reference flux
-as the optimal solution of the `reference_model`. The reference flux is
-calculated using `reference_optimizer` and `reference_modifications`, which
-default to the `optimizer` and `settings`.
+[`metabolic_adjustment_minimization_constraints`](@ref) that computes the
+reference flux as the parsimonious optimal solution of the `reference_model`.
+The reference flux is calculated using `reference_optimizer` and
+`reference_modifications`, which default to the `optimizer` and `settings`.
 
-Leftover arguments are passed to the overload of
-[`minimization_of_metabolic_adjustment`](@ref) that accepts the
-reference flux dictionary.
+Other arguments are forwarded to the internal call of
+[`parsimonious_optimized_values`](@ref).
+
+Returns `nothing` if no feasible solution is found.
 """
-function minimization_of_metabolic_adjustment(
+function metabolic_adjustment_minimization_constraints(
     model::A.AbstractFBCModel,
-    reference_model::A.AbstractFBCModel,
-    optimizer;
-    reference_optimizer = optimizer,
-    settings = [],
-    reference_settings = settings,
+    reference_model::A.AbstractFBCModel;
     kwargs...,
 )
-    reference_constraints = flux_balance_constraints(reference_model)
-    reference_fluxes = optimized_values(
+    reference_constraints = parsimonious_flux_balance_constraints(reference_model)
+    reference_fluxes = parsimonious_optimized_values(
         reference_constraints;
-        optimizer = reference_optimizer,
-        settings = reference_settings,
+        objective = reference_constraints.objective.value,
+        parsimonious_objective = reference_constraints.parsimonious_objective.value,
         output = reference_constraints.fluxes,
-    )
-    isnothing(reference_fluxes) && return nothing
-    minimization_of_metabolic_adjustment(
-        model,
-        reference_fluxes,
-        optimizer;
-        settings,
         kwargs...,
     )
+    isnothing(reference_fluxes) && return nothing
+    metabolic_adjustment_minimization_constraints(model, reference_fluxes)
 end
 
-export minimization_of_metabolic_adjustment
+export metabolic_adjustment_minimization_constraints
 
 """
 $(TYPEDSIGNATURES)
 
-Like [`minimization_of_metabolic_adjustment`](@ref) but optimizes the L1 norm.
+TODO
+"""
+metabolic_adjustment_minimization_analysis(
+    model::A.AbstractFBCModel,
+    args...;
+    optimizer,
+    settings,
+    reference_parsimonious_optimizer = optimizer,
+    reference_parsimonious_settings = settings,
+    reference_optimizer = optimizer,
+    reference_settings = settings,
+    kwargs...,
+) = frontend_optimized_values(
+    metabolic_adjustment_minimization_constraints,
+    model,
+    args...;
+    builder_kwargs = (
+        optimizer = reference_optimizer,
+        settings = reference_settings,
+        parsimonious_optimizer = reference_parsimonious_optimizer,
+        parsimonious_settings = reference_parsimonious_settings,
+    ),
+    objective = x -> x.minimal_adjustment_objective.value,
+    sense = Minimal,
+    optimizer,
+    settings,
+    kwargs...,
+)
+
+export metabolic_adjustment_minimization_analysis
+
+"""
+$(TYPEDSIGNATURES)
+
+Like [`metabolic_adjustment_minimization_constraints`](@ref) but optimizes the L1 norm.
 This typically produces a sufficiently good result with less resources,
 depending on the situation. See documentation of
 [`linear_parsimonious_flux_balance_analysis`](@ref) for some of the
 considerations.
 """
-function linear_minimization_of_metabolic_adjustment(
+function linear_metabolic_adjustment_minimization_constraints(
     model::A.AbstractFBCModel,
-    reference_fluxes::Dict{Symbol,Float64},
-    optimizer;
-    kwargs...,
+    reference_fluxes::C.Tree,
 )
     constraints = flux_balance_constraints(model)
 
-    difference = C.zip(ct.fluxes, C.Tree(reference_fluxes)) do orig, ref
+    difference = C.zip(ct.fluxes, reference_fluxes) do orig, ref
         C.Constraint(orig.value - ref)
     end
 
@@ -120,50 +137,77 @@ function linear_minimization_of_metabolic_adjustment(
 
     # `difference` actually doesn't need to go to the CT, but we include it
     # anyway to calm the curiosity of good neighbors.
-    constraints *= :reference_diff^difference
-    constraints *=
-        :reference_directional_diff_balance^sign_split_constraints(
-            positive = constraints.reference_positive_diff,
-            negative = constraints.reference_negative_diff,
-            signed = difference,
-        )
-
-    objective =
-        sum_value(constraints.reference_positive_diff, constraints.reference_negative_diff)
-
-    optimized_values(
-        constraints * :linear_minimal_adjustment_objective^C.Constraint(objective);
-        optimizer,
-        objective,
-        sense = Minimal,
-        kwargs...,
+    constraints *
+    :reference_diff^difference *
+    :reference_directional_diff_balance^sign_split_constraints(
+        positive = constraints.reference_positive_diff,
+        negative = constraints.reference_negative_diff,
+        signed = difference,
+    ) *
+    :linear_minimal_adjustment_objective^C.Constraint(
+        sum_value(constraints.reference_positive_diff, constraints.reference_negative_diff),
     )
 end
 
-function linear_minimization_of_metabolic_adjustment(
+"""
+$(TYPEDSIGNATURES)
+
+Like [`metabolic_adjustment_minimization_constraints`](@ref) but optimizes the L1 norm.
+This typically produces a sufficiently good result with less resources,
+depending on the situation. See documentation of
+[`linear_parsimonious_flux_balance_analysis`](@ref) for some of the
+considerations.
+"""
+function linear_metabolic_adjustment_minimization_constraints(
     model::A.AbstractFBCModel,
-    reference_model::A.AbstractFBCModel,
-    optimizer;
-    reference_optimizer = optimizer,
-    settings = [],
-    reference_settings = settings,
+    reference_model::A.AbstractFBCModel;
     kwargs...,
 )
-    reference_constraints = flux_balance_constraints(reference_model)
-    reference_fluxes = optimized_values(
+    reference_constraints = parsimonious_flux_balance_constraints(reference_model)
+    reference_fluxes = parsimonious_optimized_values(
         reference_constraints;
-        optimizer = reference_optimizer,
-        settings = reference_settings,
+        objective = reference_constraints.objective.value,
+        parsimonious_objective = reference_constraints.parsimonious_objective.value,
         output = reference_constraints.fluxes,
-    )
-    isnothing(reference_fluxes) && return nothing
-    linear_minimization_of_metabolic_adjustment(
-        model,
-        reference_fluxes,
-        optimizer;
-        settings,
         kwargs...,
     )
+    isnothing(reference_fluxes) && return nothing
+
+    linear_metabolic_adjustment_minimization_constraints(model, reference_fluxes)
 end
 
-export linear_minimization_of_metabolic_adjustment
+export linear_metabolic_adjustment_minimization_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
+linear_metabolic_adjustment_minimization_analysis(
+    model::A.AbstractFBCModel,
+    args...;
+    optimizer,
+    settings,
+    reference_parsimonious_optimizer = optimizer,
+    reference_parsimonious_settings = settings,
+    reference_optimizer = optimizer,
+    reference_settings = settings,
+    kwargs...,
+) = frontend_optimized_values(
+    linear_metabolic_adjustment_minimization_constraints,
+    model,
+    args...;
+    builder_kwargs = (
+        optimizer = reference_optimizer,
+        settings = reference_settings,
+        parsimonious_optimizer = reference_parsimonious_optimizer,
+        parsimonious_settings = reference_parsimonious_settings,
+    ),
+    objective = x -> x.linear_minimal_adjustment_objective.value,
+    sense = Minimal,
+    optimizer,
+    settings,
+    kwargs...,
+)
+
+export linear_metabolic_adjustment_minimization_analysis

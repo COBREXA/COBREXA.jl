@@ -46,7 +46,7 @@ model = load_model("e_coli_core.json")
 # limit for IPM algorithm may now look as follows:
 solution = flux_balance_analysis(
     model,
-    Tulip.Optimizer;
+    optimizer = Tulip.Optimizer,
     settings = [silence, set_optimizer_attribute("IPM_IterationsLimit", 1000)],
 )
 
@@ -59,7 +59,7 @@ solution = flux_balance_analysis(
 
 solution = flux_balance_analysis(
     model,
-    Tulip.Optimizer;
+    optimizer = Tulip.Optimizer,
     settings = [set_optimizer_attribute("IPM_IterationsLimit", 2)],
 )
 

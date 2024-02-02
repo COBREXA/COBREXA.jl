@@ -33,12 +33,14 @@ function parsimonious_optimized_values(
     settings = [],
     parsimonious_objective::C.Value,
     parsimonious_optimizer = nothing,
-    parsimonious_sense = J.MIN_SENSE,
+    parsimonious_sense = Minimal,
     parsimonious_settings = [],
     tolerances = [absolute_tolerance_bound(0)],
     output = constraints,
     kwargs...,
 )
+    # arguments need to be kept in sync with
+    # frontend_parsimonious_optimized_values
 
     # first solve the optimization problem with the original objective
     om = optimization_model(constraints; objective, kwargs...)
