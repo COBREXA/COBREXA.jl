@@ -59,12 +59,17 @@ kos = Dict(
     "lysA" => (:DAPDC, :lys),
 )
 
-
 ko_rxn1, aa1 = kos["ilvA"]
 ko_rxn2, aa2 = kos["metA"]
 
 aa1_id = aa1 == :gly ? Symbol("EX_", aa1, "_e") : Symbol("EX_", aa1, "__L_e")
 aa2_id = aa2 == :gly ? Symbol("EX_", aa2, "_e") : Symbol("EX_", aa2, "__L_e")
+
+open_bounds!(model, rxn_id) = begin
+    model.fluxes[rxn_id].bound = C.Between(-1000,1000)
+    model.fluxes_forward[rxn_id].bound = C.Between(0,1000) # TODO unfortunate, easy to miss
+    model.fluxes_reverse[rxn_id].bound = C.Between(0,1000) # TODO unfortunate, easy to miss
+end
 
 mut1 = simplified_enzyme_constrained_flux_balance_constraints(
     model;
@@ -73,10 +78,9 @@ mut1 = simplified_enzyme_constrained_flux_balance_constraints(
     capacity = 400.0, # mg/gDW
     interface = :identifier_prefixes,
 )
-mut1.fluxes.EX_glc__D_e.bound = C.Between(-1000, 1000)
-mut1.fluxes[ko_rxn1].bound = C.EqualTo(0.0) # knockout
-mut1.fluxes[aa1_id].bound = C.Between(-1000,1000)
-mut1.fluxes[aa2_id].bound = C.Between(-1000,1000)
+open_bounds!(mut1, :EX_glc__D_e)
+open_bounds!(mut1, aa1_id)
+open_bounds!(mut1, aa2_id)
 
 mut2 = simplified_enzyme_constrained_flux_balance_constraints(
     model;
@@ -85,10 +89,9 @@ mut2 = simplified_enzyme_constrained_flux_balance_constraints(
     capacity = 400.0, # mg/gDW
     interface = :identifier_prefixes,
 )
-mut2.fluxes.EX_glc__D_e.bound = C.Between(-1000, 1000)
-mut2.fluxes[ko_rxn2].bound = C.EqualTo(0.0) # knockout
-mut2.fluxes[aa1_id].bound = C.Between(-1000,1000)
-mut2.fluxes[aa2_id].bound = C.Between(-1000,1000)
+open_bounds!(mut2, :EX_glc__D_e)
+open_bounds!(mut2, aa1_id)
+open_bounds!(mut2, aa2_id)
 
 # create bound function to constrain interface
 boundf(id) = begin
@@ -113,5 +116,7 @@ sol = optimized_values(
     x;
     optimizer = Gurobi.Optimizer,
     objective = x.mut1.objective.value,
+    sense = Maximal,
     settings = [silence,]
 )
+sol.mut1.objective
