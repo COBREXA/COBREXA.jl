@@ -21,38 +21,43 @@ Build log-concentration-stoichiometry constraints for the `model`, as used e.g.
 by [`max_min_driving_force_analysis`](@ref).
 
 The output constraint tree contains a log-concentration variable for each
-metabolite in subtree `log_concentrations`. Individual reactions' total
-reactant log concentrations (i.e., all log concentrations of actual reactants
-minus all log concentrations of products) have their own variables in
-`reactant_log_concentrations`.
+`metabolite` from `model`, in subtree `log_concentrations`. The total reactant
+log-concentrations for each `reaction` are constrained in subtree
+`log_concentration_stoichiometry`. By default, all reactions and metabolites in
+`model` are included.
 
-Function `concentration_bound` may return a bound for the log-concentration of
-a given metabolite (compatible with `ConstraintTrees.Bound`), or `nothing`.
+A concentration bound is given by parameter function `concentration_bound` for
+each metabolite ID (the string ID is the single argument of the function); by
+default the function returns `nothing` and no bounds are installed. The same is
+used for reactions with `reaction_concentration_bound`.
 """
 function log_concentration_constraints(
     model::A.AbstractFBCModel;
-    concentration_bound = _ -> nothing,
+    reactions = A.reactions(model),
+    metabolites = A.metabolites(model),
+    metabolite_concentration_bound = _ -> nothing,
+    reaction_concentration_bound = _ -> nothing,
 )
-    rxns = Symbol.(A.reactions(model))
-    mets = Symbol.(A.metabolites(model))
-    stoi = A.stoichiometry(model)
+    rxns = String.(collect(reactions))
+    mets = String.(collect(metabolites))
+    metset = Set{String}(metabolites)
 
-    constraints =
-        :log_concentrations^C.variables(keys = mets, bounds = concentration_bound.(mets))
+    vars = C.variables(keys = Symbol.(mets), bounds = metabolite_concentration_bound.(mets))
 
-    cs = C.ConstraintTree()
+    stoi = C.ConstraintTree(
+        Symbol(rxn) => C.Constraint(
+            value = sum(
+                (
+                    coeff * vars[Symbol(met)].value for
+                    (met, coeff) in A.reaction_stoichiometry(model, rxn) if (met in metset)
+                );
+                init = zero(C.LinearValue),
+            ),
+            bound = reaction_concentration_bound(rxn),
+        ) for rxn in rxns
+    )
 
-    for (midx, ridx, coeff) in zip(SparseArrays.findnz(stoi)...)
-        rid = rxns[ridx]
-        value = constraints.log_concentrations[mets[midx]].value * coeff
-        if haskey(cs, rid)
-            cs[rid].value += value
-        else
-            cs[rid] = C.Constraint(; value)
-        end
-    end
-
-    return constraints * :reactant_log_concentrations^cs
+    return :log_concentrations^vars * :log_concentration_stoichiometry^stoi
 end
 
 export log_concentration_constraints

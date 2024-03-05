@@ -46,9 +46,10 @@ model = load_model("e_coli_core.json")
 # ## Thermodynamic data
 
 # We will need ΔᵣG⁰ data for each reaction we want to include in the
-# thermodynamic model. To generate this data manually, go to
-# https://equilibrator.weizmann.ac.il/. To generate automatically, you may use
-# the eQuilibrator.jl package.
+# thermodynamic model. To generate this data manually, use
+# [eQuilibrator](https://equilibrator.weizmann.ac.il/). To generate
+# automatically, you may use the
+# [eQuilibrator.jl](https://github.com/stelmo/Equilibrator.jl) package.
 
 reaction_standard_gibbs_free_energies = Dict{String,Float64}(
     "ENO" => -3.8108376097261782,
@@ -114,10 +115,10 @@ mmdf_solution = max_min_driving_force_analysis(
         "atp" => ("atp_c", "adp_c", 10.0),
         "nadh" => ("nadh_c", "nad_c", 0.13),
     ),
-    proton_metabolites = ["h_c", "h_e"],
-    water_metabolites = ["h2o_c", "h2o_e"],
-    concentration_lower_bound = 1e-6, # M
-    concentration_upper_bound = 1e-1, # M
+    proton_metabolites = ["h_c"],
+    water_metabolites = ["h2o_c"],
+    concentration_lower_bound = 1e-6, # mol/L
+    concentration_upper_bound = 1e-1, # mol/L
     T = 298.15, # Kelvin
     R = 8.31446261815324e-3, # kJ/K/mol
     optimizer = GLPK.Optimizer,

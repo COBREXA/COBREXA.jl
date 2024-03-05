@@ -51,9 +51,9 @@ Following arguments are set optionally:
   ratio can be fixed to five-times-more-ATP by setting `concentration_ratios =
   Dict("adenosin_ratio" => ("atp", "adp", 5.0))`
 - `T` and `R` default to the usual required thermodynamic constraints in the
-  usual units (K and kJ/K/mol, respectively). These multiply the
-  log-concentrations to obtain the actual Gibbs energies and thus driving
-  forces.
+  expected units (the defaults assume the "usual" units, valuing 298.15 K and
+  ~0.008314 kJ/K/mol, respectively). These multiply the log-concentrations to
+  obtain the actual Gibbs energies, and thus driving forces.
 """
 function max_min_driving_force_constraints(
     model::A.AbstractFBCModel;
@@ -64,12 +64,11 @@ function max_min_driving_force_constraints(
     ignored_metabolites = [],
     proton_metabolites = [],
     water_metabolites = [],
-    concentration_lower_bound = 1e-9, # M
-    concentration_upper_bound = 1e-1, # M
-    T = 298.15, # Kelvin
-    R = 8.31446261815324e-3, # kJ/K/mol
+    concentration_lower_bound = 1e-9,
+    concentration_upper_bound = 1e-1,
+    T = 298.15, # assuming K
+    R = 8.31446261815324e-3, # assuming kJ/K/mol
     reference_flux_atol = 1e-6,
-    check_ignored_reactions = missing,
 )
 
     # First let's just check if all the identifiers are okay because we use
@@ -126,19 +125,6 @@ function max_min_driving_force_constraints(
             "unknown metabolites referenced by ignored_metabolites",
         ),
     )
-    if !ismissing(check_ignored_reactions) && (
-        all(
-            x -> !haskey(reaction_standard_gibbs_free_energies, x),
-            check_ignored_reactions,
-        ) || (
-            union(
-                Set(check_ignored_reactions),
-                Set(keys(reaction_standard_gibbs_free_energies)),
-            ) != model_reactions
-        )
-    )
-        throw(AssertionError("check_ignored_reactions validation failed"))
-    end
 
     # that was a lot of checking.
 
@@ -151,28 +137,30 @@ function max_min_driving_force_constraints(
         Set(Symbol.(ignored_metabolites)),
     )
 
-    # TODO it might be quite viable to only create a system with the
-    # metabolites and reactions actually required for the MMDF.
-
     constraints =
         log_concentration_constraints(
             model,
-            concentration_bound = met -> if met in no_concentration_metabolites
-                C.EqualTo(0)
+            reactions = keys(reaction_standard_gibbs_free_energies),
+            metabolites = setdiff(
+                Set(
+                    mid for rid in keys(reaction_standard_gibbs_free_energies) for
+                    (mid, _) in A.reaction_stoichiometry(model, rid)
+                ),
+                Set(water_metabolites),
+                Set(proton_metabolites),
+                Set(ignored_metabolites),
+            ),
+            metabolite_concentration_bound = met -> if haskey(constant_concentrations, met)
+                C.EqualTo(log(constant_concentrations[met]))
             else
-                mid = String(met)
-                if haskey(constant_concentrations, mid)
-                    C.EqualTo(log(constant_concentrations[mid]))
-                else
-                    default_concentration_bound
-                end
+                default_concentration_bound
             end,
         ) + :min_driving_force^C.variable()
 
     driving_forces = C.ConstraintTree(
         let r = Symbol(rid),
             rf = reference_flux[rid],
-            df = dGr0 + R * T * constraints.reactant_log_concentrations[r].value
+            df = dGr0 + R * T * constraints.log_concentration_stoichiometry[r].value
 
             r => if isapprox(rf, 0.0, atol = reference_flux_atol)
                 C.Constraint(df, C.EqualTo(0))
