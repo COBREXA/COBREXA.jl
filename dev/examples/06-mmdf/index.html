@@ -8,7 +8,7 @@
 import JSONFBCModels
 import GLPK
 
-model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><h2 id="Thermodynamic-data"><a class="docs-heading-anchor" href="#Thermodynamic-data">Thermodynamic data</a><a id="Thermodynamic-data-1"></a><a class="docs-heading-anchor-permalink" href="#Thermodynamic-data" title="Permalink"></a></h2><p>We will need ΔᵣG⁰ data for each reaction we want to include in the thermodynamic model. To generate this data manually, go to https://equilibrator.weizmann.ac.il/. To generate automatically, you may use the eQuilibrator.jl package.</p><pre><code class="language-julia hljs">reaction_standard_gibbs_free_energies = Dict{String,Float64}(
+model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><h2 id="Thermodynamic-data"><a class="docs-heading-anchor" href="#Thermodynamic-data">Thermodynamic data</a><a id="Thermodynamic-data-1"></a><a class="docs-heading-anchor-permalink" href="#Thermodynamic-data" title="Permalink"></a></h2><p>We will need ΔᵣG⁰ data for each reaction we want to include in the thermodynamic model. To generate this data manually, use <a href="https://equilibrator.weizmann.ac.il/">eQuilibrator</a>. To generate automatically, you may use the <a href="https://github.com/stelmo/Equilibrator.jl">eQuilibrator.jl</a> package.</p><pre><code class="language-julia hljs">reaction_standard_gibbs_free_energies = Dict{String,Float64}(
     &quot;ENO&quot; =&gt; -3.8108376097261782,
     &quot;FBA&quot; =&gt; 23.376920310319235,
     &quot;GAPD&quot; =&gt; 0.5307809794271634,
@@ -64,17 +64,17 @@ model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documen
         &quot;atp&quot; =&gt; (&quot;atp_c&quot;, &quot;adp_c&quot;, 10.0),
         &quot;nadh&quot; =&gt; (&quot;nadh_c&quot;, &quot;nad_c&quot;, 0.13),
     ),
-    proton_metabolites = [&quot;h_c&quot;, &quot;h_e&quot;],
-    water_metabolites = [&quot;h2o_c&quot;, &quot;h2o_e&quot;],
-    concentration_lower_bound = 1e-6, # M
-    concentration_upper_bound = 1e-1, # M
+    proton_metabolites = [&quot;h_c&quot;],
+    water_metabolites = [&quot;h2o_c&quot;],
+    concentration_lower_bound = 1e-6, # mol/L
+    concentration_upper_bound = 1e-1, # mol/L
     T = 298.15, # Kelvin
     R = 8.31446261815324e-3, # kJ/K/mol
     optimizer = GLPK.Optimizer,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 6 elements:
   :concentration_ratio_constraints =&gt; ConstraintTrees.Tree{Float64}(#= 2 elemen…
   :driving_forces                  =&gt; ConstraintTrees.Tree{Float64}(#= 11 eleme…
-  :log_concentrations              =&gt; ConstraintTrees.Tree{Float64}(#= 72 eleme…
+  :log_concentration_stoichiometry =&gt; ConstraintTrees.Tree{Float64}(#= 11 eleme…
+  :log_concentrations              =&gt; ConstraintTrees.Tree{Float64}(#= 17 eleme…
   :min_driving_force               =&gt; 2.79911
-  :min_driving_force_thresholds    =&gt; ConstraintTrees.Tree{Float64}(#= 11 eleme…
-  :reactant_log_concentrations     =&gt; ConstraintTrees.Tree{Float64}(#= 95 eleme…</code></pre><p>TODO verify correctness</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05-enzyme-constrained-models/">« Enzyme constrained models</a><a class="docs-footer-nextpage" href="../07-loopless-models/">Loopless flux balance analysis (ll-FBA) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Friday 2 February 2024 09:13">Friday 2 February 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  :min_driving_force_thresholds    =&gt; ConstraintTrees.Tree{Float64}(#= 11 eleme…</code></pre><p>TODO verify correctness</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05-enzyme-constrained-models/">« Enzyme constrained models</a><a class="docs-footer-nextpage" href="../07-loopless-models/">Loopless flux balance analysis (ll-FBA) »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.3.0 on <span class="colophon-date" title="Tuesday 5 March 2024 21:43">Tuesday 5 March 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
