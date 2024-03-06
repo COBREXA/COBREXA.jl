@@ -337,7 +337,7 @@ ec_solution.objective
 # One can also observe many interesting thing, e.g. the amount of gene product
 # material required for the system to run:
 
-ec_solution.gene_product_amount
+ec_solution.gene_product_amounts
 
 # The total amount of required gene product mass is, by default, present as
 # `total_capacity`:

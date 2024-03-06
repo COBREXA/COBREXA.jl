@@ -102,7 +102,7 @@ function isozyme_gene_product_amount_constraints(isozyme_amounts, isozyme_stoich
                     if haskey(res, gp)
                         res[gp].value += i.value * stoi
                     else
-                        res[gp] = C.Constraint(i.value * stoi, 0)
+                        res[gp] = C.Constraint(i.value * stoi)
                     end
                 end
             end
@@ -229,25 +229,24 @@ Like [`isozyme_gene_product_amount_constraints`](@ref), but works with the
 "simplified" view where each reaction has an uniquely determined catalytic
 isozyme, as with [`simplified_enzyme_constraints`](@ref).
 
-As the main difference, `isozyme_amounts` is not supposed to contain a subtree
-of isozymes for each reaction, and `isozyme_stoichiometry` accordingly expects
-only a single identifier parameter for the reaction ID.
+As the main difference, the arguments are tuples that contain first the
+constraint tree without the "isozyme" layer (i.e., fluxes), and second a
+function that returns the gene product stoichiometry and the turnover number
+(again in a tuple) for the given flux identifier.
 """
-function simplified_isozyme_gene_product_amount_constraints(
-    isozyme_amounts_stoichiometry_kcat,
-)
+function simplified_isozyme_gene_product_amount_constraints(x...)
     res = C.ConstraintTree()
-    for (iss, stoikcatfn) in isozyme_amounts
+    for (iss, stoikcatfn) in x
         for (rid, i) in iss
             x = stoikcatfn(rid)
             isnothing(x) && continue
-            gpstoi, kcat = x
+            (gpstoi, kcat) = x
             isnothing(kcat) && continue
             for (gp, stoi) in gpstoi
                 if haskey(res, gp)
                     res[gp].value += i.value * stoi / kcat
                 else
-                    res[gp] = C.Constraint(i.value * stoi / kcat, 0)
+                    res[gp] = C.Constraint(i.value * stoi / kcat)
                 end
             end
         end
@@ -279,10 +278,10 @@ function simplified_enzyme_constraints(;
     mass_cost_reverse = _ -> nothing,
     capacity_limits = [],
 )
-    function contribution(fl, cost, rid)
-        c = cost(rid)
-        isnothing(c) && !haskey(fl, rid) && return zero(C.LinearValue)
-        return c * fl[rid]
+    function contribution(fl, cost, id)
+        c = cost(id)
+        isnothing(c) && !haskey(fl, id) && return zero(C.LinearValue)
+        return c * fl[id]
     end
 
     return C.ConstraintTree(

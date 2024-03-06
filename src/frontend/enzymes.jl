@@ -125,7 +125,7 @@ function enzyme_constrained_flux_balance_constraints(
     )
 
     return constraints *
-           sign_split_constraints(;
+           :directional_flux_balance^sign_split_constraints(;
                positive = constraints.fluxes_forward,
                negative = constraints.fluxes_reverse,
                signed = constraints.fluxes,
@@ -191,25 +191,35 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
 )
-
+    # TODO this deserves a rewrite once more
+    # prepare some data
     isozyme_mass(i) = sum(
         (
             (
                 haskey(gene_product_molar_masses, gid) ?
                 coeff * gene_product_molar_masses[gid] :
                 throw(DomainError(gid, "missing a required gene product molar mass"))
-            ) for (gid, stoich) in i.gene_product_stoichiometry
+            ) for (gid, coeff) in i.gene_product_stoichiometry
         ),
         init = 0.0,
     )
 
+    # here I wish we had proper failure handling and patternmatcing in list comprehensions
     min_isozyme_cost_forward = Dict(
-        Symbol(rid) => argmin(last, (i, isozyme_mass(i) / i.kcat_forward) for i in is)
-        for (rid, is) in reaction_isozymes if !isnothing(is.kcat_forward)
+        Symbol(rid) => argmin(
+            last,
+            (i, isozyme_mass(i) / i.kcat_forward) for
+            (_, i) in is if !isnothing(i.kcat_forward)
+        ) for (rid, is) in reaction_isozymes if
+        any(!isnothing(i.kcat_forward) for (_, i) in is)
     )
     min_isozyme_cost_reverse = Dict(
-        Symbol(rid) => argmin(last, (i, isozyme_mass(i) / i.kcat_reverse) for i in is)
-        for (rid, is) in reaction_isozymes if !isnothing(is.kcat_reverse)
+        Symbol(rid) => argmin(
+            last,
+            (i, isozyme_mass(i) / i.kcat_reverse) for
+            (_, i) in is if !isnothing(i.kcat_reverse)
+        ) for (rid, is) in reaction_isozymes if
+        any(!isnothing(i.kcat_forward) for (_, i) in is)
     )
 
     constraints = flux_balance_constraints(model; interface, interface_name)
@@ -221,22 +231,22 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     )
 
     return constraints *
-           sign_split_constraints(;
+           :directional_flux_balance^sign_split_constraints(;
                positive = constraints.fluxes_forward,
                negative = constraints.fluxes_reverse,
                signed = constraints.fluxes,
            ) *
-           :capacity_limits^simplified_enzyme_constraints(
-               constraints.fluxes_forward,
-               constraints.fluxes_reverse,
+           :capacity_limits^simplified_enzyme_constraints(;
+               fluxes_forward = constraints.fluxes_forward,
+               fluxes_reverse = constraints.fluxes_reverse,
                mass_cost_forward = rid ->
-                   maybemap(last, get(min_cost_forward, rid, nothing)),
+                   maybemap(last, get(min_isozyme_cost_forward, rid, nothing)),
                mass_cost_reverse = rid ->
-                   maybemap(last, get(min_cost_reverse, rid, nothing)),
+                   maybemap(last, get(min_isozyme_cost_reverse, rid, nothing)),
                capacity_limits = capacity isa Real ?
                                  [(
                    :total_capacity,
-                   Symbol.(a.genes(model)),
+                   Symbol.(A.genes(model)),
                    C.Between(0, capacity),
                )] :
                                  [
@@ -247,14 +257,26 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                (
                    constraints.fluxes_forward,
                    rid -> maybemap(
-                       i -> (i.gene_product_stoichiometry, i.kcat_forward),
+                       ic -> (
+                           Dict(
+                               Symbol(k) => v for
+                               (k, v) in first(ic).gene_product_stoichiometry
+                           ),
+                           first(ic).kcat_forward,
+                       ),
                        get(min_isozyme_cost_forward, rid, nothing),
                    ),
                ),
                (
                    constraints.fluxes_reverse,
                    rid -> maybemap(
-                       i -> (i.gene_product_stoichiometry, i.kcat_reverse),
+                       ic -> (
+                           Dict(
+                               Symbol(k) => v for
+                               (k, v) in first(ic).gene_product_stoichiometry
+                           ),
+                           first(ic).kcat_reverse,
+                       ),
                        get(min_isozyme_cost_reverse, rid, nothing),
                    ),
                ),
