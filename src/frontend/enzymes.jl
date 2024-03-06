@@ -105,7 +105,6 @@ function enzyme_constrained_flux_balance_constraints(
                 gene_product_molar_masses[k]
             else
                 throw(DomainError(k, "missing a required gene product molar mass"))
-                # TODO: maybe better default to 0 and ignore the issue ?
             end
         end
 
@@ -121,7 +120,6 @@ function enzyme_constrained_flux_balance_constraints(
     constraints += enzyme_variables(;
         fluxes_forward = constraints.fluxes_forward,
         fluxes_reverse = constraints.fluxes_reverse,
-        gene_ids,
         isozyme_forward_ids,
         isozyme_reverse_ids,
     )
@@ -137,14 +135,15 @@ function enzyme_constrained_flux_balance_constraints(
                fluxes_reverse = constraints.fluxes_reverse,
                isozyme_forward_amounts = constraints.isozyme_forward_amounts,
                isozyme_reverse_amounts = constraints.isozyme_reverse_amounts,
-               gene_product_amounts = constraints.gene_product_amounts,
                kcat_forward,
                kcat_reverse,
                isozyme_gene_product_stoichiometry,
                gene_product_molar_mass,
                capacity_limits = capacity isa Real ?
-                                 [(:total_capacity, gene_ids, capacity)] :
-                                 [(k, Symbol.(gs), cap) for (k, gs, cap) in capacity],
+                                 [(:total_capacity, gene_ids, C.Between(0, capacity))] :
+                                 [
+                   (Symbol(k), Symbol.(gs), C.Between(0, cap)) for (k, gs, cap) in capacity
+               ],
            )
 end
 
@@ -173,31 +172,16 @@ export enzyme_constrained_flux_balance_analysis
 """
 $(TYPEDSIGNATURES)
 
-Construct a simplified enzyme-constrained flux-balance constraint system. Based
-on the SMOMENT algorithm described in *Bekiaris, P.S., Klamt, S. Automatic
-construction of metabolic models with enzyme constraints. BMC Bioinformatics 21,
-19 (2020). https://doi.org/10.1186/s12859-019-3329-9*.
+Like [`enzyme_constrained_flux_balance_constraints`](@ref), but automatically
+selects a single "fastest" isozyme for each reaction direction. In turn, the
+system requires much less variables in the constraint system description, and
+usually solves more efficiently, for the price of possibly finding suboptimal
+solutions. The method follows the SMOMENT algorithm described in *Bekiaris,
+P.S., Klamt, S. Automatic construction of metabolic models with enzyme
+constraints. BMC Bioinformatics 21, 19 (2020).
+https://doi.org/10.1186/s12859-019-3329-9*.
 
-The model is parameterized by `reaction_isozymes`, which is a mapping of
-reaction identifiers to [`Isozyme`](@ref) descriptions. For each gene product in
-`reaction_isozymes`, a corresponding entry in `gene_product_molar_masses` must
-be present, which is a mapping of gene products to their molar masses.
-Internally, the cheapest/fastest isozyme (minimum of MW/kcat for each isozyme)
-is used in the capacity bound.
-
-`capacity` may be a single number, which sets the limit of protein required for
-all the fluxes in `reaction_isozymes` (mass/mass DW units). Alternatively,
-`capacity` may be a vector of identifier-fluxes-limit triples that make a
-constraint (identified by the given identifier) that limits the enzyme
-requirements of the listed fluxes to the given limit (mass/mass DW units).
-
-`interface` and `interface_name` are forwarded to [`flux_balance_constraints`](@ref).
-
-## Note
-[`simplified_enzyme_constrained_flux_balance_constraints`](@ref) and
-[`enzyme_constrained_flux_balance_constraints`](@ref) differ in how the capacity
-bound(s) are formulated. For the former, fluxes are used, but for the latter,
-gene products are used directly.
+Arguments are as with [`enzyme_constrained_flux_balance_constraints`](@ref).
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
@@ -208,38 +192,73 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     interface_name = :interface,
 )
 
-    # setup: get fastest isozyme for each reaction (flux * MW/kcat = isozyme
-    # mass fraction required to catalyze reaction)
-    enzyme_speeds = Dict(
-        Symbol(rid) => (;
-            forward = minimum(
-                sum(
-                    stoich * gene_product_molar_masses[gid] for
-                    (gid, stoich) in iso.gene_product_stoichiometry
-                ) / iso.kcat_forward for iso in values(isos)
-            ),
-            reverse = minimum(
-                sum(
-                    stoich * gene_product_molar_masses[gid] for
-                    (gid, stoich) in iso.gene_product_stoichiometry
-                ) / iso.kcat_reverse for iso in values(isos)
-            ),
-        ) for (rid, isos) in reaction_isozymes
+    isozyme_mass(i) = sum(
+        (
+            (
+                haskey(gene_product_molar_masses, gid) ?
+                coeff * gene_product_molar_masses[gid] :
+                throw(DomainError(gid, "missing a required gene product molar mass"))
+            ) for (gid, stoich) in i.gene_product_stoichiometry
+        ),
+        init = 0.0,
     )
 
-    # fails ungracefully if rid is not in enzyme_speeds - prevents footguns
-    fastest_isozyme_forward(rid) = enzyme_speeds[rid].forward
-    fastest_isozyme_reverse(rid) = enzyme_speeds[rid].reverse
-
-    capacity_limits =
-        capacity isa Real ? [("totalcapacity", keys(enzyme_speeds), capacity)] : capacity
-
-    simplified_enzyme_constraints(
-        flux_balance_constraints(model; interface, interface_name);
-        fastest_isozyme_forward,
-        fastest_isozyme_reverse,
-        capacity_limits,
+    min_isozyme_cost_forward = Dict(
+        Symbol(rid) => argmin(last, (i, isozyme_mass(i) / i.kcat_forward) for i in is)
+        for (rid, is) in reaction_isozymes if !isnothing(is.kcat_forward)
     )
+    min_isozyme_cost_reverse = Dict(
+        Symbol(rid) => argmin(last, (i, isozyme_mass(i) / i.kcat_reverse) for i in is)
+        for (rid, is) in reaction_isozymes if !isnothing(is.kcat_reverse)
+    )
+
+    constraints = flux_balance_constraints(model; interface, interface_name)
+
+    constraints += sign_split_variables(
+        constraints.fluxes,
+        positive = :fluxes_forward,
+        negative = :fluxes_reverse,
+    )
+
+    return constraints *
+           sign_split_constraints(;
+               positive = constraints.fluxes_forward,
+               negative = constraints.fluxes_reverse,
+               signed = constraints.fluxes,
+           ) *
+           :capacity_limits^simplified_enzyme_constraints(
+               constraints.fluxes_forward,
+               constraints.fluxes_reverse,
+               mass_cost_forward = rid ->
+                   maybemap(last, get(min_cost_forward, rid, nothing)),
+               mass_cost_reverse = rid ->
+                   maybemap(last, get(min_cost_reverse, rid, nothing)),
+               capacity_limits = capacity isa Real ?
+                                 [(
+                   :total_capacity,
+                   Symbol.(a.genes(model)),
+                   C.Between(0, capacity),
+               )] :
+                                 [
+                   (Symbol(k), Symbol.(gs), C.Between(0, cap)) for (k, gs, cap) in capacity
+               ],
+           ) *
+           :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
+               (
+                   constraints.fluxes_forward,
+                   rid -> maybemap(
+                       i -> (i.gene_product_stoichiometry, i.kcat_forward),
+                       get(min_isozyme_cost_forward, rid, nothing),
+                   ),
+               ),
+               (
+                   constraints.fluxes_reverse,
+                   rid -> maybemap(
+                       i -> (i.gene_product_stoichiometry, i.kcat_reverse),
+                       get(min_isozyme_cost_reverse, rid, nothing),
+                   ),
+               ),
+           )
 end
 
 export simplified_enzyme_constrained_flux_balance_constraints
