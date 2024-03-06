@@ -25,8 +25,18 @@ subunit stoichiometry and turnover numbers. Use with
 $(TYPEDFIELDS)
 """
 Base.@kwdef mutable struct Isozyme
+    """
+    Mapping of gene product identifiers ("genes" in FBC model nomenclature)
+    to their relative amount required to construct one unit of the isozyme.
+    """
     gene_product_stoichiometry::Dict{String,Float64}
+
+    "Turnover number for this isozyme catalyzing the forward direction of the
+    reaction."
     kcat_forward::Maybe{Float64} = nothing
+
+    "Turnover number for this isozyme catalyzing the reverse direction of the
+    reaction."
     kcat_reverse::Maybe{Float64} = nothing
 end
 
@@ -35,96 +45,107 @@ export Isozyme
 """
 $(TYPEDSIGNATURES)
 
-Construct a enzyme-constrained flux-balance constraint system. The model is
-parameterized by `reaction_isozymes`, which is a mapping of reaction
-identifiers to [`Isozyme`](@ref) descriptions.
+Construct a enzyme-constrained flux-balance constraint system,
+following the method in GECKO algorithm (refer to: *Sánchez, Benjamín J., et
+al. "Improving the phenotype predictions of a yeast genome‐scale metabolic
+model by incorporating enzymatic constraints." Molecular systems biology 13.8
+(2017): 935*).
 
-Additionally, the computation requires `gene_product_molar_masses` to describe
-the weights of enzyme building material, and `capacity`, which limits the mass
-of enzymes in the whole model.
+The enzyme mass constraints depend primarily on the available *isozymes*, given
+in parameter `reaction_isozymes`, which is a mapping of reaction identifiers to
+descriptions of [`Isozyme`](@ref)s that may catalyze the particular reactions.
+The isozymes are built from gene products, the mass of which is specified by
+`gene_product_molar_masses`. In total, the amount of gene product building
+material is limited by `capacity`.
 
-`capacity` may be a single number, which sets the limit for "all described
+`capacity` may be a single number, which sets the mass limit for "all described
 enzymes". Alternatively, `capacity` may be a vector of identifier-genes-limit
-triples that make a constraint (identified by the given identifier) that limits
-the listed genes to the given limit.
+triples that together form a constraint (identified by the given identifier)
+that limits the total sum of the listed genes to the given limit.
+
+`interface` and `interface_name` are forwarded to
+[`flux_balance_constraints`](@ref).
 """
 function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
     reaction_isozymes::Dict{String,Dict{String,Isozyme}},
     gene_product_molar_masses::Dict{String,Float64},
     capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+    interface::Maybe{Symbol} = nothing,
+    interface_name = :interface,
 )
-    constraints = flux_balance_constraints(model)
+    # prepare some accessor functions for the later stuff
+    # TODO: might be nicer to somehow parametrize the fwd/rev directions out.
+    # Also there is a lot of conversion between symbols and strings, might be
+    # nicer to have that sorted out in some better way.
+    function isozyme_forward_ids(rid)
+        haskey(reaction_isozymes, String(rid)) || return nothing
+        return [
+            Symbol(k) for
+            (k, i) in reaction_isozymes[String(rid)] if !isnothing(i.kcat_forward)
+        ]
+    end
+    function isozyme_reverse_ids(rid)
+        haskey(reaction_isozymes, String(rid)) || return nothing
+        return [
+            Symbol(k) for
+            (k, i) in reaction_isozymes[String(rid)] if !isnothing(i.kcat_reverse)
+        ]
+    end
+    kcat_forward(rid, iso_id) = reaction_isozymes[String(rid)][String(iso_id)].kcat_forward
+    kcat_reverse(rid, iso_id) = reaction_isozymes[String(rid)][String(iso_id)].kcat_reverse
+    isozyme_gene_product_stoichiometry(rid, iso_id) = Dict(
+        Symbol(k) => v for (k, v) in
+        reaction_isozymes[String(rid)][String(iso_id)].gene_product_stoichiometry
+    )
+    gene_ids = Symbol.(keys(gene_product_molar_masses))
+    gene_product_molar_mass(gid) =
+        let k = String(gid)
+            if haskey(gene_product_molar_masses, k)
+                gene_product_molar_masses[k]
+            else
+                throw(DomainError(k, "missing a required gene product molar mass"))
+                # TODO: maybe better default to 0 and ignore the issue ?
+            end
+        end
 
-    # might be nice to omit some conditionally (e.g. slash the direction if one
-    # kcat is nothing)
-    isozyme_amounts = isozyme_amount_variables(
-        Symbol.(keys(reaction_isozymes)),
-        rid -> Symbol.(keys(reaction_isozymes[string(rid)])),
+    # allocate all variables and build the system
+    constraints = flux_balance_constraints(model; interface, interface_name)
+
+    constraints += sign_split_variables(
+        constraints.fluxes,
+        positive = :fluxes_forward,
+        negative = :fluxes_reverse,
     )
 
-    # allocate variables for everything (nb. += wouldn't associate right here)
-    constraints =
-        constraints +
-        :fluxes_forward^unsigned_positive_contribution_variables(constraints.fluxes) +
-        :fluxes_reverse^unsigned_negative_contribution_variables(constraints.fluxes) +
-        :isozyme_forward_amounts^isozyme_amounts +
-        :isozyme_reverse_amounts^isozyme_amounts +
-        :gene_product_amounts^C.variables(
-            keys = Symbol.(A.genes(model)),
-            bounds = C.Between(0, Inf),
-        )
-
-    # connect all parts with constraints
-    constraints *
-    :directional_flux_balance^sign_split_constraints(
-        positive = constraints.fluxes_forward,
-        negative = constraints.fluxes_reverse,
-        signed = constraints.fluxes,
-    ) *
-    :isozyme_flux_forward_balance^isozyme_flux_constraints(
-        constraints.isozyme_forward_amounts,
-        constraints.fluxes_forward,
-        (rid, isozyme) -> maybemap(
-            x -> x.kcat_forward,
-            maybeget(reaction_isozymes, string(rid), string(isozyme)),
-        ),
-    ) *
-    :isozyme_flux_reverse_balance^isozyme_flux_constraints(
-        constraints.isozyme_reverse_amounts,
-        constraints.fluxes_reverse,
-        (rid, isozyme) -> maybemap(
-            x -> x.kcat_reverse,
-            maybeget(reaction_isozymes, string(rid), string(isozyme)),
-        ),
-    ) *
-    :gene_product_isozyme_balance^gene_product_isozyme_constraints(
-        constraints.gene_product_amounts,
-        (constraints.isozyme_forward_amounts, constraints.isozyme_reverse_amounts),
-        (rid, isozyme) -> maybemap(
-            x -> [(Symbol(k), v) for (k, v) in x.gene_product_stoichiometry],
-            maybeget(reaction_isozymes, string(rid), string(isozyme)),
-        ),
-    ) *
-    :gene_product_capacity^(
-        capacity isa Float64 ?
-        C.Constraint(
-            value = sum(
-                gpa.value * gene_product_molar_masses[String(gp)] for
-                (gp, gpa) in constraints.gene_product_amounts
-            ),
-            bound = C.Between(0, capacity),
-        ) :
-        C.ConstraintTree(
-            Symbol(id) => C.Constraint(
-                value = sum(
-                    constraints.gene_product_amounts[Symbol(gp)].value *
-                    gene_product_molar_masses[gp] for gp in gps
-                ),
-                bound = C.Between(0, limit),
-            ) for (id, gps, limit) in capacity_limits
-        )
+    constraints += enzyme_variables(;
+        fluxes_forward = constraints.fluxes_forward,
+        fluxes_reverse = constraints.fluxes_reverse,
+        gene_ids,
+        isozyme_forward_ids,
+        isozyme_reverse_ids,
     )
+
+    return constraints *
+           sign_split_constraints(;
+               positive = constraints.fluxes_forward,
+               negative = constraints.fluxes_reverse,
+               signed = constraints.fluxes,
+           ) *
+           enzyme_constraints(;
+               fluxes_forward = constraints.fluxes_forward,
+               fluxes_reverse = constraints.fluxes_reverse,
+               isozyme_forward_amounts = constraints.isozyme_forward_amounts,
+               isozyme_reverse_amounts = constraints.isozyme_reverse_amounts,
+               gene_product_amounts = constraints.gene_product_amounts,
+               kcat_forward,
+               kcat_reverse,
+               isozyme_gene_product_stoichiometry,
+               gene_product_molar_mass,
+               capacity_limits = capacity isa Real ?
+                                 [(:total_capacity, gene_ids, capacity)] :
+                                 [(k, Symbol.(gs), cap) for (k, gs, cap) in capacity],
+           )
 end
 
 export enzyme_constrained_flux_balance_constraints
