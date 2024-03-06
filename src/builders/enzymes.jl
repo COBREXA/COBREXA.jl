@@ -29,8 +29,9 @@ Returning an empty iterable prevents allocating the subtree for the given flux.
 """
 isozyme_amount_variables(fluxes, flux_isozymes) = sum(
     (
-        f^C.variables(keys = flux_isozymes(f), bounds = C.Between(0, Inf)) for
-        f in fluxes if !isempty(flux_isozymes(f))
+        f^C.variables(keys = fis, bounds = C.Between(0, Inf)) for
+        (f, fis) in ((f, flux_isozymes(f)) for f in fluxes) if
+        !isnothing(fis) && !isempty(fis)
     ),
     init = C.ConstraintTree(),
 )
@@ -150,7 +151,7 @@ enzyme_variables(;
     isozyme_ids = _ -> nothing,
     isozyme_forward_ids = isozyme_ids,
     isozyme_reverse_ids = isozyme_ids,
-    gene_product_bound = _ -> C.between(0, Inf),
+    gene_product_bound = _ -> C.Between(0, Inf),
     isozyme_forward_amounts_name = :isozyme_forward_amounts,
     isozyme_reverse_amounts_name = :isozyme_reverse_amounts,
     gene_product_amounts_name = :gene_product_amounts,
@@ -177,7 +178,23 @@ Connect variables returned by [`enzyme_variables`](@ref) to unidirectional
 fluxes. This is used to construct the contraint system for
 [`enzyme_constrained_flux_balance_constraints`](@ref).
 
-Parameters `fluxes_forward`, `fluxes_reverse`, `isozyme_forward_amounts`, `isozyme_reverse_amounts` and `gene_product_amounts` should be taken as 
+Parameters `fluxes_forward`, `fluxes_reverse`, `isozyme_forward_amounts`,
+`isozyme_reverse_amounts` and `gene_product_amounts` should correspond to
+parameters and results of [`enzyme_variables`](@ref).
+
+Further, parameter functions `kcat_forward` and `kcat_reverse` specify the
+turnover numbers for reaction and isozyme IDs given in parameters;
+`isozyme_gene_product_stoichiometry` specifies the composition of the
+reaction-isozyme IDs given in parameter by returning an interable mapping of
+gene product IDs to numbers (such as `Dict{Symbol, Float64}`), and
+`gene_product_molar_mass` specifies a numeric mass for a given gene product ID.
+All parameter functions may return `nothing`, at which point the given
+object is considered nonexistent and is omitted from constraints.
+
+`capacity_limits` is an interable container of triples `(limit_id,
+gene_product_ids, capacity_bound)` which are converted to a constraint
+identified by the `limit_id` that limits the total mass of `gene_product_ids`
+(which is any iterable container) by `capacity_bound`.
 """
 enzyme_constraints(;
     fluxes_forward::C.ConstraintTree,
@@ -185,34 +202,40 @@ enzyme_constraints(;
     isozyme_forward_amounts::C.ConstraintTree,
     isozyme_reverse_amounts::C.ConstraintTree,
     gene_product_amounts::C.ConstraintTree,
-    kcat_forward = (_, _) -> 0.0,
-    kcat_reverse = (_, _) -> 0.0,
-    isozyme_subunit_stoichiometry = (_, _) -> nothing,
-    gene_product_molar_mass = _ -> 0.0,
+    kcat_forward = (_, _) -> nothing,
+    kcat_reverse = (_, _) -> nothing,
+    isozyme_gene_product_stoichiometry = (_, _) -> nothing,
+    gene_product_molar_mass = _ -> nothing,
     capacity_limits = [],
+    isozyme_flux_forward_balance_name = :isozyme_flux_forward_balance,
+    isozyme_flux_reverse_balance_name = :isozyme_flux_reverse_balance,
+    gene_product_isozyme_balance_name = :gene_product_isozyme_balance,
+    gene_product_capacity_name = :gene_product_capacity,
 ) =
-    :isozyme_flux_forward_balance^isozyme_flux_constraints(
+    isozyme_flux_forward_balance_name^isozyme_flux_constraints(
         isozyme_forward_amounts,
         fluxes_forward,
         kcat_forward,
     ) *
-    :isozyme_flux_reverse_balance^isozyme_flux_constraints(
+    isozyme_flux_reverse_balance_name^isozyme_flux_constraints(
         isozyme_reverse_amounts,
         fluxes_reverse,
         kcat_reverse,
     ) *
-    :gene_product_isozyme_balance^gene_product_isozyme_constraints(
+    gene_product_isozyme_balance_name^gene_product_isozyme_constraints(
         gene_product_amounts,
         (isozyme_forward_amounts, isozyme_reverse_amounts),
-        isozyme_subunit_stoichiometry,
+        isozyme_gene_product_stoichiometry,
     ) *
-    :gene_product_capacity^C.ConstraintTree(
-        Symbol(id) => C.Constraint(
+    gene_product_capacity_name^C.ConstraintTree(
+        Symbol(id) => C.Constraint(;
             value = sum(
-                gene_product_amounts[gp].value * gene_product_molar_mass(gp) for gp in gps
+                gene_product_amounts[gp].value * gpmm for
+                (gp, gpmm) in ((gp, gene_product_molar_mass(gp)) for gp in gps) if
+                !isnothing(gpmm)
             ),
-            bound = C.Between(0, limit),
-        ) for (id, gps, limit) in capacity_limits
+            bound,
+        ) for (id, gps, bound) in capacity_limits
     )
 
 export enzyme_constraints

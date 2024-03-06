@@ -127,17 +127,17 @@ function enzyme_constrained_flux_balance_constraints(
     )
 
     return constraints *
-           sign_split_constraints(
+           sign_split_constraints(;
                positive = constraints.fluxes_forward,
                negative = constraints.fluxes_reverse,
                signed = constraints.fluxes,
            ) *
-           enzyme_constraints(
+           enzyme_constraints(;
                fluxes_forward = constraints.fluxes_forward,
                fluxes_reverse = constraints.fluxes_reverse,
-               isozyme_forward_amounts = enzymes.isozyme_forward_amounts,
-               isozyme_reverse_amounts = enzymes.isozyme_reverse_amounts,
-               gene_product_amounts = enzymes.gene_product_amounts,
+               isozyme_forward_amounts = constraints.isozyme_forward_amounts,
+               isozyme_reverse_amounts = constraints.isozyme_reverse_amounts,
+               gene_product_amounts = constraints.gene_product_amounts,
                kcat_forward,
                kcat_reverse,
                isozyme_gene_product_stoichiometry,
