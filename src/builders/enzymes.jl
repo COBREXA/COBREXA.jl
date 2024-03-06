@@ -72,32 +72,37 @@ A constraint tree that binds the isozyme amounts to gene product amounts
 accordingly to their multiplicities (aka. stoichiometries, protein units, ...)
 given by `isozyme_stoichiometry`.
 
-Values in `gene_product_amounts` should describe the gene product allocations.
+Values in ConstraintTree `gene_product_amounts` should describe the gene
+product allocations.  Allocation for the isozyme is ignored if the gene product
+is missing in `gene_product_amounts`.
 
-`isozyme_amount_trees` is an iterable that contains `ConstraintTree`s that
-describe the allocated isozyme amounts (such as created by
-[`isozyme_amount_variables`](@ref). One may typically pass in both forward- and
-reverse-direction amounts at once, but it is possible to use a single tree,
-e.g., in a uni-tuple: `tuple(my_tree)`.
+`isozyme_amounts` is an iterable that contains several `ConstraintTree`s that
+describe the allocated isozyme amounts (typically these would be created by
+[`isozyme_amount_variables`](@ref). The multiple trees may describe several
+different kinds of isozyme use, e.g., you can use it to pass in both forward-
+and reverse-direction amounts at once. To only use a single tree, use an
+uni-tuple: `isozyme_amounts = tuple(my_tree)`.
 
-`isozyme_stoichiometry` gets called with a reaction and isozyme ID as given by
-the isozyme amount trees.
+Parameter function `isozyme_stoichiometry` gets called with a reaction and
+isozyme ID as given by the isozyme amount trees. It should return `nothing` in
+case there's no information -- in such case, the isozyme is *not going to be
+included* in the calculation of gene product mass.
 """
 function gene_product_isozyme_constraints(
     gene_product_amounts::C.ConstraintTree,
-    isozymes_amount_trees,
+    isozyme_amounts,
     isozyme_stoichiometry,
 )
     res = C.ConstraintTree()
     # This needs to invert the stoichiometry mapping,
     # so we patch up a fresh new CT in place.
-    for iss in isozymes_amount_trees
+    for iss in isozyme_amounts
         for (rid, is) in iss
             for (iid, i) in is
                 gpstoi = isozyme_stoichiometry(rid, iid)
-                isnothing(gpstoi) && continue # TODO: possible footgun
+                isnothing(gpstoi) && continue
                 for (gp, stoi) in gpstoi
-                    haskey(gene_product_amounts, gp) || continue # TODO: possible footgun
+                    haskey(gene_product_amounts, gp) || continue
                     if haskey(res, gp)
                         res[gp].value += i.value * stoi
                     else
@@ -116,87 +121,98 @@ export gene_product_isozyme_constraints
 """
 $(TYPEDSIGNATURES)
 
-Returns a constraint tree, built from `constraints`, with enzyme constraints
-added based on reactions in `fluxes`.
+Returns a constraint tree with enzyme capacity constraints, added for reactions
+in `fluxes_forward` and `fluxes_reverse`. This is used to construct the
+constraint system in [`enzyme_constrained_flux_balance_constraints`](@ref).
 
-Inputs:
-- `gene_ids` is a list of gene product IDs.
-- `isozyme_ids` takes a reaction ID and returns `nothing` if the reaction does
-  not have isozymes associated with it, or an iterable container of all the
-  isozyme ids.
-- `kcat_forward` and `kcat_reverse` takes `(rid, iso_id)` and returns the
-  relevant enzyme turnover number, where `rid` is a reaction ID, and `iso_id` is
-  the isozyme ID of that reaction.
-- `isozyme_subunit_stoichiometry` takes `(rid, iso_id)` and returns the gene
-  product subunit stoichiometry of the associated isozyme, or `nothing` if it
-  does not exist.
-- `gene_product_molar_mass` takes `gid` and returns the molar mass of the gene
-  product with ID `gid`.
-- `capacity_limits` is an iterable container of triples `(capacity_id,
-  gene_product_ids, capacity_bound)`, which creates capacity bound(s).
+Parameter `gene_ids` is an iterable collection of gene identifiers (as `Symbol`s).
+
+Parameter function `isozyme_ids` takes a reaction ID and returns `nothing` if
+the reaction does not have isozymes associated with it, or an iterable
+container of all the isozyme IDs for that reaction (as `Symbol`s).
+
+Parameters `isozyme_forward_ids` and `isozyme_reverse_ids` can be used to
+fine-tune the generated isozymes in either direction; both default to
+`isozyme_ids`.
+
+Parameter function `gene_product_bound` can be used to generate a bound on the
+gene product amount variables (the `Symbol` key is passed as a parameter). By
+default, all amounts are bounded to be non-negative.
+
+The keys in the output constraint tree can be customized by setting
+`isozyme_forward_amounts_name`, `isozyme_reverse_amounts_name` and
+`gene_product_amounts_name`.
 """
-function enzyme_constraints(
-    constraints::C.ConstraintTree;
-    fluxes = constraints.fluxes,
+enzyme_variables(;
+    fluxes_forward::C.ConstraintTree,
+    fluxes_reverse::C.ConstraintTree,
     gene_ids = Symbol[],
     isozyme_ids = _ -> nothing,
+    isozyme_forward_ids = isozyme_ids,
+    isozyme_reverse_ids = isozyme_ids,
+    gene_product_bound = _ -> C.between(0, Inf),
+    isozyme_forward_amounts_name = :isozyme_forward_amounts,
+    isozyme_reverse_amounts_name = :isozyme_reverse_amounts,
+    gene_product_amounts_name = :gene_product_amounts,
+) =
+    isozyme_forward_amounts_name^isozyme_amount_variables(
+        Symbol.(keys(fluxes_forward)),
+        isozyme_forward_ids,
+    ) +
+    isozyme_reverse_amounts_name^isozyme_amount_variables(
+        Symbol.(keys(fluxes_reverse)),
+        isozyme_reverse_ids,
+    ) +
+    gene_product_amounts_name^C.variables(
+        keys = gene_ids,
+        bounds = gene_product_bound.(gene_ids),
+    )
+
+export enzyme_variables
+
+"""
+$(TYPEDSIGNATURES)
+
+Connect variables returned by [`enzyme_variables`](@ref) to unidirectional
+fluxes. This is used to construct the contraint system for
+[`enzyme_constrained_flux_balance_constraints`](@ref).
+
+Parameters `fluxes_forward`, `fluxes_reverse`, `isozyme_forward_amounts`, `isozyme_reverse_amounts` and `gene_product_amounts` should be taken as 
+"""
+enzyme_constraints(;
+    fluxes_forward::C.ConstraintTree,
+    fluxes_reverse::C.ConstraintTree,
+    isozyme_forward_amounts::C.ConstraintTree,
+    isozyme_reverse_amounts::C.ConstraintTree,
+    gene_product_amounts::C.ConstraintTree,
     kcat_forward = (_, _) -> 0.0,
     kcat_reverse = (_, _) -> 0.0,
     isozyme_subunit_stoichiometry = (_, _) -> nothing,
     gene_product_molar_mass = _ -> 0.0,
     capacity_limits = [],
-)
-    # TODO: would be nice if directionally constrained
-
-    # might be nice to omit some conditionally (e.g. slash the direction if one
-    # kcat is nothing)
-    isozyme_amounts = isozyme_amount_variables(
-        [rid for rid in keys(fluxes) if !isnothing(isozyme_ids(rid))],
-        rid -> isozyme_ids(rid),
-    )
-
-    # allocate variables for everything (nb. += wouldn't associate right here)
-    constraints =
-        constraints +
-        sign_split_variables(
-            fluxes;
-            positive = :fluxes_forward,
-            negative = :fluxes_reverse,
-        ) +
-        :isozyme_forward_amounts^isozyme_amounts +
-        :isozyme_reverse_amounts^isozyme_amounts +
-        :gene_product_amounts^C.variables(keys = gene_ids, bounds = C.Between(0, Inf))
-
-    # connect all parts with constraints
-    constraints *
-    :directional_flux_balance^sign_split_constraints(
-        positive = constraints.fluxes_forward,
-        negative = constraints.fluxes_reverse,
-        signed = constraints.fluxes,
-    ) *
+) =
     :isozyme_flux_forward_balance^isozyme_flux_constraints(
-        constraints.isozyme_forward_amounts,
-        constraints.fluxes_forward,
+        isozyme_forward_amounts,
+        fluxes_forward,
         kcat_forward,
     ) *
     :isozyme_flux_reverse_balance^isozyme_flux_constraints(
-        constraints.isozyme_reverse_amounts,
-        constraints.fluxes_reverse,
+        isozyme_reverse_amounts,
+        fluxes_reverse,
         kcat_reverse,
     ) *
     :gene_product_isozyme_balance^gene_product_isozyme_constraints(
-        constraints.gene_product_amounts,
-        (constraints.isozyme_forward_amounts, constraints.isozyme_reverse_amounts),
+        gene_product_amounts,
+        (isozyme_forward_amounts, isozyme_reverse_amounts),
         isozyme_subunit_stoichiometry,
     ) *
     :gene_product_capacity^C.ConstraintTree(
         Symbol(id) => C.Constraint(
             value = sum(
-                constraints.gene_product_amounts[gp].value * gene_product_molar_mass(gp) for gp in gps
+                gene_product_amounts[gp].value * gene_product_molar_mass(gp) for gp in gps
             ),
             bound = C.Between(0, limit),
         ) for (id, gps, limit) in capacity_limits
     )
-end
 
 export enzyme_constraints
