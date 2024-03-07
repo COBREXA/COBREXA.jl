@@ -105,7 +105,6 @@ function enzyme_constrained_flux_balance_constraints(
                 gene_product_molar_masses[k]
             else
                 throw(DomainError(k, "missing a required gene product molar mass"))
-                # TODO: maybe better default to 0 and ignore the issue ?
             end
         end
 
@@ -121,13 +120,12 @@ function enzyme_constrained_flux_balance_constraints(
     constraints += enzyme_variables(;
         fluxes_forward = constraints.fluxes_forward,
         fluxes_reverse = constraints.fluxes_reverse,
-        gene_ids,
         isozyme_forward_ids,
         isozyme_reverse_ids,
     )
 
     return constraints *
-           sign_split_constraints(;
+           :directional_flux_balance^sign_split_constraints(;
                positive = constraints.fluxes_forward,
                negative = constraints.fluxes_reverse,
                signed = constraints.fluxes,
@@ -137,14 +135,15 @@ function enzyme_constrained_flux_balance_constraints(
                fluxes_reverse = constraints.fluxes_reverse,
                isozyme_forward_amounts = constraints.isozyme_forward_amounts,
                isozyme_reverse_amounts = constraints.isozyme_reverse_amounts,
-               gene_product_amounts = constraints.gene_product_amounts,
                kcat_forward,
                kcat_reverse,
                isozyme_gene_product_stoichiometry,
                gene_product_molar_mass,
                capacity_limits = capacity isa Real ?
-                                 [(:total_capacity, gene_ids, capacity)] :
-                                 [(k, Symbol.(gs), cap) for (k, gs, cap) in capacity],
+                                 [(:total_capacity, gene_ids, C.Between(0, capacity))] :
+                                 [
+                   (Symbol(k), Symbol.(gs), C.Between(0, cap)) for (k, gs, cap) in capacity
+               ],
            )
 end
 
@@ -153,7 +152,8 @@ export enzyme_constrained_flux_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-Perform the enzyme-constrained flux balance analysis on the `model` and return the solved constraint system.
+Perform the enzyme-constrained flux balance analysis on the `model` and return
+the solved constraint system.
 
 Arguments are forwarded to
 [`enzyme_constrained_flux_balance_constraints`](@ref); solver configuration
@@ -168,3 +168,155 @@ enzyme_constrained_flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) =
     )
 
 export enzyme_constrained_flux_balance_analysis
+
+"""
+$(TYPEDSIGNATURES)
+
+Like [`enzyme_constrained_flux_balance_constraints`](@ref), but automatically
+selects a single "fastest" isozyme for each reaction direction. In turn, the
+system requires much less variables in the constraint system description, and
+usually solves more efficiently, for the price of possibly finding suboptimal
+solutions. The method follows the SMOMENT algorithm described in *Bekiaris,
+P.S., Klamt, S. Automatic construction of metabolic models with enzyme
+constraints. BMC Bioinformatics 21, 19 (2020).
+https://doi.org/10.1186/s12859-019-3329-9*.
+
+Arguments are as with [`enzyme_constrained_flux_balance_constraints`](@ref),
+with a major difference in `capacity` handling: the identifier lists (2nd
+elements of the triples given in the list) are not identifiers of gene
+products, but identifiers of reactions.
+"""
+function simplified_enzyme_constrained_flux_balance_constraints(
+    model;
+    reaction_isozymes::Dict{String,Dict{String,Isozyme}},
+    gene_product_molar_masses::Dict{String,Float64},
+    capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+    interface::Maybe{Symbol} = nothing,
+    interface_name = :interface,
+)
+    # TODO this deserves a rewrite once more -- Isozyme struct is hiding a bit
+    # too much of uncertainty for the code of this thing to be short and
+    # concise...maybe we should have an isozyme with only one kcat which is
+    # never missing so that the nothing-handling code and duplicate getters can
+    # disappear?
+
+    # prepare getters and data
+
+    isozyme_mass(i) = sum(
+        (
+            (
+                haskey(gene_product_molar_masses, gid) ?
+                coeff * gene_product_molar_masses[gid] :
+                throw(DomainError(gid, "missing a required gene product molar mass"))
+            ) for (gid, coeff) in i.gene_product_stoichiometry
+        ),
+        init = 0.0,
+    )
+
+    min_isozyme_cost_forward = Dict(
+        Symbol(rid) => argmin(
+            last,
+            (i, isozyme_mass(i) / i.kcat_forward) for
+            (_, i) in is if !isnothing(i.kcat_forward)
+        ) for (rid, is) in reaction_isozymes if
+        any(!isnothing(i.kcat_forward) for (_, i) in is)
+    )
+    min_isozyme_cost_reverse = Dict(
+        Symbol(rid) => argmin(
+            last,
+            (i, isozyme_mass(i) / i.kcat_reverse) for
+            (_, i) in is if !isnothing(i.kcat_reverse)
+        ) for (rid, is) in reaction_isozymes if
+        any(!isnothing(i.kcat_forward) for (_, i) in is)
+    )
+
+    # allocate the model and variables
+
+    constraints = flux_balance_constraints(model; interface, interface_name)
+
+    # TODO consider only splitting the reactions that we have to split
+    constraints += sign_split_variables(
+        constraints.fluxes,
+        positive = :fluxes_forward,
+        negative = :fluxes_reverse,
+    )
+
+    # connect everything with constraints
+
+    return constraints *
+           :directional_flux_balance^sign_split_constraints(;
+               positive = constraints.fluxes_forward,
+               negative = constraints.fluxes_reverse,
+               signed = constraints.fluxes,
+           ) *
+           :capacity_limits^simplified_enzyme_constraints(;
+               fluxes_forward = constraints.fluxes_forward,
+               fluxes_reverse = constraints.fluxes_reverse,
+               mass_cost_forward = rid ->
+                   maybemap(last, get(min_isozyme_cost_forward, rid, nothing)),
+               mass_cost_reverse = rid ->
+                   maybemap(last, get(min_isozyme_cost_reverse, rid, nothing)),
+               capacity_limits = capacity isa Real ?
+                                 [(
+                   :total_capacity,
+                   keys(constraints.fluxes),
+                   C.Between(0, capacity),
+               )] :
+                                 [
+                   (Symbol(k), Symbol.(fs), C.Between(0, cap)) for (k, fs, cap) in capacity
+               ],
+           ) *
+           :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
+               (
+                   constraints.fluxes_forward,
+                   rid -> maybemap(
+                       ic -> (
+                           Dict(
+                               Symbol(k) => v for
+                               (k, v) in first(ic).gene_product_stoichiometry
+                           ),
+                           first(ic).kcat_forward,
+                       ),
+                       get(min_isozyme_cost_forward, rid, nothing),
+                   ),
+               ),
+               (
+                   constraints.fluxes_reverse,
+                   rid -> maybemap(
+                       ic -> (
+                           Dict(
+                               Symbol(k) => v for
+                               (k, v) in first(ic).gene_product_stoichiometry
+                           ),
+                           first(ic).kcat_reverse,
+                       ),
+                       get(min_isozyme_cost_reverse, rid, nothing),
+                   ),
+               ),
+           )
+    # TODO add some generic functionality that allows people to add additional
+    # capacity group bounds over gene product amounts. That code can be shared
+    # with enzyme_constraints.
+end
+
+export simplified_enzyme_constrained_flux_balance_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Perform the enzyme-constrained flux balance analysis on the `model` and return
+the solved constraint system.
+
+Arguments are forwarded to
+[`simplified_enzyme_constrained_flux_balance_constraints`](@ref); solver
+configuration arguments are forwarded to [`optimized_values`](@ref).
+"""
+simplified_enzyme_constrained_flux_balance_analysis(model::A.AbstractFBCModel; kwargs...) =
+    frontend_optimized_values(
+        simplified_enzyme_constrained_flux_balance_constraints,
+        model;
+        objective = x -> x.objective.value,
+        kwargs...,
+    )
+
+export simplified_enzyme_constrained_flux_balance_analysis

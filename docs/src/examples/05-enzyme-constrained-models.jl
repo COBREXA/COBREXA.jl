@@ -329,6 +329,21 @@ ec_solution = enzyme_constrained_flux_balance_analysis(
     optimizer = GLPK.Optimizer,
 )
 
+# We can notice that the objective function is a little lower than with
+# unconstrained E. coli core:
+
+ec_solution.objective
+
+# One can also observe many interesting thing, e.g. the amount of gene product
+# material required for the system to run:
+
+ec_solution.gene_product_amounts
+
+# The total amount of required gene product mass is, by default, present as
+# `total_capacity`:
+
+ec_solution.gene_product_capacity
+
 #src these values should be unique (glucose transporter is the only way to get carbon into the system)
 @test isapprox(ec_solution.objective, 0.706993382849705, atol = TEST_TOLERANCE) #src
 @test isapprox( #src
@@ -340,5 +355,39 @@ ec_solution = enzyme_constrained_flux_balance_analysis(
 @test isapprox( #src
     ec_solution.gene_product_amounts.b2417, #src
     0.011875920383431717, #src
+    atol = TEST_TOLERANCE, #src
+) #src
+
+# ## Simplified models
+#
+# Because most reactions typically only use a single isozyme, we may also use a
+# simplified representation of the problem where this fact is reflected, saving
+# the variable allocation for the isozymes.
+#
+# [`simplified_enzyme_constrained_flux_balance_analysis`](@ref) takes similar
+# arguments as the [`enzyme_constrained_flux_balance_analysis`](@ref), but
+# automatically chooses the "fastest" reaction isozyme for each reaction
+# direction and builds the model with that.
+
+simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses = ecoli_core_gene_product_masses,
+    capacity = total_enzyme_capacity,
+    optimizer = GLPK.Optimizer,
+)
+
+# In this case, the result is the same as with the full analysis:
+
+simplified_ec_solution.capacity_limits.total_capacity
+
+# Gene product amounts are not present in the model but are reconstructed
+# nevertheless (they are uniquely determined by the flux:
+
+simplified_ec_solution.gene_product_amounts
+
+@test isapprox( #src
+    ec_solution.objective, #src
+    simplified_ec_solution.objective, #src
     atol = TEST_TOLERANCE, #src
 ) #src
