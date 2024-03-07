@@ -280,21 +280,21 @@ function simplified_enzyme_constraints(;
 )
     function contribution(fl, cost, id)
         c = cost(id)
-        isnothing(c) && !haskey(fl, id) && return zero(C.LinearValue)
-        return c * fl[id]
+        (isnothing(c) || !haskey(fl, id)) && return zero(C.LinearValue)
+        return c * fl[id].value
     end
 
     return C.ConstraintTree(
         id => C.Constraint(;
             value = sum(
-                contribution(fluxes_forward, mass_cost_forward, i) for i in fluxes;
+                contribution(fluxes_forward, mass_cost_forward, f) for f in fs;
                 init = zero(C.LinearValue),
             ) + sum(
-                contribution(fluxes_reverse, mass_cost_reverse, i) for i in fluxes;
+                contribution(fluxes_reverse, mass_cost_reverse, f) for f in fs;
                 init = zero(C.LinearValue),
             ),
-            bound = bound,
-        ) for (id, fluxes, bound) in capacity_limits
+            bound,
+        ) for (id, fs, bound) in capacity_limits
     )
 end
 

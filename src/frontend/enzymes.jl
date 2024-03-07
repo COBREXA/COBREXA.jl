@@ -181,7 +181,10 @@ P.S., Klamt, S. Automatic construction of metabolic models with enzyme
 constraints. BMC Bioinformatics 21, 19 (2020).
 https://doi.org/10.1186/s12859-019-3329-9*.
 
-Arguments are as with [`enzyme_constrained_flux_balance_constraints`](@ref).
+Arguments are as with [`enzyme_constrained_flux_balance_constraints`](@ref),
+with a major difference in `capacity` handling: the identifier lists (2nd
+elements of the triples given in the list) are not identifiers of gene
+products, but identifiers of reactions.
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
@@ -191,8 +194,14 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
 )
-    # TODO this deserves a rewrite once more
-    # prepare some data
+    # TODO this deserves a rewrite once more -- Isozyme struct is hiding a bit
+    # too much of uncertainty for the code of this thing to be short and
+    # concise...maybe we should have an isozyme with only one kcat which is
+    # never missing so that the nothing-handling code and duplicate getters can
+    # disappear?
+
+    # prepare getters and data
+
     isozyme_mass(i) = sum(
         (
             (
@@ -204,7 +213,6 @@ function simplified_enzyme_constrained_flux_balance_constraints(
         init = 0.0,
     )
 
-    # here I wish we had proper failure handling and patternmatcing in list comprehensions
     min_isozyme_cost_forward = Dict(
         Symbol(rid) => argmin(
             last,
@@ -222,13 +230,18 @@ function simplified_enzyme_constrained_flux_balance_constraints(
         any(!isnothing(i.kcat_forward) for (_, i) in is)
     )
 
+    # allocate the model and variables
+
     constraints = flux_balance_constraints(model; interface, interface_name)
 
+    # TODO consider only splitting the reactions that we have to split
     constraints += sign_split_variables(
         constraints.fluxes,
         positive = :fluxes_forward,
         negative = :fluxes_reverse,
     )
+
+    # connect everything with constraints
 
     return constraints *
            :directional_flux_balance^sign_split_constraints(;
@@ -246,11 +259,11 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                capacity_limits = capacity isa Real ?
                                  [(
                    :total_capacity,
-                   Symbol.(A.genes(model)),
+                   keys(constraints.fluxes),
                    C.Between(0, capacity),
                )] :
                                  [
-                   (Symbol(k), Symbol.(gs), C.Between(0, cap)) for (k, gs, cap) in capacity
+                   (Symbol(k), Symbol.(fs), C.Between(0, cap)) for (k, fs, cap) in capacity
                ],
            ) *
            :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
@@ -281,6 +294,9 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                    ),
                ),
            )
+    # TODO add some generic functionality that allows people to add additional
+    # capacity group bounds over gene product amounts. That code can be shared
+    # with enzyme_constraints.
 end
 
 export simplified_enzyme_constrained_flux_balance_constraints
