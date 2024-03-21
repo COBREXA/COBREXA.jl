@@ -20,6 +20,7 @@
 
 using COBREXA
 
+# TODO why not download+load combo?
 download_model(
     "http://bigg.ucsd.edu/static/models/e_coli_core.json",
     "e_coli_core.json",
@@ -30,10 +31,7 @@ import AbstractFBCModels.CanonicalModel as CM
 import JSONFBCModels
 import Clarabel
 
-# TODO this might do the convert immediately as with the old cobrexa...
-# probably better have an actual output-type argument tho rather than force the
-# guessing.
-model = convert(CM.Model, load_model("e_coli_core.json"))
+model = load_model("e_coli_core.json", CM.Model)
 
 reference_fluxes =
     parsimonious_flux_balance_analysis(
@@ -42,4 +40,33 @@ reference_fluxes =
         settings = [silence],
     ).fluxes
 
-# TODO MOMA from here
+model.reactions["CYTBD"]
+
+model.reactions["CYTBD"].upper_bound = 10.0
+
+solution = metabolic_adjustment_minimization_analysis(
+    model,
+    reference_fluxes;
+    optimizer = Clarabel.Optimizer,
+    settings = [silence],
+)
+
+solution.objective
+@test isapprox(solution.objective, 0.241497, atol = TEST_TOLERANCE) #src
+
+sqrt(solution.minimal_adjustment_objective)
+@test sqrt(solution.minimal_adjustment_objective) < 71 #src
+
+solution.fluxes.CYTBD
+@test isapprox(solution.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
+
+# compare
+
+optimal_solution = parsimonious_flux_balance_analysis(
+    model,
+    optimizer = Clarabel.Optimizer,
+    settings = [silence],
+)
+
+import ConstraintTrees as C
+sort(collect(C.zip(-, optimal_solution.fluxes, solution.fluxes, Float64)), by = last)

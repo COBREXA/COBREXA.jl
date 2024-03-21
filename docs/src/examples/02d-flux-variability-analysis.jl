@@ -32,12 +32,15 @@ model = load_model("e_coli_core.json")
 
 solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer)
 
+@test isapprox(solution.ACALD[1], -2.542370370370188, atol = TEST_TOLERANCE) #src
+@test isapprox(solution.ACALD[2], 0.0, atol = TEST_TOLERANCE) #src
+
 # ## Specifying bounds
 
 very_close = flux_variability_analysis(
     model,
     optimizer = GLPK.Optimizer,
-    objective_bound = absolute_tolerance_bound(1e-6),
+    objective_bound = absolute_tolerance_bound(1e-5),
 )
 
 one_percent_close = flux_variability_analysis(

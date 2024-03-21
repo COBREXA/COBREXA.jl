@@ -27,8 +27,9 @@ function constraints_variability(
     workers = D.workers(),
 )::C.Tree{Tuple{Maybe{Float64},Maybe{Float64}}}
 
-    target_array =
-        [dim * dir for dim in tree_deflate(C.value, targets, C.LinearValue), dir in (-1, 1)]
+    target_array = [
+        (dir, tgt) for tgt in tree_deflate(C.value, targets, C.LinearValue), dir in (-1, 1)
+    ]
 
     result_array = screen_optimization_model(
         constraints,
@@ -36,10 +37,10 @@ function constraints_variability(
         optimizer,
         settings,
         workers,
-    ) do om, target
-        J.@objective(om, Maximal, C.substitute(target, om[:x]))
+    ) do om, (dir, tgt)
+        J.@objective(om, Maximal, C.substitute(dir * tgt, om[:x]))
         J.optimize!(om)
-        is_solved(om) ? J.objective_value(om) : nothing
+        is_solved(om) ? dir * J.objective_value(om) : nothing
     end
 
     tree_reinflate(

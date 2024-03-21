@@ -31,7 +31,7 @@ in a given constraint tree.
 function sum_value(x...)
     res = zero(C.LinearValue)
     for ct in x
-        C.map(ct) do c
+        C.traverse(ct) do c
             res += c.value
         end
     end

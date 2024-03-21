@@ -30,17 +30,16 @@ adjustment of the organism towards a somewhat working state.
 
 Reference fluxes that do not exist in the model are ignored (internally, the
 objective is constructed via [`squared_sum_error_value`](@ref)).
-
-Additional parameters are forwarded to [`optimized_values`](@ref).
 """
 function metabolic_adjustment_minimization_constraints(
     model::A.AbstractFBCModel,
-    reference_fluxes::C.Tree,
+    reference_fluxes::C.Tree;
+    _...,
 )
     constraints = flux_balance_constraints(model)
     constraints *
     :minimal_adjustment_objective^C.Constraint(
-        squared_sum_error_value(constraints.fluxes, reference_fluxes),
+        squared_sum_error_value(constraints.fluxes, x -> get(reference_fluxes, x, nothing)),
     )
 end
 
@@ -86,7 +85,7 @@ metabolic_adjustment_minimization_analysis(
     model::A.AbstractFBCModel,
     args...;
     optimizer,
-    settings,
+    settings = [],
     reference_parsimonious_optimizer = optimizer,
     reference_parsimonious_settings = settings,
     reference_optimizer = optimizer,
@@ -187,7 +186,7 @@ linear_metabolic_adjustment_minimization_analysis(
     model::A.AbstractFBCModel,
     args...;
     optimizer,
-    settings,
+    settings = [],
     reference_parsimonious_optimizer = optimizer,
     reference_parsimonious_settings = settings,
     reference_optimizer = optimizer,
