@@ -22,4 +22,4 @@ Break an interval into `breaks` (count) breaks.
 Used for computing breaks in [`objective_production_envelope`](@ref).
 """
 break_interval(lower, upper, breaks::Int) =
-    lower .+ (upper - lower) .* ((1:s) .- 1) ./ max(breaks - 1, 1)
+    lower .+ (upper - lower) .* ((1:breaks) .- 1) ./ max(breaks - 1, 1)
