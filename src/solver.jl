@@ -149,3 +149,14 @@ function optimized_model(om; output::C.ConstraintTreeElem)
 end
 
 export optimized_model
+
+"""
+$(TYPEDSIGNATURES)
+
+Like [`optimized_model`](@ref) but only returns the objective value (or
+`nothing` if the model is not solved).
+"""
+function optimized_objective(om)
+    J.optimize!(om)
+    is_solved(om) ? J.objective_value(om) : nothing
+end

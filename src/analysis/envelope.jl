@@ -57,8 +57,7 @@ function constraints_objective_envelope(
             J.@constraint(om, C.substitute(v, om[:x]) == x) for
             (v, x) in zip(values, coords)
         ]
-        J.optimize!(om)
-        res = is_solved(om) ? J.objective_value(om) : nothing
+        res = optimized_objective(om)
         J.delete.(Ref(om), con_refs)
         return res
     end

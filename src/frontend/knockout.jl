@@ -14,6 +14,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function gene_knockouts(model::A.AbstractFBCModel, genes, n; kwargs...)
-    # TODO just use screen to do this right
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
+function gene_knockouts(
+    model::A.AbstractFBCModel,
+    gene_combinations::Vector{<:Union{String,NTuple{N,String} where {N}}} = A.genes(model);
+    workers = D.workers(),
+    optimizer,
+    settings = [],
+    kwargs...,
+)
+    rxns = A.reactions(model)
+    constraints = flux_balance_constraints(model)
+
+    gene_combinations .=> screen_optimization_model(
+        constraints,
+        gene_combinations;
+        objective = constraints.objective.value,
+        sense = Maximal,
+        optimizer,
+        settings,
+        workers,
+    ) do om, knockout
+        con_refs = [
+            J.@constraint(om, C.substitute(c.value, om[:x]) == c.bound.equal_to) for
+            c in values(knockout_constraints(constraints.fluxes, knockout, model))
+        ]
+        res = optimized_objective(om)
+        J.delete.(Ref(om), con_refs)
+        return res
+        # TODO the above construction of con_refs is shared with envelopes and
+        # might be also reusable elsewhere. Also also the @constraint creation
+        # is kinda similar to what solver.jl does.
+        #
+        # Makes a nice code saving opportunity.
+    end
 end
+
+export gene_knockouts

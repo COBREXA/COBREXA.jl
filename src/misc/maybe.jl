@@ -28,5 +28,5 @@ $(TYPEDSIGNATURES)
 
 Helper for applying functions to stuff that might be `nothing`.
 """
-maybemap(f, _::Nothing) = nothing
-maybemap(f, x) = f(x)
+maybemap(f, ::Nothing, def = nothing) = def
+maybemap(f, x, ::Any) = f(x)
