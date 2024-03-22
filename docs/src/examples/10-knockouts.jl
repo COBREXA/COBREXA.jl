@@ -55,8 +55,8 @@ some_double_knockouts = gene_knockouts(
     optimizer = GLPK.Optimizer,
 )
 
-@test isapprox(last(some_double_knockouts[1]), 0.13475540327383498, atol=TEST_TOLERANCE) #src
-@test isapprox(last(some_double_knockouts[2]), 0, atol=TEST_TOLERANCE) #src
+@test isapprox(last(some_double_knockouts[1]), 0.13475540327383498, atol = TEST_TOLERANCE) #src
+@test isapprox(last(some_double_knockouts[2]), 0, atol = TEST_TOLERANCE) #src
 
 knockouts_with_b3919 =
     gene_knockouts(model, tuple.(keys(ko_dict), "b3919"), optimizer = GLPK.Optimizer)

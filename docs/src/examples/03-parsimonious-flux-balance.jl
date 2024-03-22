@@ -45,7 +45,11 @@ solution = parsimonious_flux_balance_analysis(
 )
 
 @test isapprox(solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
-@test isapprox(solution.parsimonious_objective, 11414.211988071253,; atol = QP_TEST_TOLERANCE) #src
+@test isapprox( #src
+    solution.parsimonious_objective, #src
+    11414.211988071253, #src
+    atol = QP_TEST_TOLERANCE, #src
+) #src
 @test isapprox( #src
     sum(x^2 for x in values(solution.fluxes)), #src
     solution.parsimonious_objective, #src
