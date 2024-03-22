@@ -40,12 +40,21 @@ reference_fluxes =
         settings = [silence],
     ).fluxes
 
-model.reactions["CYTBD"]
+modified_model = deepcopy(model) # avoid reference sharing
 
-model.reactions["CYTBD"].upper_bound = 10.0
+modified_model.reactions["CYTBD"]
+
+modified_model.reactions["CYTBD"].upper_bound = 10.0
 
 solution = metabolic_adjustment_minimization_analysis(
-    model,
+    modified_model,
+    model;
+    optimizer = Clarabel.Optimizer,
+    settings = [silence],
+)
+
+solution_with_fluxes = metabolic_adjustment_minimization_analysis(
+    modified_model,
     reference_fluxes;
     optimizer = Clarabel.Optimizer,
     settings = [silence],
@@ -53,6 +62,7 @@ solution = metabolic_adjustment_minimization_analysis(
 
 solution.objective
 @test isapprox(solution.objective, 0.241497, atol = TEST_TOLERANCE) #src
+@test isapprox(solution_with_fluxes.objective, solution.objective, atol = TEST_TOLERANCE) #src
 
 sqrt(solution.minimal_adjustment_objective)
 @test sqrt(solution.minimal_adjustment_objective) < 71 #src
@@ -60,7 +70,17 @@ sqrt(solution.minimal_adjustment_objective)
 solution.fluxes.CYTBD
 @test isapprox(solution.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
 
-# compare
+@test isapprox( #src
+    C.reduce( #src
+        max, #src
+        C.zip((a, b) -> abs(a - b), solution, solution_with_fluxes, Float64), #src
+        init = 0.0, #src
+    ), #src
+    0.0, #src
+    atol = TEST_TOLERANCE, #src
+) #src
+
+# TODO compare
 
 optimal_solution = parsimonious_flux_balance_analysis(
     model,
@@ -70,3 +90,26 @@ optimal_solution = parsimonious_flux_balance_analysis(
 
 import ConstraintTrees as C
 sort(collect(C.zip(-, optimal_solution.fluxes, solution.fluxes, Float64)), by = last)
+
+# ## Faster L1-minimal adjustments
+
+import GLPK
+
+linear_solution = linear_metabolic_adjustment_minimization_analysis(
+    modified_model,
+    model;
+    optimizer = GLPK.Optimizer,
+)
+
+linear_solution.objective
+@test isapprox(linear_solution.objective, 0.21924874959433985, atol = TEST_TOLERANCE) #src
+
+linear_solution.fluxes.CYTBD
+@test isapprox(linear_solution.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
+
+linear_solution.linear_minimal_adjustment_objective
+@test linear_solution.linear_minimal_adjustment_objective < 305 #src
+
+# TODO compare again
+
+sort(collect(C.zip(-, linear_solution.fluxes, solution.fluxes, Float64)), by = last)
