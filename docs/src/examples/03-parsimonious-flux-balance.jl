@@ -38,76 +38,33 @@ model = load_model("e_coli_core.json") # load the model
 
 # Use the convenience function to run standard pFBA on
 
-vt = parsimonious_flux_balance_analysis(
+solution = parsimonious_flux_balance_analysis(
     model;
     optimizer = Clarabel.Optimizer,
     settings = [silence],
 )
 
-@test isapprox(vt.objective, 0.87392; atol = TEST_TOLERANCE) #src
-@test sum(x^2 for x in values(vt.fluxes)) < 15000 #src
+@test isapprox(solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
+@test isapprox(solution.parsimonious_objective, 11414.211988071253,; atol = QP_TEST_TOLERANCE) #src
+@test isapprox( #src
+    sum(x^2 for x in values(solution.fluxes)), #src
+    solution.parsimonious_objective, #src
+    atol = QP_TEST_TOLERANCE, #src
+) #src
 
-#=
+# ## Linear version
+#
+# TODO
 
-# Alternatively, you can construct your own constraint tree model with
-# the quadratic objective (this approach is much more flexible).
+import GLPK
 
-ctmodel = flux_balance_constraints(model)
-ctmodel *= :l2objective^squared_sum_value(ctmodel.fluxes)
-ctmodel.objective.bound = 0.3 # set growth rate # TODO currently breaks
+linear_solution =
+    linear_parsimonious_flux_balance_analysis(model; optimizer = GLPK.Optimizer)
 
-opt_model = optimization_model(
-    ctmodel;
-    objective = ctmodel.:l2objective.value,
-    optimizer = Clarabel.Optimizer,
-    sense = Minimal,
-)
-
-J.optimize!(opt_model) # JuMP is called J in COBREXA
-
-is_solved(opt_model) # check if solved
-
-vt = C.substitute_values(ctmodel, J.value.(opt_model[:x])) # ConstraintTrees.jl is called C in COBREXA
-
-@test isapprox(vt.l2objective, ?; atol = QP_TEST_TOLERANCE) #src  # TODO will break until mutable bounds
-
-# It is likewise as simple to run MOMA using the convenience functions.
-
-ref_sol = Dict("ATPS4r" => 33.0, "CYTBD" => 22.0)
-
-vt = minimize_metabolic_adjustment(model, ref_sol, Gurobi.Optimizer)
-
-# Or use the piping functionality
-
-model |>
-minimize_metabolic_adjustment(ref_sol, Clarabel.Optimizer; settings = [silence])
-
-@test isapprox(vt.:momaobjective, 0.81580806; atol = TEST_TOLERANCE) #src
-
-# Alternatively, you can construct your own constraint tree model with
-# the quadratic objective (this approach is much more flexible).
-
-ctmodel = flux_balance_constraints(model)
-ctmodel *=
-    :minoxphospho^squared_sum_error_value(
-        ctmodel.fluxes,
-        Dict(:ATPS4r => 33.0, :CYTBD => 22.0),
-    )
-ctmodel.objective.bound = 0.3 # set growth rate # TODO currently breaks
-
-opt_model = optimization_model(
-    ctmodel;
-    objective = ctmodel.minoxphospho.value,
-    optimizer = Clarabel.Optimizer,
-    sense = Minimal,
-)
-
-J.optimize!(opt_model) # JuMP is called J in COBREXA
-
-is_solved(opt_model) # check if solved
-
-vt = C.substitute_values(ctmodel, J.value.(opt_model[:x])) # ConstraintTrees.jl is called C in COBREXA
-
-@test isapprox(vt.l2objective, ?; atol = QP_TEST_TOLERANCE) #src  # TODO will break until mutable bounds
-
-=#
+@test isapprox(linear_solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
+@test isapprox(linear_solution.parsimonious_objective, 518.422; atol = TEST_TOLERANCE) #src
+@test isapprox( #src
+    sum(abs.(values(linear_solution.fluxes))), #src
+    linear_solution.parsimonious_objective, #src
+    atol = TEST_TOLERANCE, #src
+) #src
