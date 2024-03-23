@@ -67,9 +67,9 @@ function interface_constraints(
     # (while also renumbering the interfaces)
     modules = sum(prep_pair.(ps); init = C.ConstraintTree())
 
-    # TODO maybe split the interface creation into a separate function
-    # (BUT- people shouldn't really need it since they should have all of their
-    # interfacing stuff in interface subtrees anyway, right?)
+    # TODO maybe split the interface-preparing function into a separate
+    # function, so that others can easily make their own interface connectors
+    # with compatible interface.
 
     # fold a union of all non-ignored interface keys
     interface_sum = foldl(modules, init = C.ConstraintTree()) do accs, (id, ms)

@@ -24,6 +24,8 @@ This is merely a nice shortcut for `Distributed.pmap` running over a
 """
 screen(f, args...; workers = D.workers()) = D.pmap(f, D.CachingPool(workers), args...)
 
+export screen
+
 """
 $(TYPEDSIGNATURES)
 

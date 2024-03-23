@@ -73,6 +73,7 @@ include("builders/unsigned.jl")
 
 # simplified front-ends for the above
 include("frontend/balance.jl")
+include("frontend/community.jl")
 include("frontend/concentrations.jl")
 include("frontend/envelope.jl")
 include("frontend/enzymes.jl")
