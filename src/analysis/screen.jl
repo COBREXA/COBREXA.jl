@@ -64,7 +64,7 @@ function screen_optimization_model(
         for s in settings
             s(om)
         end
-        om
+        return om
     end
 
     D.pmap(
