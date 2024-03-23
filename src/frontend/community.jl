@@ -41,7 +41,7 @@ function community_flux_balance_constraints(
                 c = flux_balance_constraints(m; interface)
                 (c, interface_exchanges(c), a)
             end for (k, (m, a)) in model_abundances
-        )...;
+        );
         out_interface = :community_exchanges,
         out_balance = :community_balance,
         bound = x -> get(bounds_lookup, String(last(x)), nothing),
