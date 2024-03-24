@@ -14,25 +14,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function sample_achr(
-    constraints::C.ConstraintTree,
-    points::Matrix{Float64};
-    seed,
-    chains,
-    collect_iterations,
-    epsilon,
-    filter_constraints::C.ConstraintTree,
-    workers = D.workers(),
-) end
+"""
+$(TYPEDSIGNATURES)
 
-function sample_affine_hr(
-    constraints::C.ConstraintTree,
-    points::Matrix{Float64};
-    seed,
-    chains,
-    collect_iterations,
-    epsilon,
-    mix_points,
-    filter_constraints::C.ConstraintTree,
-    workers = D.workers(),
-) end
+TODO
+"""
+function sampler_chain_achr(;
+    start::Matrix{Float64};
+    single_variable_bounds::Matrix{Float64,Float64},
+    eq_constraints::Matrix{Float64},
+    eq_values::Vector{Float64},
+    interval_constraints::Matrix{Float64},
+    interval_values::Matrix{Float64},
+    eq_epsilon::Float64,
+    interval_epsilon::Float64,
+    collect_iterations::Vector{Int},
+    generator::StableRNG.StableRNG,
+)
+
+    return sample
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
+function sample_constraint_variables(sampler::Function, constraints::C.ConstraintTree, start::Matrix{Float64})
+
+    return sample
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+TODO
+"""
+function sample_constraints(sampler::Function, constraints::C.ConstraintTree, output::C.ConstraintTree, aggregate=collect, sample::Matrix{Float64})
+
+end
