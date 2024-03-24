@@ -99,10 +99,8 @@ function flux_balance_constraints(
             :boundary,
             [(all(col .<= 0) | all(col .>= 0)) for col in eachcol(stoi)],
         )
-    elseif interface == nothing
-        # nothing :]
     else
-        throw(DomainError(interface, "unknown interface specifier"))
+        interface == nothing || throw(DomainError(interface, "unknown interface specifier"))
     end
 
     return constraints
