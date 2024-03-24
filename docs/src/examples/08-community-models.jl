@@ -80,12 +80,21 @@ screen(0.0:0.1:1.0) do ratio2
     res = community_flux_balance_analysis(
         ["bug1" => (ecoli1, ratio1), "bug2" => (ecoli2, ratio2)],
         ["EX_glc__D_e" => (-10.0, 0.0)],
+        interface = :sbo, # usually more reproducible
         optimizer = GLPK.Optimizer,
     )
     (ratio1, ratio2) => (isnothing(res) ? nothing : res.community_biomass)
 end
 
 # ...seems a lot like `bug1` will eventually disappear.
+
+# ## Note about interfaces
+
+# Some work:
+flux_balance_constraints(ecoli1, interface = :sbo).interface
+
+# Some generally don't do well:
+flux_balance_constraints(ecoli1, interface = :boundary).interface
 
 # # TODO old version
 

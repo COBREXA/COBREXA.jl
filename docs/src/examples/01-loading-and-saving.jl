@@ -18,6 +18,61 @@
 
 using COBREXA
 
-# TODO: download the models into a single directory that can get cached. Probably best have a fake mktempdir().
+# ## Getting the models reliably from the repositories
+
+download_model(
+    "http://bigg.ucsd.edu/static/models/e_coli_core.json",
+    "e_coli_core.json",
+    "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
+)
+
+download_model(
+    "http://bigg.ucsd.edu/static/models/e_coli_core.xml",
+    "e_coli_core.xml",
+    "b4db506aeed0e434c1f5f1fdd35feda0dfe5d82badcfda0e9d1342335ab31116",
+)
+
+# TODO: how to get the hashes: specify a dummy value at once and convert them from a warning
 #
-# TODO: demonstrate download_model here and explain how to get hashes (simply not fill them in for the first time)
+# TODO: test this :)
+
+# ## Loading models
+
+import JSONFBCModels, SBMLFBCModels
+
+model1 = load_model("e_coli_core.json")
+
+model2 = load_model("e_coli_core.xml")
+
+import AbstractFBCModels as A
+
+A.reactions(model1)
+
+A.reactions(model2)
+
+# ### Converting model types
+
+# Avoid guessing the model type (works also without the suffix in file name):
+
+model = load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json")
+
+# Directly convert to a different model type
+
+model_converted_to_json = load_model("e_coli_core.xml", JSONFBCModels.JSONFBCModel)
+
+# Or do all at once, load a precisely typed model and convert it to an easily modifiable representation
+model_in_julia_structures =
+    load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
+
+# Also possible to convert everything using Julia's `convert`.
+
+# ## Saving models
+
+save_model(model_converted_to_json, "e_coli_core_from_sbml.json")
+
+println(open("e_coli_core_from_sbml.json") do f
+    read(f, 100)
+end |> String, "...")
+
+# TODO refer to ABCMT docs for more docs
+# TODO carefully refer to matlab models
