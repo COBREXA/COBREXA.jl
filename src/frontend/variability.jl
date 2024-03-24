@@ -35,15 +35,15 @@ Use [`constraints_variability`](@ref) to customize the FVA execution.
 """
 function flux_variability_analysis(
     model::A.AbstractFBCModel;
-    objective_bound = relative_tolerance_bound(0.99),
+    objective_bound = relative_tolerance_bound(0.9),
     reaction_subset = nothing,
     optimizer,
-    settings,
+    settings = [],
     workers = D.workers(),
 )
     constraints = flux_balance_constraints(model)
 
-    objective = constraints.objective_value
+    objective = constraints.objective.value
 
     objective_flux = optimized_values(
         constraints;

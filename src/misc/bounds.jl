@@ -25,6 +25,8 @@ absolute_tolerance_bound(tolerance) = x -> begin
     (minimum(bound), maximum(bound))
 end
 
+export absolute_tolerance_bound
+
 """
 $(TYPEDSIGNATURES)
 
@@ -35,3 +37,5 @@ relative_tolerance_bound(tolerance) = x -> begin
     bound = (x * tolerance, x / tolerance)
     (minimum(bound), maximum(bound))
 end
+
+export relative_tolerance_bound

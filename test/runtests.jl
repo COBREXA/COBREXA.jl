@@ -48,7 +48,7 @@ end
 W = addprocs(2)
 t = @elapsed @everywhere begin
     using COBREXA
-    import Tulip, JuMP
+    import Tulip, GLPK, JuMP
 end
 
 # load the test models

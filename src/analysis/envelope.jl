@@ -54,14 +54,11 @@ function constraints_objective_envelope(
         workers,
     ) do om, coords
         con_refs = [
-            begin
-                J.@constraint(om, con_ref, C.substitute(v, om[:x]) == x)
-                con_ref
-            end for (v, x) in zip(values, coords)
+            J.@constraint(om, C.substitute(v, om[:x]) == x) for
+            (v, x) in zip(values, coords)
         ]
-        J.optimize!(om)
-        res = is_solved(om) ? J.objective_value(om) : nothing
-        J.delete.(con_refs)
-        res
+        res = optimized_objective(om)
+        J.delete.(Ref(om), con_refs)
+        return res
     end
 end

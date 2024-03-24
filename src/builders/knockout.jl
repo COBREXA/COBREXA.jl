@@ -22,13 +22,11 @@ Make a `ConstraintTree` that knocks out fluxes given by the predicate
 key of the flux in tree `fluxes`) and must return a boolean. Returning `true`
 means that the corresponding flux (usually a reaction flux) will be knocked
 out.
-
-Use [`fbc_gene_knockout_constraints`](@ref) to apply gene knockouts easily to
-models with `AbstractFBCModel` interface.
 """
-knockout_constraints(knockout_test, fluxes::C.ConstraintTree) = C.ConstraintTree(
-    id => C.Constraint(C.value(flux), 0) for (id, flux) in fluxes if knockout_test(id)
-)
+knockout_constraints(knockout_test::F, fluxes::C.ConstraintTree) where {F<:Function} =
+    C.ConstraintTree(
+        id => C.Constraint(C.value(flux), 0) for (id, flux) in fluxes if knockout_test(id)
+    )
 
 """
 $(TYPEDSIGNATURES)
@@ -41,15 +39,30 @@ Keys of the fluxes must correspond to the reaction identifiers in the `model`.
 `knockout_genes` may be any collection that support element tests using `in`.
 Since the test is done many times, a `Set` is a preferred contained for longer
 lists of genes.
+
+All constraints are equality constraints returned in a single flat
+`ConstraintTree`.
 """
-fbc_gene_knockout_constraints(;
-    fluxes::C.ConstraintTree,
-    knockout_genes,
-    model::A.AbstractFBCModel,
-) =
+knockout_constraints(fluxes::C.ConstraintTree, knockout_genes, model::A.AbstractFBCModel) =
     knockout_constraints(fluxes) do rid
         maybemap(
             !,
             A.reaction_gene_products_available(model, string(rid), !in(knockout_genes)),
+            false,
         )
     end
+
+"""
+$(TYPEDSIGNATURES)
+
+Convenience overload of [`knockout_constraints`](@ref) for knocking out a
+single gene (without the necessity to store the gene identifier in a singleton
+container).
+"""
+knockout_constraints(
+    fluxes::C.ConstraintTree,
+    knockout_gene::String,
+    model::A.AbstractFBCModel,
+) = knockout_constraints(fluxes, tuple(knockout_gene), model)
+
+export knockout_constraints

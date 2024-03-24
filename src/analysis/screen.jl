@@ -24,6 +24,8 @@ This is merely a nice shortcut for `Distributed.pmap` running over a
 """
 screen(f, args...; workers = D.workers()) = D.pmap(f, D.CachingPool(workers), args...)
 
+export screen
+
 """
 $(TYPEDSIGNATURES)
 
@@ -62,7 +64,7 @@ function screen_optimization_model(
         for s in settings
             s(om)
         end
-        om
+        return om
     end
 
     D.pmap(

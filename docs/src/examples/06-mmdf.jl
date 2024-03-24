@@ -28,16 +28,17 @@ using COBREXA
 # To do this, we will first need a model that includes glycolysis, which we can
 # download if it is not already present.
 
-import Downloads: download
+using COBREXA
 
-#TODO use AFBCMs functionality
-!isfile("e_coli_core.json") &&
-    download("http://bigg.ucsd.edu/static/models/e_coli_core.json", "e_coli_core.json")
+download_model(
+    "http://bigg.ucsd.edu/static/models/e_coli_core.json",
+    "e_coli_core.json",
+    "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
+)
 
 # Additionally to COBREXA, and the model format package, we will need a solver
 # -- let's use GLPK here:
 
-using COBREXA
 import JSONFBCModels
 import GLPK
 

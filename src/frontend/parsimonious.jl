@@ -67,33 +67,21 @@ Like [`parsimonious_flux_balance_constraints`](@ref), but uses a L1 metric for
 solving the parsimonious problem. The `parsimonious_objective` constraint is
 thus linear.
 """
-function linear_parsimonious_flux_balance_constraints(
-    model::A.AbstractFBCModel,
-    optimizer;
-    kwargs...,
-)
+function linear_parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
     constraints = flux_balance_constraints(model)
     constraints =
         constraints +
-        :fluxes_forward^unsigned_positive_contribution_variables(ct.fluxes) +
-        :fluxes_reverse^unsigned_negative_contribution_variables(ct.fluxes)
-    constraints *=
-        :directional_flux_balance^sign_split_constraints(
-            positive = ct.fluxes_forward,
-            negative = ct.fluxes_reverse,
-            signed = ct.fluxes,
-        )
-
-    parsimonious_objective = sum_value(ct.fluxes_forward, ct.fluxes_reverse)
-
-    parsimonious_optimized_values(
-        constraints * :parsimonious_objective^C.Constraint(parsimonious_objective);
-        optimizer,
-        objective = constraints.objective.value,
-        parsimonious_objective,
-        tolerances,
-        kwargs...,
-    )
+        :fluxes_forward^unsigned_positive_contribution_variables(constraints.fluxes) +
+        :fluxes_reverse^unsigned_negative_contribution_variables(constraints.fluxes)
+    return constraints *
+           :directional_flux_balance^sign_split_constraints(
+               positive = constraints.fluxes_forward,
+               negative = constraints.fluxes_reverse,
+               signed = constraints.fluxes,
+           ) *
+           :parsimonious_objective^C.Constraint(
+               sum_value(constraints.fluxes_forward, constraints.fluxes_reverse),
+           )
 end
 
 export linear_parsimonious_flux_balance_constraints

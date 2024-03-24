@@ -14,12 +14,7 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Parsimonious flux balance analysis
-
-# We will use [`parsimonious_flux_balance_analysis`](@ref) to find the optimal
-# flux distribution in the *E. coli* "core" model.
-#
-# TODO pFBA citation
+# # Gene knockouts
 
 using COBREXA
 
@@ -29,46 +24,45 @@ download_model(
     "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
 )
 
-# next, load the necessary packages
-
 import JSONFBCModels
-import Clarabel # can solve QPs
-
-model = load_model("e_coli_core.json") # load the model
-
-# Use the convenience function to run standard pFBA on
-
-solution = parsimonious_flux_balance_analysis(
-    model;
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)
-
-@test isapprox(solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
-@test isapprox( #src
-    solution.parsimonious_objective, #src
-    11414.211988071253, #src
-    atol = QP_TEST_TOLERANCE, #src
-) #src
-@test isapprox( #src
-    sum(x^2 for x in values(solution.fluxes)), #src
-    solution.parsimonious_objective, #src
-    atol = QP_TEST_TOLERANCE, #src
-) #src
-
-# ## Linear version
-#
-# TODO
-
 import GLPK
 
-linear_solution =
-    linear_parsimonious_flux_balance_analysis(model; optimizer = GLPK.Optimizer)
+model = load_model("e_coli_core.json")
 
-@test isapprox(linear_solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
-@test isapprox(linear_solution.parsimonious_objective, 518.422; atol = TEST_TOLERANCE) #src
-@test isapprox( #src
-    sum(abs.(values(linear_solution.fluxes))), #src
-    linear_solution.parsimonious_objective, #src
-    atol = TEST_TOLERANCE, #src
-) #src
+# ## Single gene knockouts
+
+ko_objective_values = gene_knockouts(model, optimizer = GLPK.Optimizer)
+
+ko_dict = Dict(ko_objective_values)
+
+@test length(ko_dict) == 137 #src
+
+ko_dict["b3919"]
+
+ko_dict["b3738"]
+
+# how many genes are critical?
+
+critical = count(isnothing, values(ko_dict))
+
+@test critical == 2 #src
+
+# ## Multiple gene knockouts
+
+some_double_knockouts = gene_knockouts(
+    model,
+    [("b3919", "b3738"), ("b0118", "b0720")],
+    optimizer = GLPK.Optimizer,
+)
+
+@test isapprox(last(some_double_knockouts[1]), 0.13475540327383498, atol = TEST_TOLERANCE) #src
+@test isapprox(last(some_double_knockouts[2]), 0, atol = TEST_TOLERANCE) #src
+
+knockouts_with_b3919 =
+    gene_knockouts(model, tuple.(keys(ko_dict), "b3919"), optimizer = GLPK.Optimizer)
+
+# how many genes are critical with b3919 missing?
+
+critical_without_b3919 = count(isnothing, last.(knockouts_with_b3919))
+
+@test critical_without_b3919 == 23 #src

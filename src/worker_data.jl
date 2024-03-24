@@ -29,7 +29,7 @@ Base.@kwdef mutable struct worker_local_data
     "The data that is transferred to the remote worker"
     transfer_data::Any
     "The data that is cached on the remote worker"
-    local_data::Union{Some,Nothing}
+    local_data::Maybe{Some}
     """
     The function that converts the transferred data to locally-cached data on
     the remote worker
@@ -59,5 +59,5 @@ function get_worker_local_data(x::worker_local_data)
         x.local_data = Some(x.transform(x.transfer_data))
         x.transfer_data = nothing
     end
-    some(x.local_data)
+    something(x.local_data)
 end

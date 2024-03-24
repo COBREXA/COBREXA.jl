@@ -46,22 +46,22 @@ function objective_production_envelope(
 
     envelope_bounds = constraints_variability(
         constraints,
-        (r => constraints.fluxes[r] for r in rs);
+        collect(constraints.fluxes[r].value for r in rs);
         optimizer,
         settings,
         workers,
     )
 
-    #TODO check for nothings in the bounds
+    #TODO check for nothings in the bounds and produce a sensible error
 
-    bss = [break_interval(envelope_bounds[r]..., breaks) for r in rs]
+    bss = [break_interval(eb..., breaks) for eb in eachrow(envelope_bounds)]
 
     return (
         breaks = reactions .=> bss,
         objective_values = constraints_objective_envelope(
             constraints,
-            (constraints.fluxes[r] => bs for (r, bs) in zip(rs, bss))...;
-            objective = model.objective.value,
+            (constraints.fluxes[r].value => bs for (r, bs) in zip(rs, bss))...;
+            objective = constraints.objective.value,
             sense = Maximal,
             optimizer,
             settings,
@@ -82,3 +82,5 @@ function objective_production_envelope(
     # TODO think about it
     =#
 end
+
+export objective_production_envelope
