@@ -19,7 +19,7 @@ $(TYPEDSIGNATURES)
 
 TODO
 """
-function sample_chain_achr(;
+function sample_chain_achr(
     sample::M;
     variable_lower_bounds::V,
     variable_upper_bounds::V,
@@ -28,7 +28,7 @@ function sample_chain_achr(;
     upper_bounds::V,
     epsilon::F = config.sampler_tolerance,
     collect_iterations::Vector{Int},
-    generator::StableRNG.StableRNG,
+    generator::StableRNGs.StableRNG,
 ) where {F<:Real,V<:AbstractVector{F},M<:AbstractMatrix{F}}
 
     (n, d) = size(sample)

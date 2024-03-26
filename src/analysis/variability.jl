@@ -56,7 +56,7 @@ function constraints_variability(
     output = (dir, om) -> dir * J.objective_value(om),
     output_type::Type{T} = Float64,
     workers = D.workers(),
-)::Matrix{Maybe{T}}
+)::Matrix{Maybe{T}} where T
 
     target_array = [(dir, tgt) for tgt in targets, dir in (-1, 1)]
 
