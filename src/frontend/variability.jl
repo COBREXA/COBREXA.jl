@@ -36,7 +36,7 @@ Use [`constraints_variability`](@ref) to customize the FVA execution.
 function flux_variability_analysis(
     model::A.AbstractFBCModel;
     objective_bound = relative_tolerance_bound(0.9),
-    reaction_subset = nothing,
+    reactions = nothing,
     optimizer,
     settings = [],
     workers = D.workers(),
@@ -58,8 +58,8 @@ function flux_variability_analysis(
     constraints_variability(
         constraints *
         :objective_bound^C.Constraint(objective, objective_bound(objective_flux)),
-        isnothing(reaction_subset) ? constraints.fluxes :
-        let s = Set(Symbol.(reaction_subset))
+        isnothing(reactions) ? constraints.fluxes :
+        let s = Set(Symbol.(reactions))
             C.ConstraintTree(k => v for (k, v) in constraints.fluxes if k in s)
         end;
         optimizer,

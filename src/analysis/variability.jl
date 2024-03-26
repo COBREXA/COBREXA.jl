@@ -53,8 +53,10 @@ function constraints_variability(
     targets::Vector{<:C.Value};
     optimizer,
     settings = [],
+    output = (dir, om) -> dir * J.objective_value(om),
+    output_type::Type{T} = Float64,
     workers = D.workers(),
-)::Matrix{Maybe{Float64}}
+)::Matrix{Maybe{T}}
 
     target_array = [(dir, tgt) for tgt in targets, dir in (-1, 1)]
 
@@ -67,7 +69,7 @@ function constraints_variability(
     ) do om, (dir, tgt)
         J.@objective(om, Maximal, C.substitute(dir * tgt, om[:x]))
         J.optimize!(om)
-        is_solved(om) ? dir * J.objective_value(om) : nothing
+        is_solved(om) ? output(dir, om) : nothing
     end
 end
 
