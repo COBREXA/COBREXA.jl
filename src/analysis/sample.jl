@@ -46,6 +46,7 @@ function sampler_chain_achr(;
     @assert nic == length(interval_lower_bounds) == length(interval_upper_bounds)
 
     result = Matrix{F}(undef, d, n * length(collect_iterations))
+    center = Vector{F}(undef, d)
 
     function update_range(range, pos, dir, lb, ub, tol)
         (rl, ru) = range
@@ -57,17 +58,15 @@ function sampler_chain_achr(;
     end
 
     iter = 0
-    tmp = copy(sample)
 
     for (iter_idx, iter_target) in enumerate(collect_iterations)
         while iter < iter_target
             iter += 1
 
-            tmp .= sample
+            center .= sum(sample, dims = 2) ./ n
 
             for i = 1:n
-                mix = rand(rng, n) .+ eq_epsilon
-                dir = sample * (mix ./ sum(mix)) - sample[:, i]
+                dir = center .- sample[:, i]
 
                 # iteratively collect the maximum and minimum possible multiple
                 # of `dir` added to the current point
@@ -114,9 +113,8 @@ function sampler_chain_achr(;
                 # generate a point in the viable run range and update it
                 lambda = run_range[1] + rand(rng) * (run_range[2] - run_range[1])
                 isfinite(lambda) || continue # bail out to avoid divergence
-                tmp[:, i] = points[:, i] .+ lambda .* dir
+                sample[:, i] .= points[:, i] .+ lambda .* dir
             end
-            sample .= tmp
         end
         result[:, n*(iter_idx-1)+1:iter_idx*n] .= sample
     end
