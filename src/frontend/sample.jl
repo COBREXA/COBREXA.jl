@@ -19,15 +19,53 @@ $(TYPEDSIGNATURES)
 
 TODO
 """
-function achr_flux_sample(model::A.AbstractFBCModel; optimizer, kwargs...)
-    #TODO
-end
+function flux_sample(
+    model::A.AbstractFBCModel;
+    seed = rand(Int),
+    objective_bound = relative_tolerance_bound(0.9),
+    method = sample_chain_achr,
+    optimizer,
+    settings = [],
+    workers = D.workers(),
+)
 
-"""
-$(TYPEDSIGNATURES)
+    constraints = flux_balance_constraints(model)
 
-TODO
-"""
-function affine_hr_flux_sample(model::A.AbstractFBCModel; optimizer, kwargs...)
-    #TODO probably share a lot of the frontend with the above thing
+    objective = constraints.objective.value
+
+    objective_flux = optimized_values(
+        constraints;
+        objective = constraints.objective.value,
+        output = constraints.objective,
+        optimizer,
+        settings,
+    )
+
+    isnothing(objective_flux) && return nothing
+
+    constraints *=
+        :objective_bound(C.Constraint(objective, objective_bound(objective_flux)))
+
+    warmup = vcat(
+        transpose.(
+            constraints_variability(
+                constraints,
+                constraints.fluxes;
+                optimizer,
+                settings,
+                output = (_, om) -> J.value.(om[:x]),
+                output_type = Vector{Float64},
+                workers,
+            )
+        )...,
+    )
+
+    sample_constraints(
+        method,
+        constraints;
+        output = constraints.fluxes,
+        start_variables = warmup,
+        workers,
+        kwargs...,
+    )
 end

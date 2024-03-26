@@ -70,6 +70,11 @@ Base.@kwdef mutable struct Configuration
     [`flux_balance_constraints`](@ref).
     """
     demand_sbos::Vector{String} = ["SBO:0000628"]
+
+    """
+    Default numerical tolerance for sampling functions.
+    """
+    sampler_tolerance = 1e-6
 end
 
 """
