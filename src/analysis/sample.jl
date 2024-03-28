@@ -59,7 +59,7 @@ function sample_chain_achr(
         while iter < iter_target
             iter += 1
 
-            center .= sum(sample, dims = 2) ./ n
+            center .= sum(sample, dims = 2)[:] ./ n
 
             for i = 1:n
                 dir = center .- sample[:, i]
