@@ -171,17 +171,6 @@ function sample_constraint_variables(
     return vcat(samples...)
 end
 
-# TODO this needs to be normalized; vectors are absolutely normal math objects
-struct VecWrap{T}
-    v::T
-end
-
-Base.:+(x::VecWrap, y::VecWrap) = VecWrap(x.v .+ y.v)
-Base.:+(x, y::VecWrap) = VecWrap(x .+ y.v)
-Base.:*(x, y::VecWrap) = VecWrap(x .* y.v)
-
-un_vec_wrap(x::VecWrap) = x.v
-
 """
 $(TYPEDSIGNATURES)
 
@@ -195,12 +184,9 @@ function sample_constraints(
     aggregate_type::Type{T} = Vector{Float64},
     kwargs...,
 ) where {T}
-    var_samples = [
-        VecWrap(aggregate(col)) for
-        col in eachcol(sample_constraint_variables(sampler, constraints; kwargs...))
-    ]
+    sample = sample_constraint_variables(sampler, constraints; kwargs...)
 
     C.map(output, aggregate_type) do c
-        un_vec_wrap(C.substitute(c.value, var_samples))
+        aggregate(C.substitute(c.value, row) for row in eachrow(sample))
     end
 end
