@@ -30,7 +30,7 @@ model = load_model("e_coli_core.json")
 
 # note here: this needs the optimizer to generate warmup. If you have warmup,
 # you can do without one.
-flux_sample(
+s = flux_sample(
     model,
     optimizer = GLPK.Optimizer,
     objective_bound = relative_tolerance_bound(0.99),
@@ -38,4 +38,4 @@ flux_sample(
     collect_iterations = [100],
 )
 
-@test 21.8 < sum(x.O2t) / length(x.O2t) < 22.0 #src
+@test 21.8 < sum(s.O2t) / length(s.O2t) < 22.0 #src
