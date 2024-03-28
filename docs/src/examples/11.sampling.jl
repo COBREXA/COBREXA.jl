@@ -38,4 +38,4 @@ flux_sample(
     collect_iterations = [100],
 )
 
-@test 21.8 < sum(x.O2t)/length(x.O2t) < 22.0 #src
+@test 21.8 < sum(x.O2t) / length(x.O2t) < 22.0 #src
