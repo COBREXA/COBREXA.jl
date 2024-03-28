@@ -21,12 +21,13 @@ TODO
 """
 function flux_sample(
     model::A.AbstractFBCModel;
-    seed = rand(Int),
+    seed::UInt = rand(UInt),
     objective_bound = relative_tolerance_bound(0.9),
     method = sample_chain_achr,
     optimizer,
     settings = [],
     workers = D.workers(),
+    kwargs...,
 )
 
     constraints = flux_balance_constraints(model)
@@ -43,12 +44,11 @@ function flux_sample(
 
     isnothing(objective_flux) && return nothing
 
-    constraints *=
-        :objective_bound(C.Constraint(objective, objective_bound(objective_flux)))
+    constraints *= :objective_bound^C.Constraint(objective, objective_bound(objective_flux))
 
     warmup = vcat(
-        transpose.(
-            constraints_variability(
+        (
+            transpose(v) for (_, vs) in constraints_variability(
                 constraints,
                 constraints.fluxes;
                 optimizer,
@@ -56,16 +56,19 @@ function flux_sample(
                 output = (_, om) -> J.value.(om[:x]),
                 output_type = Vector{Float64},
                 workers,
-            )
+            ) for v in vs
         )...,
     )
 
     sample_constraints(
         method,
         constraints;
+        seed,
         output = constraints.fluxes,
         start_variables = warmup,
         workers,
         kwargs...,
     )
 end
+
+export flux_sample

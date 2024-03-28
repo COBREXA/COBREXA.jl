@@ -20,18 +20,20 @@ $(TYPEDSIGNATURES)
 TODO
 """
 function sample_chain_achr(
-    sample::M;
+    sample_c::M;
     variable_lower_bounds::V,
     variable_upper_bounds::V,
-    coupling::M,
+    coupling::SM,
     lower_bounds::V,
     upper_bounds::V,
-    epsilon::F = config.sampler_tolerance,
+    epsilon::F = configuration.sampler_tolerance,
     collect_iterations::Vector{Int},
     generator::StableRNGs.StableRNG,
-) where {F<:Real,V<:AbstractVector{F},M<:AbstractMatrix{F}}
+) where {F<:Real,V<:AbstractVector{F},M<:AbstractMatrix{F},SM<:AbstractMatrix{F}}
 
-    (n, d) = size(sample)
+    (n, d) = size(sample_c)
+    sample = collect(sample_c')
+
     nc = size(coupling, 1)
 
     @assert length(variable_lower_bounds) == d
@@ -91,15 +93,16 @@ function sample_chain_achr(
                 end
 
                 # generate a point in the viable run range and update it
-                lambda = run_range[1] + rand(rng) * (run_range[2] - run_range[1])
+                lambda = run_range[1] + rand(generator) * (run_range[2] - run_range[1])
                 isfinite(lambda) || continue # bail out to avoid divergence
+                #TODO the above divergence check dies everytime, fix that.
                 sample[:, i] .= points[:, i] .+ lambda .* dir
             end
         end
         result[:, n*(iter_idx-1)+1:iter_idx*n] .= sample
     end
 
-    return sample
+    return collect(result')
 end
 
 """
@@ -111,7 +114,7 @@ function sample_constraint_variables(
     sampler::Function,
     constraints::C.ConstraintTree;
     start_variables::Matrix{Float64},
-    seed::Int,
+    seed::UInt,
     workers = D.workers(),
     n_chains,
     kwargs...,
@@ -146,13 +149,15 @@ function sample_constraint_variables(
     end
 
     # convert constraints to a matrix
-    coupling = vcat(transpose.(sparse(c.value) for c in cs)...)
+    coupling = vcat(
+        transpose.(SparseArrays.sparsevec(c.value.idxs, c.value.weights, d) for c in cs)...,
+    )
     clbs = [c.bound.lower for c in cs]
     cubs = [c.bound.upper for c in cs]
 
     # run the actual sampling using screen()
-    rng = StableRNG(seed)
-    samples = screen(rand(rng, Int, n_chains)) do chain_seed
+    rng = StableRNGs.StableRNG(seed)
+    samples = screen(rand(rng, UInt, n_chains)) do chain_seed
         sampler(
             start_variables;
             variable_lower_bounds = lbs,
@@ -160,12 +165,23 @@ function sample_constraint_variables(
             coupling,
             lower_bounds = clbs,
             upper_bounds = cubs,
-            seed = chain_seed,
+            generator = StableRNGs.StableRNG(chain_seed),
             kwargs...,
         )
     end
     return vcat(samples...)
 end
+
+# TODO this needs to be normalized; vectors are absolutely normal math objects
+struct VecWrap{T}
+    v::T
+end
+
+Base.:+(x::VecWrap, y::VecWrap) = VecWrap(x.v .+ y.v)
+Base.:+(x, y::VecWrap) = VecWrap(x .+ y.v)
+Base.:*(x, y::VecWrap) = VecWrap(x .* y.v)
+
+un_vec_wrap(x::VecWrap) = x.v
 
 """
 $(TYPEDSIGNATURES)
@@ -177,15 +193,15 @@ function sample_constraints(
     constraints::C.ConstraintTree;
     output::C.ConstraintTree = constraints,
     aggregate = collect,
+    aggregate_type::Type{T} = Vector{Float64},
     kwargs...,
-)
+) where {T}
     var_samples = [
-        aggregate(col) for col in eachcol(
-            sample_constraint_variables(sampler, constraints; start_variables, kwargs...),
-        )
+        VecWrap(aggregate(col)) for
+        col in eachcol(sample_constraint_variables(sampler, constraints; kwargs...))
     ]
 
-    C.map(output) do c
-        C.substitute(c.value, var_samples)
+    C.map(output, aggregate_type) do c
+        un_vec_wrap(C.substitute(c.value, var_samples))
     end
 end

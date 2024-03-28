@@ -22,22 +22,18 @@ TODO
 function constraints_variability(
     constraints::C.ConstraintTree,
     targets::C.ConstraintTree;
-    optimizer,
-    settings = [],
-    workers = D.workers(),
-)::C.Tree{Tuple{Maybe{Float64},Maybe{Float64}}}
+    kwargs...,
+)
 
     result_array = constraints_variability(
         constraints,
         tree_deflate(C.value, targets, C.Value);
-        optimizer,
-        settings,
-        workers,
+        kwargs...,
     )
 
     tree_reinflate(
         targets,
-        Tuple{Maybe{Float64},Maybe{Float64}}[
+        Tuple{eltype(result_array),eltype(result_array)}[
             tuple(a, b) for (a, b) in eachrow(result_array)
         ],
     )
