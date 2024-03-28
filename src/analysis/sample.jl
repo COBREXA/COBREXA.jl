@@ -95,8 +95,7 @@ function sample_chain_achr(
                 # generate a point in the viable run range and update it
                 lambda = run_range[1] + rand(generator) * (run_range[2] - run_range[1])
                 isfinite(lambda) || continue # bail out to avoid divergence
-                #TODO the above divergence check dies everytime, fix that.
-                sample[:, i] .= points[:, i] .+ lambda .* dir
+                sample[:, i] .+= lambda .* dir
             end
         end
         result[:, n*(iter_idx-1)+1:iter_idx*n] .= sample
@@ -123,7 +122,7 @@ function sample_constraint_variables(
     d = size(start_variables, 2)
     @assert C.var_count(constraints) <= d
     lbs = fill(-Inf, d)
-    ubs = fill(-Inf, d)
+    ubs = fill(Inf, d)
     cs = C.Constraint[]
 
     # gather constraints information
@@ -132,7 +131,7 @@ function sample_constraint_variables(
         if length(v.idxs) == 1 && first(v.idxs) > 0
             idx = first(v.idxs)
             lbs[idx] = max(lbs[idx], b.lower)
-            ubs[idx] = min(ubs[idx], b.lower)
+            ubs[idx] = min(ubs[idx], b.upper)
         else
             push!(cs, C.Constraint(v, b))
         end
