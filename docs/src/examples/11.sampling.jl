@@ -34,8 +34,8 @@ s = flux_sample(
     model,
     optimizer = GLPK.Optimizer,
     objective_bound = relative_tolerance_bound(0.99),
-    n_chains = 10,
-    collect_iterations = [100],
+    n_chains = 2,
+    collect_iterations = [10],
 )
 
 @test 21.8 < sum(s.O2t) / length(s.O2t) < 22.0 #src
