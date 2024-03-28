@@ -43,6 +43,7 @@ import Distributed as D
 import JuMP as J
 import LinearAlgebra
 import SparseArrays
+import StableRNGs
 
 include("types.jl")
 include("config.jl")

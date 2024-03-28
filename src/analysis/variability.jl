@@ -22,22 +22,18 @@ TODO
 function constraints_variability(
     constraints::C.ConstraintTree,
     targets::C.ConstraintTree;
-    optimizer,
-    settings = [],
-    workers = D.workers(),
-)::C.Tree{Tuple{Maybe{Float64},Maybe{Float64}}}
+    kwargs...,
+)
 
     result_array = constraints_variability(
         constraints,
         tree_deflate(C.value, targets, C.Value);
-        optimizer,
-        settings,
-        workers,
+        kwargs...,
     )
 
     tree_reinflate(
         targets,
-        Tuple{Maybe{Float64},Maybe{Float64}}[
+        Tuple{eltype(result_array),eltype(result_array)}[
             tuple(a, b) for (a, b) in eachrow(result_array)
         ],
     )
@@ -53,8 +49,10 @@ function constraints_variability(
     targets::Vector{<:C.Value};
     optimizer,
     settings = [],
+    output = (dir, om) -> dir * J.objective_value(om),
+    output_type::Type{T} = Float64,
     workers = D.workers(),
-)::Matrix{Maybe{Float64}}
+)::Matrix{Maybe{T}} where {T}
 
     target_array = [(dir, tgt) for tgt in targets, dir in (-1, 1)]
 
@@ -67,7 +65,7 @@ function constraints_variability(
     ) do om, (dir, tgt)
         J.@objective(om, Maximal, C.substitute(dir * tgt, om[:x]))
         J.optimize!(om)
-        is_solved(om) ? dir * J.objective_value(om) : nothing
+        is_solved(om) ? output(dir, om) : nothing
     end
 end
 
