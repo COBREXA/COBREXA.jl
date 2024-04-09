@@ -30,7 +30,7 @@ model is solved for all combinations. Shape of the output matrix corresponds to
 `Iterators.product(last.(dims)...)`.
 
 Operation is parallelized by distribution over `workers`; by default all
-`Distributed` workers are used.
+`Distributed.workers()` are used.
 """
 function constraints_objective_envelope(
     constraints::C.ConstraintTree,

@@ -17,13 +17,28 @@
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Run a sampling algorithm on the near-optimal feasible space of the `model` (as
+specified by `objective_bound`). By default, the sampling algorithm is ACHR
+(the `method` parameter is defaulted to [`sample_chain_achr`](@ref)). The
+sampling algorithm is ran for `n_chains` and the iterations for collecting the
+sampled values are specified by `collect_iterations`.
+
+`optimizer` is used to generate the warmup (with `settings`) for the sampler
+using the usual unidimensional maximum-variability fluxes (as from
+[`flux_variability_analysis`](@ref)). All computations are parallelized across
+`workers`.
+
+Extra arguments are forwarded to [`sample_constraints`](@ref). Eventually the
+arguments will reach the `method` function, so extra arguments can be also used
+to customize the methods (e.g., by setting the `epsilon` for the ACHR sampler).
 """
 function flux_sample(
     model::A.AbstractFBCModel;
     seed::UInt = rand(UInt),
     objective_bound = relative_tolerance_bound(0.9),
     method = sample_chain_achr,
+    n_chains = 10,
+    collect_iterations = [32],
     optimizer,
     settings = [],
     workers = D.workers(),
@@ -66,6 +81,8 @@ function flux_sample(
         seed,
         output = constraints.fluxes,
         start_variables = warmup,
+        n_chains,
+        collect_iterations,
         workers,
         kwargs...,
     )

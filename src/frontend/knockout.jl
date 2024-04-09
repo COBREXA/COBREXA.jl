@@ -17,14 +17,18 @@
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Compute the objective value of the `model` for all knockouts specified by
+`gene_combinations`, which is a vector of gene IDs or tuples of gene IDs that
+are knocked out in groups.
+
+Returns a vector in the same order as `gene_combinations`.
+
+Extra arguments (mainly, the `optimizer`) are forwarded to
+[`screen_optimization_model`](@ref).
 """
 function gene_knockouts(
     model::A.AbstractFBCModel,
     gene_combinations::Vector{<:Union{String,NTuple{N,String} where {N}}} = A.genes(model);
-    workers = D.workers(),
-    optimizer,
-    settings = [],
     kwargs...,
 )
     rxns = A.reactions(model)
@@ -35,9 +39,7 @@ function gene_knockouts(
         gene_combinations;
         objective = constraints.objective.value,
         sense = Maximal,
-        optimizer,
-        settings,
-        workers,
+        kwargs...
     ) do om, knockout
         con_refs = [
             J.@constraint(om, C.substitute(c.value, om[:x]) == c.bound.equal_to) for
