@@ -39,7 +39,7 @@ function gene_knockouts(
         gene_combinations;
         objective = constraints.objective.value,
         sense = Maximal,
-        kwargs...
+        kwargs...,
     ) do om, knockout
         con_refs = [
             J.@constraint(om, C.substitute(c.value, om[:x]) == c.bound.equal_to) for

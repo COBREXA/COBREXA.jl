@@ -69,11 +69,7 @@ function constraints_variability(
 
     target_array = [(dir, tgt) for tgt in targets, dir in (-1, 1)]
 
-    screen_optimization_model(
-        constraints,
-        target_array;
-        kwargs...
-    ) do om, (dir, tgt)
+    screen_optimization_model(constraints, target_array; kwargs...) do om, (dir, tgt)
         J.@objective(om, Maximal, C.substitute(dir * tgt, om[:x]))
         J.optimize!(om)
         is_solved(om) ? output(dir, om) : nothing
