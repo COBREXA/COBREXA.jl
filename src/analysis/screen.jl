@@ -73,3 +73,5 @@ function screen_optimization_model(
         args...,
     )
 end
+
+export screen_optimization_model

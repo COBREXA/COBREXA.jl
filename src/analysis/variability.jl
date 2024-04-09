@@ -17,7 +17,12 @@
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Simplified variant of [`constraints_variability`](@ref) that computes the
+variability of all values in tree `targets`, and returns a new tree of the same
+shape as `targets` that contains tuples for minima and maxima.
+
+All other arguments are forwarded to the matrix-returning overload of
+[`constraints_variability`](@ref).
 """
 function constraints_variability(
     constraints::C.ConstraintTree,
@@ -42,27 +47,29 @@ end
 """
 $(TYPEDSIGNATURES)
 
-TODO
+In a feasible space specified by `constraints`, compute the feasible range of
+individual `targets` values. The output is a matrix with one column for minima
+and second column for maxima of the individual target's values.
+
+This is used e.g. to compute the [`flux_variability_analysis`](@ref), and can
+be viewed as a more generalized version thereof.
+
+`output` and `output_type` can be used to customize the information reported
+from the solved models.
+
+Extra arguments are passed to [`screen_optimization_model`](@ref).
 """
 function constraints_variability(
     constraints::C.ConstraintTree,
     targets::Vector{<:C.Value};
-    optimizer,
-    settings = [],
     output = (dir, om) -> dir * J.objective_value(om),
     output_type::Type{T} = Float64,
-    workers = D.workers(),
+    kwargs...,
 )::Matrix{Maybe{T}} where {T}
 
     target_array = [(dir, tgt) for tgt in targets, dir in (-1, 1)]
 
-    screen_optimization_model(
-        constraints,
-        target_array;
-        optimizer,
-        settings,
-        workers,
-    ) do om, (dir, tgt)
+    screen_optimization_model(constraints, target_array; kwargs...) do om, (dir, tgt)
         J.@objective(om, Maximal, C.substitute(dir * tgt, om[:x]))
         J.optimize!(om)
         is_solved(om) ? output(dir, om) : nothing

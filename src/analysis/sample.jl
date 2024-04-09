@@ -17,7 +17,14 @@
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Implementation of a single chain run for the Artificially-Centered Hit and Run
+algorithm (ACHR).
+
+To use this on a model, use [`flux_sample`](@ref) or
+[`sample_constraints`](@ref); most parameters are filled in correctly by these
+functions.
+
+`epsilon` is defaulted from [`configuration`](@ref).
 """
 function sample_chain_achr(
     sample_c::M;
@@ -104,10 +111,20 @@ function sample_chain_achr(
     return collect(result')
 end
 
+export sample_chain_achr
+
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Sample the feasible space constrained by `constraints` by sampling algorithm
+`sampler`, using the `start_variables` as a "warm-up" for the sampling runs.
+Random values are derived from the `seed`. Computation of individual `n_chains`
+chains by `sampler` is parallelized over `workers` using [`screen`](@ref).
+Extra arguments are passed to `sampler`.
+
+This function returns a matrix of the samples (one sample per row).  To nicely
+aggregate the statistics in the constraint tree, use
+[`sample_constraints`](@ref).
 """
 function sample_constraint_variables(
     sampler::Function,
@@ -156,7 +173,7 @@ function sample_constraint_variables(
 
     # run the actual sampling using screen()
     rng = StableRNGs.StableRNG(seed)
-    samples = screen(rand(rng, UInt, n_chains)) do chain_seed
+    samples = screen(rand(rng, UInt, n_chains); workers) do chain_seed
         sampler(
             start_variables;
             variable_lower_bounds = lbs,
@@ -171,10 +188,17 @@ function sample_constraint_variables(
     return vcat(samples...)
 end
 
+export sample_constraint_variables
+
 """
 $(TYPEDSIGNATURES)
 
-TODO
+A front-end for [`sample_constraint_variables`](@ref) that saves the sampling
+results in a constraint tree of the same shape as `output`. Additionally,
+`aggregate` function and `aggregate_type` can be specified to customize the
+output.
+
+All other parameters are forwarded to [`sample_constraint_variables`](@ref).
 """
 function sample_constraints(
     sampler::Function,
@@ -190,3 +214,5 @@ function sample_constraints(
         aggregate(C.substitute(c.value, row) for row in eachrow(sample))
     end
 end
+
+export sample_constraints

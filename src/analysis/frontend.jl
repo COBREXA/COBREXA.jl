@@ -45,8 +45,6 @@ function frontend_optimized_values(
     )
 end
 
-export frontend_optimized_values
-
 """
 $(TYPEDSIGNATURES)
 
@@ -89,5 +87,3 @@ function frontend_parsimonious_optimized_values(
         tolerances,
     )
 end
-
-export frontend_parsimonious_optimized_values

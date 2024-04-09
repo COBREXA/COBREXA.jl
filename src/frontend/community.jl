@@ -21,7 +21,20 @@
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Construct an instance of a linear Community Flux Balance Analysis problems: The
+relative abundances of the organisms are known in advance; this function
+predicts the total achievable growth.
+
+`model_abundances` is a dictionary-like object that maps model identifiers to
+tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such
+as: `"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` are a
+dictionary-like object that can be additionally used to restrict selected
+community exchange reactions (keys should be reaction IDs, the values are
+converted to `ConstraintTrees`-like bounds).
+
+`interface` is forwarded to [`flux_balance_constraints`](@ref).
+`interface_exchanges` and `interface_biomass` are used to pick up the correct
+interface part to contribute to the community exchanges and community biomass.
 """
 function community_flux_balance_constraints(
     model_abundances,
@@ -65,7 +78,9 @@ export community_flux_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Run the Community Flux Balance Analysis on several models. All arguments are
+forwarded to [`community_flux_balance_constraints`](@ref) which constructs the
+model; this function returns the solved model.
 """
 community_flux_balance_analysis(args...; kwargs...) = frontend_optimized_values(
     community_flux_balance_constraints,
