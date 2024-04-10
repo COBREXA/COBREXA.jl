@@ -65,8 +65,8 @@ that reduce the parallel efficiency, which can be summarized as follows:
   round-trip-time to the worker processes. Do not use unnecessary
   parallelization for small tasks.
 - Transferring large amounts of data among workers may hamper parallel
-  efficiency. Use [the system of model variants](../concepts/1_screen.md) to avoid
-  transferring many similar models to the workers.
+  efficiency. Use [the system of model variants](../concepts/screening.md) to
+  avoid transferring many similar models to the workers.
 
 !!! note "Cost of the distribution and parallelization overhead"
     Before allocating extra resources into the distributed execution, always
