@@ -30,7 +30,11 @@ lists of genes.
 All constraints are equality constraints returned in a single flat
 `ConstraintTree`.
 """
-gene_knockout_constraints(fluxes::C.ConstraintTree, knockout_genes, model::A.AbstractFBCModel) =
+gene_knockout_constraints(
+    fluxes::C.ConstraintTree,
+    knockout_genes,
+    model::A.AbstractFBCModel,
+) =
     knockout_constraints(fluxes) do rid
         maybemap(
             !,
