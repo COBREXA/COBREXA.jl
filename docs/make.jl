@@ -60,13 +60,10 @@ makedocs(
             "Contents" => "examples.md"
             find_mds("examples")
         ],
+        "Core concepts and structure" => "structure.md",
         "Parallel, distributed and HPC processing" => [
             "Contents" => "distributed.md"
             find_mds("distributed")
-        ],
-        "Core concepts guide" => [
-            "Contents" => "concepts.md"
-            find_mds("concepts")
         ],
         "API reference" => [
             "Contents" => "reference.md"
