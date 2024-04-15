@@ -60,3 +60,5 @@ squared_sum_error_value(constraints::C.ConstraintTree, target) = sum(
     ),
     init = zero(C.LinearValue),
 )
+
+export squared_sum_error_value
