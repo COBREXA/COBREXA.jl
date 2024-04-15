@@ -67,7 +67,7 @@ many various purposes:
   - [`all_equal_constraints`](@ref), [`greater_or_equal_constraint`](@ref) and
     similar ones
   - [`knockout_constraints`](@ref)
-  - [`loopless_constriants`](@ref)
+  - [`loopless_constraints`](@ref)
   - [`scale_bounds`](@ref)
   - [`scale_constraints`](@ref)
   - [`sign_split_variables`](@ref) and [`sign_split_constraints`](@ref)
