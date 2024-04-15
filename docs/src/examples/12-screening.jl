@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# Screening through many model variants
+# # Screening through many model variants
 
 using COBREXA
 
