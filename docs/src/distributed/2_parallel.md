@@ -36,7 +36,7 @@ argument, and the parallel processing is automatically orchestrated for you:
 
 ```julia
 model = load_model("e_coli_core.xml")
-result = flux_variability_analysis(	
+result = flux_variability_analysis(
     model,
     optimizer = GLPK.Optimizer,
     workers = workers()
