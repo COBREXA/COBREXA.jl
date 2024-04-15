@@ -14,11 +14,18 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Loading and saving models!
+# # Loading and saving models
 
 using COBREXA
 
 # ## Getting the models reliably from the repositories
+#
+# For convenience, COBREXA provides a specific function
+# [`download_model`](@ref) to download models from repositories that also
+# automatically uses the cached downloaded version of the model if it's already
+# downloaded, and verifies the checksum to improve reproducibility. It will
+# print out a warning in case the model checksum does not match the
+# expectation:
 
 download_model(
     "http://bigg.ucsd.edu/static/models/e_coli_core.json",
@@ -32,11 +39,20 @@ download_model(
     "b4db506aeed0e434c1f5f1fdd35feda0dfe5d82badcfda0e9d1342335ab31116",
 )
 
-# TODO: how to get the hashes: specify a dummy value at once and convert them from a warning
-#
-# TODO: test this :)
+# (You do not need to fill in the hash values immediately; simply run the
+# function once and then copy the reported hash value into your script.)
 
 # ## Loading models
+
+# To load the flux-balance constrained models, COBREXA uses the
+# [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl)
+# framework to import various kinds of models including SBML, JSON and the
+# legacy Matlab-formatted "COBRA toolbox" models.
+
+# All models can be loaded automatically using [`load_model`](@ref); but you
+# must import the model-type specific packages to load the functionality. (This
+# step is required to keep the "base" COBREXA as efficient and fast-loading as
+# possible.)
 
 import JSONFBCModels, SBMLFBCModels
 
@@ -44,35 +60,45 @@ model1 = load_model("e_coli_core.json")
 
 model2 = load_model("e_coli_core.xml")
 
+# You can explore the contents of the models using the AbstractFBCModels'
+# interface:
 import AbstractFBCModels as A
 
 A.reactions(model1)
 
 A.reactions(model2)
 
+# Additional extractable information can be found in [the documentation of the
+# abstract models
+# package](https://cobrexa.github.io/AbstractFBCModels.jl/stable/reference/#Model-content-accessors).
+
 # ### Converting model types
 
-# Avoid guessing the model type (works also without the suffix in file name):
+# Normally, [`load_model`](@ref) is forced to guess the model type from the
+# filename suffix. You can help it by specifying the model type yourself (this
+# also allows you to work with non-standard file suffixes):
 
 model = load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json")
 
-# Directly convert to a different model type
+# Sometimes it is useful to convert the model data to another type, such as the
+# SBML to a JSON model structure:
 
 model_converted_to_json = load_model("e_coli_core.xml", JSONFBCModels.JSONFBCModel)
 
-# Or do all at once, load a precisely typed model and convert it to an easily modifiable representation
+# Or to the "Canonical Julia model" from AbstractFBCModels:
 model_in_julia_structures =
     load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
 
-# Also possible to convert everything using Julia's `convert`.
+# The above command specifies all model types explicitly, leaving least room
+# for guessing-based errors. Note that it is also possible to convert all model
+# types to each other simply by using Julia's `convert`.
 
 # ## Saving models
 
+# You can write your models to storage by using [`save_model`](@ref):
 save_model(model_converted_to_json, "e_coli_core_from_sbml.json")
 
+# Expectably, the file will contain the JSON with the model description:
 println(open("e_coli_core_from_sbml.json") do f
     read(f, 100)
 end |> String, "...")
-
-# TODO refer to ABCMT docs for more docs
-# TODO carefully refer to matlab models

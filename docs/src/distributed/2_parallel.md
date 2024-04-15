@@ -1,7 +1,9 @@
 
 # Local parallel processing
 
-To run an analysis in parallel, you first need to load the `Distributed` package and add a few worker processes. For example, you may start 5 local processes (that may utilize 5 CPUs) like this:
+To run an analysis in parallel, you first need to load the `Distributed`
+package and add a few worker processes. For example, you may start 5 local
+processes (that may utilize 5 CPUs) as follows
 
 ```julia
 using Distributed
@@ -23,16 +25,20 @@ around 500MB of RAM, which should be taken into account when planning the
 analysis scale.
 
 Packages (COBREXA and your selected solver) must be loaded at all processes,
-which you can ensure using the "everywhere" macro:
+which you can ensure using the "everywhere" macro (from `Distributed` package):
 ```julia
 @everywhere using COBREXA, GLPK
 ```
 
 Utilizing the prepared worker processes is then straightforward: You pass the
 list of workers to the selected analysis function using the `workers` keyword
-argument, and the parallel processing is automatically orchestrated for you.
+argument, and the parallel processing is automatically orchestrated for you:
 
 ```julia
 model = load_model("e_coli_core.xml")
-result = flux_variability_analysis(model, GLPK.Optimizer; workers=workers())
+result = flux_variability_analysis(
+    model,
+    optimizer = GLPK.Optimizer,
+    workers = workers()
+)
 ```

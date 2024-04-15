@@ -7,7 +7,8 @@ Julia and `COBREXA.jl` work well within this environment, and the COBREXA
 analyses usually require only minimal additional customization to be able to
 find and utilize the resources available from the HPC.
 
-When executed in a HPC environment, the analysis script must solve several relatively complex tasks:
+When executed in a HPC environment, the analysis script must solve several
+relatively complex tasks:
 
 - It needs to find out how many resources were allocated for the analysis
 - It needs to add the remote workers precisely at the allocated places
@@ -32,9 +33,10 @@ using normal `addprocs` --- typically you load the model and (for example) run
 the `flux_variability_analysis` as if you would use the [local
 workers](2_parallel.md).
 
-The Julia script that does a parallel analysis in a Slurm cluster may look as follows:
+The Julia script that does a parallel analysis in a Slurm cluster may look as
+follows:
 
-```
+```julia
 using COBREXA, Distributed, ClusterManagers, GLPK
 
 available_workers = parse(Int, ENV["SLURM_NTASKS"])
@@ -43,7 +45,7 @@ addprocs_slurm(available_workers)
 
 # ... load models, prepare data, etc. ...
 
-result = flux_variability_analysis(...; workers=workers())
+results = flux_variability_analysis(..., workers=workers())
 
 # ... save the results into a file ...
 ```
@@ -72,14 +74,14 @@ saved on your HPC cluster's access node, the corresponding Slurm batch script
 #SBATCH -t 30            # the whole job will take less than 30 minutes
 #SBATCH -J myJob         # the name of the job
 
-module load lang/Julia   # this is usually required to make Julia available to your job
+module load lang/Julia   # add Julia to the environment (this may differ on different clusters and installations)
 
 julia myJob.jl
 ```
 
-To run the computation, simply run `sbatch myJob.sbatch` on the cluster access
-node.  The job will be scheduled and eventually executed. You may watch the
-output of commands `sacct` and `squeue` in the meantime, to see the progress.
+To run the computation, run `sbatch myJob.sbatch` on the cluster access node.
+The job will be scheduled and eventually executed. You may watch the output of
+commands `sacct` and `squeue` in the meantime, to see the progress.
 
 Remember that you need to explicitly save the result of your Julia script
 computation to files, to be able to retrieve them later. Standard outputs of

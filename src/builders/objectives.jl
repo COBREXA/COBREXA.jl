@@ -22,6 +22,8 @@ present in a given constraint tree.
 """
 squared_sum_value(x::C.ConstraintTree) = squared_sum_error_value(x, _ -> 0.0)
 
+export squared_sum_value
+
 """
 $(TYPEDSIGNATURES)
 
@@ -37,6 +39,8 @@ function sum_value(x...)
     end
     res
 end
+
+export sum_value
 
 """
 $(TYPEDSIGNATURES)
@@ -56,3 +60,5 @@ squared_sum_error_value(constraints::C.ConstraintTree, target) = sum(
     ),
     init = zero(C.LinearValue),
 )
+
+export squared_sum_error_value
