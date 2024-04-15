@@ -1,5 +1,5 @@
 
-# Constraint trees
+# Logical structure of COBREXA
 
 COBREXA uses
 [ConstraintTrees.jl](https://github.com/COBREXA/ConstraintTrees.jl) for
