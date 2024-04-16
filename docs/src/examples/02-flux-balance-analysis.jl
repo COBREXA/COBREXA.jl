@@ -61,10 +61,11 @@ solution.objective
 
 solution.fluxes.PFK
 
+#md #!!! warning "Warning: Nested structures cannot be tabbed through yet"
+#md #    Julia currently does not evaluate nested structures like ConstraintTrees.
+#md #    Thus, you will not be able to tab through nested solutions, unless you save
+#md #    the intermediate result.
+
 # ...or make a "table" of all fluxes through all reactions:
 
 collect(solution.fluxes)
-
-# ## Advanced: Finding flux balance via the low-level interface
-
-# TODO ConstraintTrees (maybe put this into a separate example?)
