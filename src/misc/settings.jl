@@ -54,6 +54,8 @@ Modification that disable all output from the JuMP optimizer (shortcut for
 """
 silence(opt_model) = J.set_silent(opt_model)
 
+export silence
+
 """
 $(TYPEDSIGNATURES)
 
@@ -61,4 +63,4 @@ Portable way to set a time limit in seconds for the optimizer computation.
 """
 set_time_limit_sec(limit) = opt_model -> J.set_time_limit_sec(opt_model, limit)
 
-export silence
+export set_time_limit_sec
