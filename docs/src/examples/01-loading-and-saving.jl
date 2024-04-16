@@ -98,7 +98,7 @@ model_in_julia_structures =
 # for guessing-based errors. Note that it is also possible to convert all model
 # types to each other simply by using Julia's `convert`.
 
-model_converted_back_to_sbml = convert(SBMLFBCModels.SBMLModel)
+model_converted_back_to_sbml = convert(SBMLFBCModels.SBMLFBCModel, model_converted_to_json)
 
 # ## Saving models
 
@@ -109,3 +109,12 @@ save_model(model_converted_to_json, "e_coli_core_from_sbml.json")
 println(open("e_coli_core_from_sbml.json") do f
     read(f, 100)
 end |> String, "...")
+
+# You can also serialize models for quicker access, but this is moderately
+# dangerous because Julia offers no guarantees that different machines will be
+# able to deserialize datastructures.
+
+using Serialization
+
+serialize("model_json.js", model)
+model = deserialize("model_json.js")
