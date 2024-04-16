@@ -39,15 +39,16 @@ download_model(
     "b4db506aeed0e434c1f5f1fdd35feda0dfe5d82badcfda0e9d1342335ab31116",
 )
 
-# (You do not need to fill in the hash values immediately; simply run the
-# function once and then copy the reported hash value into your script.)
+#md #!!! tip "Tip: How do I get the model hash?"
+#md #    You do not need to fill in the hash values immediately; simply run the
+#md #    function once, and then copy the reported hash value into your script.
 
 # ## Loading models
 
-# To load the flux-balance constrained models, COBREXA uses the
-# [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl)
-# framework to import various kinds of models including SBML, JSON and the
-# legacy Matlab-formatted "COBRA toolbox" models.
+# To load genome-scale metabolic models, COBREXA uses the
+# [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) framework
+# to import various kinds of models including SBML, JSON and the legacy
+# Matlab-formatted "COBRA toolbox" models.
 
 # All models can be loaded automatically using [`load_model`](@ref); but you
 # must import the model-type specific packages to load the functionality. (This
@@ -92,6 +93,8 @@ model_in_julia_structures =
 # The above command specifies all model types explicitly, leaving least room
 # for guessing-based errors. Note that it is also possible to convert all model
 # types to each other simply by using Julia's `convert`.
+
+model_converted_back_to_sbml = convert(SBMLFBCModels.SBMLModel)
 
 # ## Saving models
 
