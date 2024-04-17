@@ -28,7 +28,7 @@
 [repostatus-img]: https://www.repostatus.org/badges/latest/active.svg
 
 | **Documentation** | **Tests** | **Coverage** | **Project status** |
-|:---:|:---:|:---:|:---:|:---:|
+|:---:|:---:|:---:|:---:|
 | [![docs-img-stable]][docs-url-stable] [![docs-img-dev]][docs-url-dev] | [![CI][ci-img]][ci-url] | [![codecov][cov-img]][cov-url] | [![repostatus-img]][repostatus-url] |
 
 COBREXA.jl provides constraint-based reconstruction and analysis tools for
