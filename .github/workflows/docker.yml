@@ -1,0 +1,22 @@
+# reference: https://github.com/marketplace/actions/push-to-ghcr
+
+name: docker
+
+on:
+  release:
+    types: [ published ]
+  push:
+    branches:
+      - master
+
+jobs:
+  docker_publish:
+    runs-on: "ubuntu-20.04"
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and publish a Docker image for ${{ github.repository }}
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}  # the name is lowercased internally
+          github_token: ${{ secrets.GITHUB_TOKEN }}
