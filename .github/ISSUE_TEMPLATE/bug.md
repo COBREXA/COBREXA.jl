@@ -7,13 +7,13 @@ about: Something that should work but does not, works very slowly, or produces w
 
 > Include a reproducible sample of code that causes the problem. Others should
 > be able to reproduce your problem by just copypasting your code into Julia
-> shell. Use `download` to get any necessary datasets from the internet.
+> shell. Use `download_model` to get any necessary datasets from the internet.
 > Preferably, keep the sample code as minimalistic as possible.
 
 ```
 using COBREXA
-download("https://badmodels.org/model1.xml", "model.xml")
-load_model("model.xml")
+download_model(...)
+load_model(...)
 # ...
 ```
 

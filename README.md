@@ -22,16 +22,14 @@
 [cov-img]: https://codecov.io/gh/COBREXA/COBREXA.jl/branch/master/graph/badge.svg?token=H3WSWOBD7L
 [cov-url]: https://codecov.io/gh/COBREXA/COBREXA.jl
 
-[contrib-img]: https://img.shields.io/badge/contributions-start%20here-green
-[contrib-url]: https://cobrexa.github.io/COBREXA.jl/stable/howToContribute/
 [legacy-url]: https://github.com/LCSB-BioCore/COBREXA.jl
 
 [repostatus-url]: https://www.repostatus.org/#active
 [repostatus-img]: https://www.repostatus.org/badges/latest/active.svg
 
-| **Documentation** | **Tests** | **Coverage** | **How to contribute?** | **Project status** |
-|:---:|:---:|:---:|:---:|:---:|
-| [![docs-img-stable]][docs-url-stable] [![docs-img-dev]][docs-url-dev] | [![CI][ci-img]][ci-url] | [![codecov][cov-img]][cov-url] | [![contrib][contrib-img]][contrib-url] | [![repostatus-img]][repostatus-url] |
+| **Documentation** | **Tests** | **Coverage** | **Project status** |
+|:---:|:---:|:---:|:---:|
+| [![docs-img-stable]][docs-url-stable] [![docs-img-dev]][docs-url-dev] | [![CI][ci-img]][ci-url] | [![codecov][cov-img]][cov-url] | [![repostatus-img]][repostatus-url] |
 
 COBREXA.jl provides constraint-based reconstruction and analysis tools for
 exa-scale metabolic modeling in [Julia](https://julialang.org/).
