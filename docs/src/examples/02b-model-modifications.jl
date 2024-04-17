@@ -74,7 +74,10 @@ model.reactions["CS"].stoichiometry
 
 # ## Running FBA on modified models
 #
-# Since the canonical model is completely mutable, you can change it in any way you like and feed it directly into [`flux_balance_analysis`](@ref). Let's first find a "original" solution, so that we have a base solution for comparing:
+# Since the canonical model is completely mutable, you can change it in any way
+# you like and feed it directly into [`flux_balance_analysis`](@ref). Let's
+# first find a "original" solution, so that we have a base solution for
+# comparing:
 
 import GLPK
 
@@ -105,7 +108,7 @@ low_glucose_solution.objective
 
 base_model = convert(CM.Model, load_model("e_coli_core.json")) # load the base
 
-modified_model = base_model # copy for modification
+modified_model = base_model # seemingly make a "copy" for modification
 
 modified_model.reactions["EX_glc__D_e"].lower_bound = -123.0 # modify the glucose intake limit
 
@@ -119,9 +122,9 @@ base_model.reactions["EX_glc__D_e"]
 # unfortunately breaks this simple use-case.
 #
 # To fix the situation, you should always ensure to make an actual copy of the
-# model data by either carefully copying the changed parts with `copy()`, or
-# simply by copying the whole model structure as is with `deepcopy()`. Let's
-# try again:
+# model data by either carefully copying the changed parts (e.g., using a
+# similar approach as with the "shallow" `copy()`), or simply by copying the
+# whole model structure as is with `deepcopy()`. Let's try again:
 
 base_model = convert(CM.Model, load_model("e_coli_core.json"))
 modified_model = deepcopy(base_model) # this forces an actual copy of the data
