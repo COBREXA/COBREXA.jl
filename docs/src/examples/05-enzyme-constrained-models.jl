@@ -15,6 +15,9 @@
 # limitations under the License.                                            #src
 
 # # Enzyme constrained models
+# Enzyme constrained metabolic models include the effect of enzyme kinetics (v =
+# k * e) and a protein capacity limitation (∑e = Etotal) on conventional mass
+# balance (FBA) models.
 
 using COBREXA
 
@@ -38,7 +41,7 @@ model = load_model("e_coli_core.json")
 
 # Enzyme constrained models require parameters that are usually not used by
 # conventional constraint based models. These include reaction specific turnover
-# numbers, molar masses of enzymes, and capacity bounds.
+# numbers, molar masses of enzymes, and protein capacity bounds.
 
 # ## Reaction turnover numbers
 
@@ -122,12 +125,15 @@ const ecoli_core_reaction_kcats = Dict(
 
 # We have these here:
 
-ecoli_core_reaction_kcats
+ecoli_core_reaction_kcats # units = 1/s
 
 # Each reaction in a constraint-based model usually has gene reaction rules
 # associated with it. These typically take the form of, possibly multiple,
 # isozymes that can catalyze a reaction. A turnover number needs to be assigned
-# to each isozyme, as shown below.
+# to each isozyme, as shown below. Additionally, some enzymes are composed of
+# multiple subunits, which differ in subunit stoichiometry. This also needs to
+# be accounted for. Assuming a stoichiometry of 1 for everything seems to be
+# okay if you do not have more information.
 
 reaction_isozymes = Dict{String,Dict{String,Isozyme}}() # a mapping from reaction IDs to isozyme IDs to isozyme structs.
 for rid in A.reactions(model)
@@ -144,8 +150,11 @@ for rid in A.reactions(model)
     end
 end
 
-#md #!!! warning "Turnover number units"
-#md #    Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting that you should rescale the turnover numbers to 1/h if you want to use the conventional flux units.
+#md #!!! tip "Tip: Turnover number units"
+#md #    Take care with the units of the turnover numbers. In literature they 
+#md #    are usually reported in 1/s. However, flux units are typically mmol/gDW/h, 
+#md #    suggesting that you should rescale the turnover numbers to 1/h if you want 
+#md #    to use the conventional flux units.
 
 # ## Enzyme molar masses
 
@@ -305,15 +314,22 @@ const ecoli_core_gene_product_masses = Dict(
 
 # We have the molar masses here:
 
-ecoli_core_gene_product_masses
+ecoli_core_gene_product_masses # unit kDa = kg/mol
 
-#md # !!! warning "Molar mass units"
-#md #    Take care with the units of the molar masses. In literature they are usually reported in Da or kDa (g/mol). However, as noted above, flux units are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e`, where `k` is the turnover number, it suggests that the enzyme variable will have units of mmol/gDW. The molar masses come into play when setting the capacity limitations, e.g. usually a sum over all enzymes weighted by their molar masses: `e * mm`. Thus, if your capacity limitation has units of g/gDW, then the molar masses must have units of g/mmol (= kDa).
+#md #!!! tip "Tip: Molar mass units"
+#md #    Take care with the units of the molar masses. In literature they are 
+#md #    usually reported in Da or kDa (g/mol). However, as noted above, flux units 
+#md #    are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e`, 
+#md #    where `k` is the turnover number, it suggests that the enzyme variable will 
+#md #    have units of mmol/gDW. The molar masses come into play when setting the 
+#md #    capacity limitations, e.g. usually a sum over all enzymes weighted by their 
+#md #    molar masses: `e * mm`. Thus, if your capacity limitation has units of g/gDW, 
+#md #    then the molar masses must have units of g/mmol (= kDa).
 
 # ## Capacity limitation
 
 # The capacity limitation usually denotes an upper bound of protein available to
-# the cell.
+# the cell. Multiple capacity bounds can be used (cytosol, membrane, etc).
 
 total_enzyme_capacity = 50.0 # mg of enzyme/gDW
 
@@ -336,7 +352,9 @@ ec_solution = enzyme_constrained_flux_balance_analysis(
 ec_solution.objective
 
 # One can also observe many interesting thing, e.g. the amount of gene product
-# material required for the system to run:
+# material required for the system to run. Importantly, the units of these
+# values depends on the units you used to set the turnover numbers and protein
+# molar masses.
 
 ec_solution.gene_product_amounts
 
@@ -361,9 +379,9 @@ ec_solution.gene_product_capacity
 
 # ## Simplified models
 #
-# Because most reactions typically only use a single isozyme, we may also use a
-# simplified representation of the problem where this fact is reflected, saving
-# the variable allocation for the isozymes.
+# Because most active reactions typically only use a single isozyme, we may also
+# use a simplified representation of the problem where this fact is reflected,
+# saving the variable allocation for the isozymes.
 #
 # [`simplified_enzyme_constrained_flux_balance_analysis`](@ref) takes similar
 # arguments as the [`enzyme_constrained_flux_balance_analysis`](@ref), but
@@ -383,7 +401,7 @@ simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
 simplified_ec_solution.capacity_limits.total_capacity
 
 # Gene product amounts are not present in the model but are reconstructed
-# nevertheless (they are uniquely determined by the flux:
+# nevertheless (they are uniquely determined by the flux):
 
 simplified_ec_solution.gene_product_amounts
 
