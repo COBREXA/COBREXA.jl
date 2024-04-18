@@ -81,7 +81,10 @@ export metabolic_adjustment_minimization_constraints
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Perform MOMA on `model`, and either a reference flux or a reference model,
+depending on the input type of the second argument. Calls
+[`metabolic_adjustment_minimization_constraints`](@ref), and dispatches
+appropriately. Only the model based comparison makes use of all the kwargs.
 """
 metabolic_adjustment_minimization_analysis(
     model::A.AbstractFBCModel,
@@ -185,7 +188,10 @@ export linear_metabolic_adjustment_minimization_constraints
 """
 $(TYPEDSIGNATURES)
 
-TODO
+Perform linear MOMA on `model`, and either a reference flux or a reference model,
+depending on the input type of the second argument. Calls
+[`linear_metabolic_adjustment_minimization_constraints`](@ref), and dispatches
+appropriately. Only the model based comparison makes use of all the kwargs.
 """
 linear_metabolic_adjustment_minimization_analysis(
     model::A.AbstractFBCModel,
