@@ -23,7 +23,7 @@ dictionary of flux ranges where the model is able to perform optimally.
 The constraint system is constructed using [`flux_balance_constraints`](@ref),
 and the variability is examined on all reaction's fluxes, or on the subset
 given optionally in `reaction_subset` (e.g., `reaction_subset = ["PFK",
-"ACALD"]`). The optimality tolerance can be specified with objective_bound
+"ACALD"]`). The optimality tolerance can be specified with `objective_bound`
 using e.g. [`relative_tolerance_bound`](@ref) or
 [`absolute_tolerance_bound`](@ref); the default is 99% relative tolerance.
 
