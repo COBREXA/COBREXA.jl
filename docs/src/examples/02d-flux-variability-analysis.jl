@@ -16,7 +16,9 @@
 
 # # Flux variability analysis (FVA)
 
-# TODO commentary
+# FVA performs FBA to find an optimal objective, and then constrains this
+# objective to lie within certain bounds. Thereafter, each other reaction is
+# minimized and maximized to identify its maximum variability.
 
 using COBREXA
 
@@ -30,12 +32,18 @@ import JSONFBCModels, GLPK
 
 model = load_model("e_coli_core.json")
 
+# Most of the basic analysis functions have standardized frontend functions,
+# making it easy to call them.
+
 solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer)
 
 @test isapprox(solution.ACALD[1], -2.542370370370188, atol = TEST_TOLERANCE) #src
 @test isapprox(solution.ACALD[2], 0.0, atol = TEST_TOLERANCE) #src
 
 # ## Specifying bounds
+
+# Options for FVA include changing the variability tolerances on the objective,
+# or making use of parallel processing, to speed up computations.
 
 very_close = flux_variability_analysis(
     model,
@@ -48,3 +56,8 @@ one_percent_close = flux_variability_analysis(
     optimizer = GLPK.Optimizer,
     objective_bound = relative_tolerance_bound(0.99),
 )
+
+using Distributed
+addprocs(2) # add workers to distribute optimization problem across more CPUs
+
+solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer; workers = [procs()])
