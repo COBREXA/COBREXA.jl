@@ -53,15 +53,22 @@ function flux_balance_constraints(
     bal = A.balance(model)
     obj = A.objective(model)
 
+    # The iteration through stoichiometry would be better done with eachrow(),
+    # unfortunately it seems to be enormously inefficient on column-major
+    # matrix formats, and findnz() on eachrow&eachcol output isn't very
+    # backwards compatible (at least not to 1.6). We thus enforce having a
+    # SparseMatrixCSC here and walk it manually.
+    stoiT = SparseArrays.SparseMatrixCSC(stoi')
+
     constraints = C.ConstraintTree(
         :fluxes^C.variables(keys = rxns, bounds = zip(lbs, ubs)) *
         :flux_stoichiometry^C.ConstraintTree(
             met => C.Constraint(
-                value = let (idxs, weights) = SparseArrays.findnz(row)
-                    C.LinearValue(; idxs, weights)
+                value = let i = stoiT.colptr[row_idx], e = stoiT.colptr[row_idx+1]
+                    C.LinearValue(idxs = stoiT.rowval[i:e], weights = stoiT.nzval[i:e])
                 end,
                 bound = C.EqualTo(b),
-            ) for (met, row, b) in zip(mets, eachcol(SparseArrays.sparse(stoi')), bal)
+            ) for (met, row_idx, b) in zip(mets, 1:stoiT.n, bal)
         ) *
         :objective^C.Constraint(C.LinearValue(SparseArrays.sparse(obj))),
     )
