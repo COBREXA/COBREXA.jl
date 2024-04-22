@@ -64,7 +64,7 @@ function flux_balance_constraints(
         :fluxes^C.variables(keys = rxns, bounds = zip(lbs, ubs)) *
         :flux_stoichiometry^C.ConstraintTree(
             met => C.Constraint(
-                value = let i = stoiT.colptr[row_idx], e = stoiT.colptr[row_idx+1]
+                value = let i = stoiT.colptr[row_idx], e = stoiT.colptr[row_idx+1] - 1
                     C.LinearValue(idxs = stoiT.rowval[i:e], weights = stoiT.nzval[i:e])
                 end,
                 bound = C.EqualTo(b),
