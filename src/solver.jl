@@ -49,10 +49,87 @@ Base.:/(s::Switch, x::Real) = Switch(s.a / x, s.b / x)
 """
 $(TYPEDSIGNATURES)
 
+Very efficiently substitute a ConstraintTrees' `LinearValue` into a JuMP
+expression of type `AffExpr`.
+"""
+function substitute_jump(val::C.LinearValue, vars)
+    e = J.AffExpr() # unfortunately @expression(model, 0) is not type stable and gives an Int
+    for (i, w) in zip(val.idxs, val.weights)
+        if i == 0
+            J.add_to_expression!(e, w)
+        else
+            J.add_to_expression!(e, w, vars[i])
+        end
+    end
+    e
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Very efficiently substitute a ConstraintTrees' `QuadraticValue` into a JuMP
+expression of type `QuadExpr`.
+"""
+function substitute_jump(val::C.QuadraticValue, vars)
+    e = J.QuadExpr()
+    for ((i, j), w) in zip(val.idxs, val.weights)
+        if i == 0 && j == 0
+            J.add_to_expression!(e, w)
+        elseif i == 0 # the symmetric case is prohibited
+            J.add_to_expression!(e, w, vars[j])
+        else
+            J.add_to_expression!(e, w, vars[i], vars[j])
+        end
+    end
+    e
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Add an equality constraint to a JuMP model.
+"""
+function constraint_jump!(model, expr, b::C.EqualTo)
+    J.@constraint(model, expr == b.equal_to)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Add an interval constraint to a JuMP model.
+"""
+function constraint_jump!(model, expr, b::C.Between)
+    isinf(b.lower) || J.@constraint(model, expr >= b.lower)
+    isinf(b.upper) || J.@constraint(model, expr <= b.upper)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Add a [`Switch`](@ref) constraint to a JuMP model.
+"""
+function constraint_jump!(model, expr, b::Switch)
+    boolean = J.@variable(model, binary = true)
+    J.@constraint(model, expr == b.a + boolean * (b.b - b.a))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Add an empty constraint to a JuMP model (this does not do anything).
+"""
+constraint_jump!(_, _, _::Nothing) = nothing
+
+"""
+$(TYPEDSIGNATURES)
+
 Construct a JuMP `Model` that describes the precise constraint system into the
 JuMP `Model` created for solving in `optimizer`, with a given optional
 `objective` and optimization `sense` chosen from [`Maximal`](@ref),
 [`Minimal`](@ref) and [`Feasible`](@ref).
+
+All types of values in the constraint tree must have an overload for
+[`substitute_jump`](@ref).
 """
 function optimization_model(
     cs::C.ConstraintTreeElem;
@@ -63,30 +140,11 @@ function optimization_model(
     model = J.Model(optimizer)
 
     J.@variable(model, x[1:C.var_count(cs)])
-    isnothing(objective) || J.@objective(model, sense, C.substitute(objective, x))
+    isnothing(objective) || J.@objective(model, sense, substitute_jump(objective, x))
 
-    # constraints
-    function add_constraint(v::C.Value, b::C.EqualTo)
-        J.@constraint(model, C.substitute(v, x) == b.equal_to)
+    C.traverse(cs) do c
+        isnothing(c.bound) || constraint_jump!(model, substitute_jump(c.value, x), c.bound)
     end
-    function add_constraint(v::C.Value, b::C.Between)
-        vx = C.substitute(v, x)
-        isinf(b.lower) || J.@constraint(model, vx >= b.lower)
-        isinf(b.upper) || J.@constraint(model, vx <= b.upper)
-    end
-    function add_constraint(v::C.Value, b::Switch)
-        boolean = J.@variable(model, binary = true)
-        J.@constraint(model, C.substitute(v, x) == b.a + boolean * (b.b - b.a))
-    end
-    add_constraint(::C.Value, _::Nothing) = nothing
-    function add_constraint(c::C.Constraint)
-        add_constraint(c.value, c.bound)
-    end
-    function add_constraint(c::C.ConstraintTree)
-        add_constraint.(values(c))
-    end
-
-    add_constraint(cs)
 
     return model
 end
