@@ -109,12 +109,3 @@ save_model(model_converted_to_json, "e_coli_core_from_sbml.json")
 println(open("e_coli_core_from_sbml.json") do f
     read(f, 100)
 end |> String, "...")
-
-# You can also serialize models for quicker access, but this is moderately
-# dangerous because Julia offers no guarantees that different machines will be
-# able to deserialize datastructures. 
-
-using Serialization
-
-serialize("model_json.js", model)
-model = deserialize("model_json.js")
