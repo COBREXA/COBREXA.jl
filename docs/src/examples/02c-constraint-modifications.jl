@@ -118,9 +118,7 @@ positive_model += sign_split_variables( # notice the +
     )
 
 #md # !!! warning "Warning: Take care between + and * operators for ConstraintTrees"
-#md #    For ConstraintTrees, `+` adds new variables to a model, and `*` adds constraints 
-#md #    to a model with the assumption that the variables they reference are already in 
-#md #    the model. 
+#md #    For ConstraintTrees, `+` adds new variables to a model, and `*` adds constraints to a model with the assumption that the variables they reference are already in the model. 
 
 # After creating the new variables, we need to link them to the original
 # variables, using constraints.
@@ -162,7 +160,4 @@ l1_sol = optimized_values(
 delete!(positive_model, :l1_objective)
 
 #md # !!! warning "Warning: Take care to keep your model consistent"
-#md #    While ConstraintTrees gives you the power to very simply create complex models,
-#md #    it does not guard you against making the internal structure inconsistent (e.g. 
-#md #    changing the bounds of the positive variables to allow negative numbers, messing 
-#md #    with the link constraints, etc.).
+#md #    While ConstraintTrees gives you the power to very simply create complex models, it does not guard you against making the internal structure inconsistent (e.g. changing the bounds of the positive variables to allow negative numbers, messing with the link constraints, etc.).
