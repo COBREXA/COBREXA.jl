@@ -57,9 +57,11 @@ function flux_balance_constraints(
         :fluxes^C.variables(keys = rxns, bounds = zip(lbs, ubs)) *
         :flux_stoichiometry^C.ConstraintTree(
             met => C.Constraint(
-                value = C.LinearValue(SparseArrays.sparse(row)),
+                value = let (idxs, weights) = SparseArrays.findnz(row)
+                    C.LinearValue(; idxs, weights)
+                end,
                 bound = C.EqualTo(b),
-            ) for (met, row, b) in zip(mets, eachrow(stoi), bal)
+            ) for (met, row, b) in zip(mets, eachcol(SparseArrays.sparse(stoi')), bal)
         ) *
         :objective^C.Constraint(C.LinearValue(SparseArrays.sparse(obj))),
     )
