@@ -15,6 +15,8 @@
 # limitations under the License.                                            #src
 
 # # Screening through many model variants
+# [`screen`](@ref) is a function that you can use to run many model/simulation
+# variants (ideally on an HPC) efficiently.
 
 using COBREXA
 
@@ -93,5 +95,3 @@ screen(
         output = c.objective,
     )
 end
-
-# TODO add tests.

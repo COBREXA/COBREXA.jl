@@ -15,6 +15,8 @@
 # limitations under the License.                                            #src
 
 # # Gene knockouts
+# FBA is classically very good at predicting the effect of knocking out genes in
+# an organism.
 
 using COBREXA
 
