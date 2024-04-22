@@ -21,20 +21,23 @@
 """
 $(TYPEDSIGNATURES)
 
-Construct an instance of a linear Community Flux Balance Analysis problems: The
-relative abundances of the organisms are known in advance; this function
-predicts the total achievable growth.
+Construct an instance of a linear community Flux Balance Analysis (cFBA) model.
+The relative abundances of the organisms are known in advance; this function
+predicts the maximum achievable community growth rate.
 
 `model_abundances` is a dictionary-like object that maps model identifiers to
-tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such
-as: `"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` are a
-dictionary-like object that can be additionally used to restrict selected
-community exchange reactions (keys should be reaction IDs, the values are
-converted to `ConstraintTrees`-like bounds).
+tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such as:
+`"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` is a dictionary-like
+object that can be additionally used to restrict selected community exchange
+reactions (keys should be reaction IDs, the values are converted to
+`ConstraintTrees`-like bounds). Bounds otherwise default to `nothing`
+(unbounded).
 
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
 interface part to contribute to the community exchanges and community biomass.
+
+This function implicitely assumes no biomass metabolite is produced.
 """
 function community_flux_balance_constraints(
     model_abundances,
@@ -44,7 +47,7 @@ function community_flux_balance_constraints(
     interface_biomass = x -> x.interface.biomass,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
-    # TODO test if abundances sum to 1?
+    @assert isapprox(sum(last.(model_abundances)), 1)
 
     bounds_lookup = Dict(community_exchange_bounds)
 
@@ -53,7 +56,7 @@ function community_flux_balance_constraints(
             Symbol(k) => let
                 c = flux_balance_constraints(m; interface)
                 (c, interface_exchanges(c), a)
-            end for (k, (m, a)) in model_abundances
+            end for (k, m, a) in model_abundances
         );
         out_interface = :community_exchanges,
         out_balance = :community_balance,
@@ -62,7 +65,7 @@ function community_flux_balance_constraints(
 
     growth_sums = [
         Symbol(k) => C.Constraint(sum_value(interface_biomass(constraints[Symbol(k)])))
-        for (k, _) in model_abundances
+        for (k, _, _) in model_abundances
     ]
 
     constraints *
