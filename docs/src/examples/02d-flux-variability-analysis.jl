@@ -62,3 +62,5 @@ addprocs(2) # add workers to distribute optimization problem across more CPUs
 @everywhere using COBREXA, GLPK # load packages on workers
 
 solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer; workers = workers()) # distribute work to more cores
+
+rmprocs(workers()...) # cleanup

@@ -76,7 +76,6 @@ community = interface_constraints(
     bound = x -> get(bounds_lookup, String(last(x)), nothing), # unbounded environmental reactions are defaulted, unless overwritten here
 )
 
-
 # Finally, we constrain the growth rate of all members to be equal to each
 # other, and solve the cFBA model
 
@@ -136,7 +135,7 @@ C.zip(
 screen(0.0:0.1:1.0) do ratio2
     ratio1 = 1 - ratio2
     res = community_flux_balance_analysis(
-        ["bug1" => (ecoli1, ratio1), "bug2" => (ecoli2, ratio2)],
+        [("bug1", ecoli1, ratio1), ("bug2", ecoli2, ratio2)],
         ["EX_glc__D_e" => (-10.0, 0.0)],
         interface = :sbo, # usually more reproducible
         optimizer = GLPK.Optimizer,

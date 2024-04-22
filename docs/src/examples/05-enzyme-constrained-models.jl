@@ -151,10 +151,7 @@ for rid in A.reactions(model)
 end
 
 #md #!!! tip "Tip: Turnover number units"
-#md #    Take care with the units of the turnover numbers. In literature they
-#md #    are usually reported in 1/s. However, flux units are typically mmol/gDW/h,
-#md #    suggesting that you should rescale the turnover numbers to 1/h if you want
-#md #    to use the conventional flux units.
+#md #    Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting that you should rescale the turnover numbers to 1/h if you want to use the conventional flux units.
 
 # ## Enzyme molar masses
 
@@ -317,14 +314,7 @@ const ecoli_core_gene_product_masses = Dict(
 ecoli_core_gene_product_masses # unit kDa = kg/mol
 
 #md #!!! tip "Tip: Molar mass units"
-#md #    Take care with the units of the molar masses. In literature they are
-#md #    usually reported in Da or kDa (g/mol). However, as noted above, flux units
-#md #    are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e`,
-#md #    where `k` is the turnover number, it suggests that the enzyme variable will
-#md #    have units of mmol/gDW. The molar masses come into play when setting the
-#md #    capacity limitations, e.g. usually a sum over all enzymes weighted by their
-#md #    molar masses: `e * mm`. Thus, if your capacity limitation has units of g/gDW,
-#md #    then the molar masses must have units of g/mmol (= kDa).
+#md #    Take care with the units of the molar masses. In literature they are usually reported in Da or kDa (g/mol). However, as noted above, flux units are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e`, where `k` is the turnover number, it suggests that the enzyme variable will have units of mmol/gDW. The molar masses come into play when setting the capacity limitations, e.g. usually a sum over all enzymes weighted by their molar masses: `e * mm`. Thus, if your capacity limitation has units of g/gDW, then the molar masses must have units of g/mmol (= kDa).
 
 # ## Capacity limitation
 

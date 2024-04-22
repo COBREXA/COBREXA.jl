@@ -40,8 +40,7 @@ download_model(
 )
 
 #md #!!! tip "Tip: How do I get the model hash?"
-#md #    You do not need to fill in the hash values immediately; simply run the
-#md #    function once, and then copy the reported hash value into your script.
+#md #    You do not need to fill in the hash values immediately; simply run the function once, and then copy the reported hash value into your script.
 
 # ## Loading models
 
@@ -91,14 +90,13 @@ model_in_julia_structures =
     load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
 
 #md #!!! tip "Tip: Where did v1's StandardModel go?"
-#md #    `CanonicalModel` is a renamed version of `StandardModel`. If you
-#md #    did not use COBREXA v1, ignore this.
+#md #    `CanonicalModel` is a renamed version of `StandardModel`. If you did not use COBREXA v1, ignore this.
 
 # The above command specifies all model types explicitly, leaving least room
 # for guessing-based errors. Note that it is also possible to convert all model
 # types to each other simply by using Julia's `convert`.
 
-model_converted_back_to_sbml = convert(SBMLFBCModels.SBMLFBCModel, model_converted_to_json)
+model_in_json_structure = convert(JSONFBCModels.JSONFBCModel, model_in_julia_structures)
 
 # ## Saving models
 

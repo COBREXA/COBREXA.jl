@@ -73,10 +73,7 @@ model.reactions["PFK"]
 model.reactions["CS"].stoichiometry
 
 #md # !!! tip "Tip: Create your own Model type!"
-#md #    For some applications, `CanonicalModel` might be too restrictive. Take
-#md #    a look at the docs of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl)
-#md #    to see how simple it is to create your own model type. Further, if you adhere
-#md #    to the interface, _all_ the analysis in COBREXA will just work on it!
+#md #    For some applications, `CanonicalModel` might be too restrictive. Take a look at the docs of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) to see how simple it is to create your own model type. Further, if you adhere to the interface, _all_ the analysis in COBREXA will just work on it!
 
 # ## Running FBA on modified models
 #
@@ -147,9 +144,7 @@ modified_model.reactions["EX_glc__D_e"].lower_bound = -123.0
       base_model.reactions["EX_glc__D_e"].lower_bound #src
 
 #md # !!! danger "Danger: Avoid overwriting base models when using in-place modifications"
-#md #    Whenever you are changing a copy of the model, make sure that you are
-#md #    not changing it by a reference. Always use some copy mechanism such as
-#md #    `copy` or `deepcopy` to prevent the default reference-based sharing.
+#md #    Whenever you are changing a copy of the model, make sure that you are  not changing it by a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
 
 # ## Observing the differences
 #
@@ -172,21 +167,4 @@ flux_changes =
 sort(collect(flux_changes), by = last)
 
 #md # !!! tip "Tip: For realistic comparisons always use a uniquely defined flux solution"
-#md #    Since the usual flux balance allows a lot of freedom in the "solved" flux and
-#md #    the only value that is "reproducible" by the analysis is the objective, one
-#md #    should never compare the flux distributions directly. Typically, that may result
-#md #    in false-positive (and sometimes false-negative) differences. Use e.g.
-#md #    [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined
-#md #    and safely comparable flux solutions.
-
-# ## Adding reactions or metabolites to a model
-
-# CanonicalModel is also useful if you need to add/delete metabolites/reactions.
-# Since it is just a Julia data structure, the obvious thing will work.
-
-copied_model = copy(model) # copy the model outer structure
-copied_model.reactions = copy(model.reactions) # copy the reaction outer structure
-
-copied_model.reactions = copy(model.reactions) # copy the reaction out
-
-model.reactions["PFK"]
+#md #    Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.

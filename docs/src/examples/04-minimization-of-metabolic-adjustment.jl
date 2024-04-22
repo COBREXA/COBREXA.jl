@@ -31,6 +31,7 @@ download_model(
 import AbstractFBCModels.CanonicalModel as CM
 import JSONFBCModels
 import Clarabel
+import GLPK
 
 model = load_model("e_coli_core.json", CM.Model)
 
@@ -88,18 +89,23 @@ solution_l2 = metabolic_adjustment_minimization_analysis(
     settings = [silence],
 )
 
-@test isapprox(solution.objective, 0.241497, atol = TEST_TOLERANCE) #src
+@test isapprox(solution_l2.objective, 0.241497, atol = TEST_TOLERANCE) #src
 @test isapprox(
     solution_with_reference_fluxes_l2.objective,
-    solution.objective,
+    solution_l2.objective,
     atol = TEST_TOLERANCE,
 ) #src
-@test sqrt(solution.minimal_adjustment_objective) < 71 #src
-@test isapprox(solution.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
+@test sqrt(solution_l2.minimal_adjustment_objective) < 71 #src
+@test isapprox(solution_l2.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
 @test isapprox( #src
     C.reduce( #src
         max, #src
-        C.zip((a, b) -> abs(a - b), solution, solution_with_reference_fluxes, Float64), #src
+        C.zip(
+            (a, b) -> abs(a - b),
+            solution_l2,
+            solution_with_reference_fluxes_l2,
+            Float64,
+        ), #src
         init = 0.0, #src
     ), #src
     0.0, #src
