@@ -90,7 +90,7 @@ model_in_julia_structures =
     load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
 
 #md #!!! tip "Tip: Where did v1's StandardModel go?"
-#md #    `CanonicalModel` is a renamed version of `StandardModel`. If you did not use COBREXA v1, ignore this. 
+#md #    `CanonicalModel` is a renamed version of `StandardModel`. If you did not use COBREXA v1, ignore this.
 
 # The above command specifies all model types explicitly, leaving least room
 # for guessing-based errors. Note that it is also possible to convert all model

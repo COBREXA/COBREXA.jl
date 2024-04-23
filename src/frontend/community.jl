@@ -47,7 +47,7 @@ function community_flux_balance_constraints(
     interface_biomass = x -> x.interface.biomass,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
-    @assert isapprox(sum(last.(model_abundances)), 1) 
+    @assert isapprox(sum(last.(model_abundances)), 1)
 
     bounds_lookup = Dict(community_exchange_bounds)
 

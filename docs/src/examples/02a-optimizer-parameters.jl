@@ -21,7 +21,7 @@
 # [`flux_balance_analysis`](@ref). These include e.g.
 #
 # - [`set_optimizer_attribute`](@ref) allowing you to tune e.g.
-#   iteration limits, tolerances, or floating-point precision, see JuMP for 
+#   iteration limits, tolerances, or floating-point precision, see JuMP for
 #   more solver specific settings
 # - [`set_objective_sense`](@ref) allowing you to change and reverse the
 #   optimization direction, if required
@@ -64,10 +64,7 @@ solution = flux_balance_analysis(
 solution = flux_balance_analysis(
     model,
     optimizer = Tulip.Optimizer,
-    settings = [
-        set_optimizer_attribute("IPM_IterationsLimit", 2),
-        set_time_limit_sec(1),
-    ],
+    settings = [set_optimizer_attribute("IPM_IterationsLimit", 2), set_time_limit_sec(1)],
 )
 
 println(solution)

@@ -60,7 +60,7 @@ solution_with_reference_fluxes_l2 = metabolic_adjustment_minimization_analysis( 
     settings = [silence],
 )
 
-# It is also straightforward to use an L1 norm version of MOMA. 
+# It is also straightforward to use an L1 norm version of MOMA.
 
 solution_with_reference_fluxes_l1 = linear_metabolic_adjustment_minimization_analysis(
     modified_model,
@@ -69,7 +69,11 @@ solution_with_reference_fluxes_l1 = linear_metabolic_adjustment_minimization_ana
     settings = [silence],
 )
 
-@test isapprox(solution_with_reference_fluxes_l1.objective, 0.21924874959, atol = TEST_TOLERANCE) #src
+@test isapprox(
+    solution_with_reference_fluxes_l1.objective,
+    0.21924874959,
+    atol = TEST_TOLERANCE,
+) #src
 @test isapprox(solution_with_reference_fluxes_l1.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
 @test solution_with_reference_fluxes_l1.linear_minimal_adjustment_objective < 305 #src
 
@@ -86,13 +90,22 @@ solution_l2 = metabolic_adjustment_minimization_analysis(
 )
 
 @test isapprox(solution_l2.objective, 0.241497, atol = TEST_TOLERANCE) #src
-@test isapprox(solution_with_reference_fluxes_l2.objective, solution_l2.objective, atol = TEST_TOLERANCE) #src
+@test isapprox(
+    solution_with_reference_fluxes_l2.objective,
+    solution_l2.objective,
+    atol = TEST_TOLERANCE,
+) #src
 @test sqrt(solution_l2.minimal_adjustment_objective) < 71 #src
 @test isapprox(solution_l2.fluxes.CYTBD, 10.0, atol = TEST_TOLERANCE) #src
 @test isapprox( #src
     C.reduce( #src
         max, #src
-        C.zip((a, b) -> abs(a - b), solution_l2, solution_with_reference_fluxes_l2, Float64), #src
+        C.zip(
+            (a, b) -> abs(a - b),
+            solution_l2,
+            solution_with_reference_fluxes_l2,
+            Float64,
+        ), #src
         init = 0.0, #src
     ), #src
     0.0, #src
@@ -108,7 +121,11 @@ solution_l1 = linear_metabolic_adjustment_minimization_analysis(
     settings = [silence],
 )
 
-@test isapprox(solution_l1.linear_minimal_adjustment_objective, 304.409209299351, atol = TEST_TOLERANCE) #src
+@test isapprox(
+    solution_l1.linear_minimal_adjustment_objective,
+    304.409209299351,
+    atol = TEST_TOLERANCE,
+) #src
 
 # ## Comparing fluxes
 
@@ -119,4 +136,14 @@ solution_l1 = linear_metabolic_adjustment_minimization_analysis(
 
 import ConstraintTrees as C
 
-sort(collect(C.zip(-, solution_with_reference_fluxes_l2.fluxes, solution_with_reference_fluxes_l1.fluxes, Float64)), by = last)
+sort(
+    collect(
+        C.zip(
+            -,
+            solution_with_reference_fluxes_l2.fluxes,
+            solution_with_reference_fluxes_l1.fluxes,
+            Float64,
+        ),
+    ),
+    by = last,
+)

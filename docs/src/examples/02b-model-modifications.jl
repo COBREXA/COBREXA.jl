@@ -73,7 +73,7 @@ model.reactions["PFK"]
 model.reactions["CS"].stoichiometry
 
 #md # !!! tip "Tip: Create your own Model type!"
-#md #    For some applications, `CanonicalModel` might be too restrictive. Take a look at the docs of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) to see how simple it is to create your own model type. Further, if you adhere to the interface, _all_ the analysis in COBREXA will just work on it! 
+#md #    For some applications, `CanonicalModel` might be too restrictive. Take a look at the docs of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) to see how simple it is to create your own model type. Further, if you adhere to the interface, _all_ the analysis in COBREXA will just work on it!
 
 # ## Running FBA on modified models
 #

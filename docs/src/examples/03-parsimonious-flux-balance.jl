@@ -88,7 +88,7 @@ solution = parsimonious_flux_balance_analysis(
 # the fluxes (splitting reversible fluxes into only positive components, as
 # mentioned earlier). We export
 # [`linear_parsimonious_flux_balance_analysis`](@ref) that does this, and
-# functions similarly. 
+# functions similarly.
 
 linear_solution =
     linear_parsimonious_flux_balance_analysis(model; optimizer = GLPK.Optimizer)

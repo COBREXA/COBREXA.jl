@@ -52,9 +52,7 @@ solution = community_flux_balance_analysis(
         ("bug1", ecoli1, 0.2), # (id, model, abundance)
         ("bug2", ecoli2, 0.8),
     ],
-    [
-        "EX_glc__D_e" => (-10.0, 0.0),
-    ],
+    ["EX_glc__D_e" => (-10.0, 0.0)],
     optimizer = GLPK.Optimizer,
 )
 
@@ -92,7 +90,7 @@ end
 
 # ...seems a lot like `bug1` will eventually disappear.
 
-# ## Inspect the interfaces before you construct a model! 
+# ## Inspect the interfaces before you construct a model!
 # Not all interfaces are made equally. Fortunately, it is simple to create your
 # own interface, by just manually assigning reactions to semantic groups using
 # ConstraintTrees.
@@ -105,10 +103,11 @@ flux_balance_constraints(ecoli1, interface = :boundary).interface
 
 # Do it manually:
 own_interface = deepcopy(flux_balance_constraints(ecoli1))
-own_interface *= :interface^C.ConstraintTree(
-    :biomass => own_interface.fluxes.BIOMASS_Ecoli_core_w_GAM,
-    :exchanges => C.ConstraintTree(
-        k =>  v for (k, v) in own_interface.fluxes if startswith(string(k), "EX_")   
+own_interface *=
+    :interface^C.ConstraintTree(
+        :biomass => own_interface.fluxes.BIOMASS_Ecoli_core_w_GAM,
+        :exchanges => C.ConstraintTree(
+            k => v for (k, v) in own_interface.fluxes if startswith(string(k), "EX_")
+        ),
     )
-)
 own_interface.interface.exchanges

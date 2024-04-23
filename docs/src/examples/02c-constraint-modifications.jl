@@ -40,7 +40,7 @@ model = load_model("e_coli_core.json") # flux balance type model
 
 # COBREXA uses [ConstraintTrees](https://github.com/COBREXA/ConstraintTrees.jl)
 # to represent model structures internally. This framework is incredibly powerful,
-# as it neatly groups relevant variables and constraints together. 
+# as it neatly groups relevant variables and constraints together.
 
 import ConstraintTrees as C
 
@@ -48,13 +48,13 @@ import ConstraintTrees as C
 # constraints are in terms of them (or derived quantities). For "normal" models,
 # you can directly convert their flux balance format (from json, sbml, mat
 # files) into a ConstraintTree. These structures make it particularly easy to
-# formulate new constraints. 
+# formulate new constraints.
 
 ctmodel = flux_balance_constraints(model) # load the ConstraintTree of model
 
-# Notice, variables and constraints are grouped here. 
+# Notice, variables and constraints are grouped here.
 
-ctmodel.fluxes # all variables 
+ctmodel.fluxes # all variables
 
 #
 
@@ -112,41 +112,45 @@ vt = optimized_values(
 positive_model = deepcopy(ctmodel)
 
 positive_model += sign_split_variables( # notice the +
-        positive_model.fluxes,
-        positive = :fluxes_forward,
-        negative = :fluxes_reverse,
-    )
+    positive_model.fluxes,
+    positive = :fluxes_forward,
+    negative = :fluxes_reverse,
+)
 
 #md # !!! warning "Warning: Take care between + and * operators for ConstraintTrees"
-#md #    For ConstraintTrees, `+` adds new variables to a model, and `*` adds constraints to a model with the assumption that the variables they reference are already in the model. 
+#md #    For ConstraintTrees, `+` adds new variables to a model, and `*` adds constraints to a model with the assumption that the variables they reference are already in the model.
 
 # After creating the new variables, we need to link them to the original
 # variables, using constraints.
 
-positive_model *= :pos_neg_flux_link^sign_split_constraints(; # notice the *
-    positive = positive_model.fluxes_forward,
-    negative = positive_model.fluxes_reverse,
-    signed = positive_model.fluxes,
-)
+positive_model *=
+    :pos_neg_flux_link^sign_split_constraints(; # notice the *
+        positive = positive_model.fluxes_forward,
+        negative = positive_model.fluxes_reverse,
+        signed = positive_model.fluxes,
+    )
 
 # Next, we can specify a new objective, minimizing the sum of all positive fluxes.
 
-positive_model *= :l1_objective^C.Constraint(
-    sum(C.value(v) for v in values(positive_model.fluxes_forward)) + sum(C.value(v) for v in values(positive_model.fluxes_reverse)),
-    nothing, # no bound
-)
+positive_model *=
+    :l1_objective^C.Constraint(
+        sum(C.value(v) for v in values(positive_model.fluxes_forward)) +
+        sum(C.value(v) for v in values(positive_model.fluxes_reverse)),
+        nothing, # no bound
+    )
 
 # Notice how easy it was to sum up all the fluxes in the forward and reverse
 # directions. Also, we did not lose any information, as the new variables and
-# objective are just layered on top of the original model. 
+# objective are just layered on top of the original model.
 
 # Next, we specify a specific growth rate, as a new constraint (making its
 # removal simple later).
 
-positive_model *= :growth_rate_setpoint^C.Constraint(
-    C.value(positive_model.fluxes.BIOMASS_Ecoli_core_w_GAM),
-    C.EqualTo(0.6) # 1/h
-)
+positive_model *=
+    :growth_rate_setpoint^C.Constraint(
+        C.value(positive_model.fluxes.BIOMASS_Ecoli_core_w_GAM),
+        C.EqualTo(0.6), # 1/h
+    )
 
 l1_sol = optimized_values(
     positive_model,
