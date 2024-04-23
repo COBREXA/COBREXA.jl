@@ -45,62 +45,7 @@ ecoli2 = deepcopy(ecoli1)
 ecoli1.reactions["CYTBD"].lower_bound = ecoli1.reactions["CYTBD"].upper_bound = 0.0
 ecoli2.reactions["FBA"].lower_bound = ecoli2.reactions["FBA"].upper_bound = 0.0
 
-# ## Interfaces between models
-# Constraint-based models are typically made for single isolates, and need to be
-# joined together to create community models. COBREXA makes use of
-# [`interface_constraints`](@ref) to systematically achieve this. Here we will
-# demonstrate how to manually build a community model to illustrate this
-# concept.
-
-# First, we will create ConstraintTree models, but this time specify that an
-# interface should be created. Since the model uses the BiGG namespace, we can
-# use `::identifier_prefixes` to distringuish between biomass, exchange and atpm
-# reactions. For other namespaces, you might have to rely SBO annotations, or
-# just create your own interface from a model.
-
-m1 = flux_balance_constraints(ecoli1; interface = :identifier_prefixes)
-
-m2 = flux_balance_constraints(ecoli2; interface = :identifier_prefixes)
-
-# Next we set the abundances, and defined the IDs of reactions to join together.
-
-bounds_lookup = Dict("EX_glc__D_e" => (-10.0, 0.0))
-
-community = interface_constraints(
-    (
-        "bug1" => (m1, m1.interface.exchanges, 0.2), # linked through the exchange interface, abundance at end
-        "bug2" => (m2, m1.interface.exchanges, 0.8), # also linked through the exchange interface
-    );
-    out_interface = :community_exchanges, # group the linked environmental/community member interface reactions here
-    out_balance = :community_balance, # mass balance name for the environmental/community member interface reactions
-    bound = x -> get(bounds_lookup, String(last(x)), nothing), # unbounded environmental reactions are defaulted, unless overwritten here
-)
-
-# Finally, we constrain the growth rate of all members to be equal to each
-# other, and solve the cFBA model
-
-growth_sums = [
-    Symbol(id) => C.Constraint(sum_value(community[Symbol(id)][:objective])) for
-    id in ["bug1", "bug2"]
-]
-
-community *=
-    :equal_growth^all_equal_constraints(
-        last(growth_sums[1]).value,
-        C.ConstraintTree(growth_sums[2:end]),
-    ) * :community_biomass^last(growth_sums[1])
-
-community_sol = optimized_values(
-    community,
-    objective = community.community_biomass.value,
-    optimizer = GLPK.Optimizer,
-)
-
-@test isapprox(community_sol.community_biomass, 0.5237157737585179, atol = TEST_TOLERANCE) #src
-
 # ## Use the builtin function to solve cFBA models
-# Instead of constructing a cFBA model manually, we can do it automatically
-# using the builtin functions.
 
 solution = community_flux_balance_analysis(
     [
