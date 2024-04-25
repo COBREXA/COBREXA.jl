@@ -17,20 +17,6 @@
 """
 $(TYPEDSIGNATURES)
 
-Find a solution of the "minimization of metabolic adjustment" (MOMA) analysis
-for the `model`, which is the "closest" feasible solution to the given
-`reference_fluxes`, in the sense of squared-sum distance. The minimized
-squared distance (the objective) is present in the result tree as
-`minimal_adjustment_objective`.
-
-This is often used for models with smaller feasible region than the reference
-models (typically handicapped by a knockout, nutritional deficiency or a
-similar perturbation). MOMA solution then gives an expectable "easiest"
-adjustment of the organism towards a somewhat working state.
-
-Reference fluxes that do not exist in the model are ignored (internally, the
-objective is constructed via [`squared_sum_error_value`](@ref)).
-
 Keyword arguments are discarded for compatibility with the other overload.
 """
 function metabolic_adjustment_minimization_constraints(
@@ -81,10 +67,24 @@ export metabolic_adjustment_minimization_constraints
 """
 $(TYPEDSIGNATURES)
 
-Perform MOMA on `model`, and either a reference flux or a reference model,
-depending on the input type of the second argument. Calls
-[`metabolic_adjustment_minimization_constraints`](@ref), and dispatches
-appropriately. Only the model based comparison makes use of all the kwargs.
+Find a solution of the "minimization of metabolic adjustment" (MOMA) analysis
+for the `model`, which is the "closest" feasible solution to the solution given
+in the second argument, which is either `reference_fluxes` or `reference_model`
+(see documentation of [`metabolic_adjustment_minimization_constraints`](@ref)),
+in the sense of squared-sum distance. The minimized squared distance (the
+objective) is present in the result tree as `minimal_adjustment_objective`.
+
+If the second argument is a reference model, it is solved using a
+[`parsimonious_flux_balance_analysis`](@ref) with the optimizer and settings
+parameters for the 2 steps set by keyword arguments prefixed by `reference_`.
+
+This is often used for models with smaller feasible region than the reference
+models (typically handicapped by a knockout, a nutritional deficiency or a
+similar perturbation). MOMA solution then gives an expectable "easiest"
+adjustment of the organism towards a somewhat working state.
+
+Reference fluxes that do not exist in the `model` are ignored (internally, the
+objective is constructed via [`squared_sum_error_value`](@ref)).
 """
 metabolic_adjustment_minimization_analysis(
     model::A.AbstractFBCModel,
@@ -119,10 +119,7 @@ export metabolic_adjustment_minimization_analysis
 $(TYPEDSIGNATURES)
 
 Like [`metabolic_adjustment_minimization_constraints`](@ref) but optimizes the
-L1 norm.  This typically produces a sufficiently good result with less
-resources, depending on the situation. See documentation of
-[`linear_parsimonious_flux_balance_analysis`](@ref) for some of the
-considerations.
+L1 distance from `reference_fluxes`.
 
 Keyword arguments are discarded for compatibility with the other overload.
 """
@@ -159,11 +156,9 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Like [`metabolic_adjustment_minimization_constraints`](@ref) but optimizes the
-L1 norm. This typically produces a sufficiently good result with less
-resources, depending on the situation. See documentation of
-[`linear_parsimonious_flux_balance_analysis`](@ref) for some of the
-considerations.
+Like [`metabolic_adjustment_minimization_constraints`](@ref) but the output
+constraints optimize the L1 distance from the linear-parsimonious solution of
+the `reference_model`.
 """
 function linear_metabolic_adjustment_minimization_constraints(
     model::A.AbstractFBCModel,
@@ -188,10 +183,16 @@ export linear_metabolic_adjustment_minimization_constraints
 """
 $(TYPEDSIGNATURES)
 
-Perform linear MOMA on `model`, and either a reference flux or a reference model,
-depending on the input type of the second argument. Calls
-[`linear_metabolic_adjustment_minimization_constraints`](@ref), and dispatches
-appropriately. Only the model based comparison makes use of all the kwargs.
+Perform a linear minimization of metabolic adjustment analysis (l-MOMA) on
+`model`. The reference is given by the second argument, which is either a
+`reference_flux` or a `reference_model` (the second argument is forwarded to
+[`linear_metabolic_adjustment_minimization_constraints`](@ref)).
+
+While the solution is "less uniquely defined" than with fully quadratic
+[`metabolic_adjustment_minimization_analysis`](@ref), the linear variant
+typically produces a sufficiently good result with much less resources. See
+documentation of [`linear_parsimonious_flux_balance_analysis`](@ref) for some
+of the considerations.
 """
 linear_metabolic_adjustment_minimization_analysis(
     model::A.AbstractFBCModel,
