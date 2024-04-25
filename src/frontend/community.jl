@@ -21,16 +21,17 @@
 """
 $(TYPEDSIGNATURES)
 
-Construct an instance of a linear Community Flux Balance Analysis problems: The
-relative abundances of the organisms are known in advance; this function
-predicts the total achievable growth.
+Construct an instance of a linear community Flux Balance Analysis (cFBA) model.
+The relative abundances of the organisms are known in advance; this function
+predicts the maximum achievable community growth rate.
 
 `model_abundances` is a dictionary-like object that maps model identifiers to
-tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such
-as: `"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` are a
-dictionary-like object that can be additionally used to restrict selected
-community exchange reactions (keys should be reaction IDs, the values are
-converted to `ConstraintTrees`-like bounds).
+tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such as:
+`"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` is a dictionary-like
+object that can be additionally used to restrict selected community exchange
+reactions (keys should be reaction IDs, the values are converted to
+`ConstraintTrees`-like bounds). Bounds otherwise default to `nothing`
+(unbounded).
 
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
@@ -44,7 +45,7 @@ function community_flux_balance_constraints(
     interface_biomass = x -> x.interface.biomass,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
-    # TODO test if abundances sum to 1?
+    @assert isapprox(sum(a for (_, (_, a)) in model_abundances), 1) "community member abundances must sum to 1"
 
     bounds_lookup = Dict(community_exchange_bounds)
 
