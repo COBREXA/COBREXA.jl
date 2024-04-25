@@ -45,13 +45,12 @@ ecoli2 = deepcopy(ecoli1)
 ecoli1.reactions["CYTBD"].lower_bound = ecoli1.reactions["CYTBD"].upper_bound = 0.0
 ecoli2.reactions["FBA"].lower_bound = ecoli2.reactions["FBA"].upper_bound = 0.0
 
-# ## Use the builtin function to solve cFBA models
+# ## Analysing the community
+
+my_community = Dict("bug1" => (ecoli1, 0.2), "bug2" => (ecoli2, 0.8))
 
 solution = community_flux_balance_analysis(
-    [
-        ("bug1", ecoli1, 0.2), # (id, model, abundance)
-        ("bug2", ecoli2, 0.8),
-    ],
+    my_community,
     ["EX_glc__D_e" => (-10.0, 0.0)],
     optimizer = GLPK.Optimizer,
 )
@@ -64,7 +63,7 @@ solution = community_flux_balance_analysis(
     atol = TEST_TOLERANCE, #src
 ) #src
 
-# ## Using ConstraintTrees to investigate the solution
+# ## Investigating the solution
 
 # We can now e.g. observe the differences in individual pairs of exchanges:
 
@@ -75,12 +74,12 @@ C.zip(
     Tuple{Float64,Float64},
 )
 
-# Or use [`screen`](@ref) to efficiently find out which composition is best:
+# ...or use [`screen`](@ref) to efficiently find out which composition is best:
 
 screen(0.0:0.1:1.0) do ratio2
     ratio1 = 1 - ratio2
     res = community_flux_balance_analysis(
-        [("bug1", ecoli1, ratio1), ("bug2", ecoli2, ratio2)],
+        [("bug1" => (ecoli1, ratio1)), ("bug2" => (ecoli2, ratio2))],
         ["EX_glc__D_e" => (-10.0, 0.0)],
         interface = :sbo, # usually more reproducible
         optimizer = GLPK.Optimizer,
@@ -90,8 +89,9 @@ end
 
 # ...seems a lot like `bug1` will eventually disappear.
 
-# ## Inspect the interfaces before you construct a model!
-# Not all interfaces are made equally. Fortunately, it is simple to create your
+# ## Inspecting the interfaces
+#
+# Not all interfaces are made equally! Fortunately, it is simple to create your
 # own interface, by just manually assigning reactions to semantic groups using
 # ConstraintTrees.
 
