@@ -36,8 +36,6 @@ reactions (keys should be reaction IDs, the values are converted to
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
 interface part to contribute to the community exchanges and community biomass.
-
-This function implicitly assumes no biomass metabolite is produced.
 """
 function community_flux_balance_constraints(
     model_abundances,
