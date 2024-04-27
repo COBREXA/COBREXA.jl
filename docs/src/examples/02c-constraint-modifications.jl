@@ -39,129 +39,87 @@ model = load_model("e_coli_core.json") # flux balance type model
 # ## Background: Constraint trees
 
 # COBREXA uses [ConstraintTrees](https://github.com/COBREXA/ConstraintTrees.jl)
-# to represent model structures internally. This framework is incredibly powerful,
-# as it neatly groups relevant variables and constraints together.
+# to represent model structures internally. This framework provides a powerful
+# unified interface over all constraints and variables in the model, making its
+# manipulation much more convenient.
 
 import ConstraintTrees as C
 
 # In general, constraint-based models use fluxes as variables, and all the
-# constraints are in terms of them (or derived quantities). For "normal" models,
-# you can directly convert their flux balance format (from json, sbml, mat
-# files) into a ConstraintTree. These structures make it particularly easy to
-# formulate new constraints.
+# constraints are in terms of them (or derived quantities). We can get a
+# constraint tree for the usual flux-balance-style models quite easily:
 
-ctmodel = flux_balance_constraints(model) # load the ConstraintTree of model
+ct = flux_balance_constraints(model)
 
-# Notice, variables and constraints are grouped here.
+# The fluxes are represented by constraints for individual variables:
 
-ctmodel.fluxes # all variables
+ct.fluxes
 
-#
+# The "mass balance" is represented as equality constraints:
 
-ctmodel.flux_stoichiometry # mass balance constraints
+ct.flux_stoichiometry
 
-#
+# The objective is represented as a "transparent reference" to the variables
+# that specify the biomass. Notice that it has no bound (thus it's technically
+# not a constraint, just a "label" for something that has a sensible semantic
+# and can be constrained or optimized).
 
-ctmodel.objective # objective (usually specified in the model as a biomass function), notice it does not have a bound
+ct.objective
 
 # ## Customizing the model
 
-# ConstraintTrees make is simple to modify the model. The most explicit way to
-# do this is to make a new constraint tree representation of the model. But
-# first, let's make a new constraint to represent fermentation fluxes.
+# You can easily create new values and constraints from the existing ones. For
+# example, this is a total flux through exchanges of typical fermentation
+# products:
 
-fermentation = ctmodel.fluxes.EX_ac_e.value + ctmodel.fluxes.EX_etoh_e.value # acetate and ethanol fluxes are grouped
+total_fermentation = ct.fluxes.EX_ac_e.value + ct.fluxes.EX_etoh_e.value
 
-fermentation_constraint = C.Constraint(fermentation, (10.0, 1000.0)) # create a new constraint, bounding the flux
+# With the value in hand, we can constraint it (enforcing that the model
+# outputs at least some fermentation products):
 
-fermentation_constrainttree = :fermentation^fermentation_constraint # create a new ConstraintTree, naming this constraint
+fermentation_constraint = C.Constraint(total_fermentation, (10.0, 1000.0))
 
-forced_mixed_fermentation = ctmodel * fermentation_constrainttree # new modified model is created
+# We can assign a name to the constraint, creating a small (singleton)
+# constraint tree:
 
-# ConstraintTrees can be directly solved. The variables and constraints are
-# automatically parsed into a JuMP model, which is subsequently solved. Note,
-# you need to specify the objective.
+:fermentation^fermentation_constraint
 
-vt = optimized_values(
-    forced_mixed_fermentation,
-    objective = forced_mixed_fermentation.objective.value,
+# Named constraints can be freely combined, and we combine our new constraint
+# with the whole original constraint tree, getting a differently constrained
+# system:
+
+fermenting_ct = ct * :fermentation^fermentation_constraint
+
+# Constraint trees can be "solved", simply by choosing the objective and sending
+# them to the appropriate function. Here, [`optimized_values`](@ref) rewrites
+# the constraints into a JuMP model, which is subsequently solved and the
+# solved variables are transformed back into semantically labeled values, in
+# the same structure as the original constraint tree.
+
+solution = optimized_values(
+    fermenting_ct,
+    objective = fermenting_ct.objective.value,
     optimizer = GLPK.Optimizer,
 )
 
-@test isapprox(vt.objective, 0.6337, atol = TEST_TOLERANCE) #src
+@test isapprox(solution.objective, 0.633738, atol = TEST_TOLERANCE) #src
 
-# Models that cannot be solved return `nothing`. In the example below, the
-# underlying model is modified.
+# Models that can not be solved (for any reason) would instead return
+# `nothing`. We demonstrate that by breaking the bounds of the original
+# constraint trees to an unsolvable state:
 
-ctmodel.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
+ct.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
 
-vt = optimized_values(
+solution = optimized_values(
     ctmodel,
     objective = ctmodel.objective.value,
     optimizer = GLPK.Optimizer,
 )
 
-@test isnothing(vt) #src
+print(solution)
 
-# In general, every attribute of a ConstraintTree can be modified. Using some
-# building block functions, complicated models can be formulated. Here we will
-# create a model with only positive fluxes, by splitting all the reactions into
-# two components (forward and reverse components). This is frequently a first
-# step in building more complicated models.
+@test isnothing(solution) #src
 
-positive_model = deepcopy(ctmodel)
-
-positive_model += sign_split_variables( # notice the +
-    positive_model.fluxes,
-    positive = :fluxes_forward,
-    negative = :fluxes_reverse,
-)
-
-#md # !!! warning "Warning: Take care between + and * operators for ConstraintTrees"
-#md #    For ConstraintTrees, `+` adds new variables to a model, and `*` adds constraints to a model with the assumption that the variables they reference are already in the model.
-
-# After creating the new variables, we need to link them to the original
-# variables, using constraints.
-
-positive_model *=
-    :pos_neg_flux_link^sign_split_constraints(; # notice the *
-        positive = positive_model.fluxes_forward,
-        negative = positive_model.fluxes_reverse,
-        signed = positive_model.fluxes,
-    )
-
-# Next, we can specify a new objective, minimizing the sum of all positive fluxes.
-
-positive_model *=
-    :l1_objective^C.Constraint(
-        sum(C.value(v) for v in values(positive_model.fluxes_forward)) +
-        sum(C.value(v) for v in values(positive_model.fluxes_reverse)),
-        nothing, # no bound
-    )
-
-# Notice how easy it was to sum up all the fluxes in the forward and reverse
-# directions. Also, we did not lose any information, as the new variables and
-# objective are just layered on top of the original model.
-
-# Next, we specify a specific growth rate, as a new constraint (making its
-# removal simple later).
-
-positive_model *=
-    :growth_rate_setpoint^C.Constraint(
-        C.value(positive_model.fluxes.BIOMASS_Ecoli_core_w_GAM),
-        C.EqualTo(0.6), # 1/h
-    )
-
-l1_sol = optimized_values(
-    positive_model,
-    objective = positive_model.l1_objective.value,
-    optimizer = GLPK.Optimizer,
-    sense = COBREXA.Minimal,
-)
-
-# Removing constraints is simple.
-
-delete!(positive_model, :l1_objective)
-
-#md # !!! warning "Warning: Take care to keep your model consistent"
-#md #    While ConstraintTrees gives you the power to very simply create complex models, it does not guard you against making the internal structure inconsistent (e.g. changing the bounds of the positive variables to allow negative numbers, messing with the link constraints, etc.).
+# Several functions exist to simplify the construction of more complicated
+# constraints. See the reference documentation for [generic constraint
+# builders](reference/builders.md#Generic-constraints) for details.
