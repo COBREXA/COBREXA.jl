@@ -118,4 +118,4 @@ print(solution)
 
 # Several functions exist to simplify the construction of more complicated
 # constraints. See the reference documentation for [generic constraint
-# builders](reference/builders.md#Generic-constraints) for details.
+# builders](../reference/builders.md#Generic-constraints) for details.
