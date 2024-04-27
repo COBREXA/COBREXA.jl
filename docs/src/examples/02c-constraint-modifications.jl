@@ -110,11 +110,7 @@ solution = optimized_values(
 
 ct.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
 
-solution = optimized_values(
-    ctmodel,
-    objective = ctmodel.objective.value,
-    optimizer = GLPK.Optimizer,
-)
+solution = optimized_values(ct, objective = ct.objective.value, optimizer = GLPK.Optimizer)
 
 print(solution)
 
