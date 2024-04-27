@@ -68,7 +68,7 @@ ct.objective
 
 # ## Customizing the model
 
-# You can easily create new values and constraints from the existing ones. For
+# New values and constraints can be easily created from the existing ones. For
 # example, this is a total flux through exchanges of typical fermentation
 # products:
 

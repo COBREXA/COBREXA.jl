@@ -32,7 +32,7 @@
 #    and combining multiple models into a bigger one.
 #
 # Here we demonstrate the first, "modeling" approach. The main advantage of
-# this approach is that the modified model is still a FBC model, and you can
+# this approach is that the modified model is still a FBC model, and we can
 # export, save and share it via the AbstractFBCModels interace. The main
 # disadvantage is that the "common" FBC model interface does not easily express
 # various complicated constructions (communities, reaction coupling, enzyme
@@ -62,7 +62,7 @@ import AbstractFBCModels.CanonicalModel as CM
 model = convert(CM.Model, load_model("e_coli_core.json"))
 
 # The canonical model is quite easy to work with, made basically of the most
-# accessible Julia structures possible. For example, you can observe a reaction
+# accessible Julia structures possible. For example, we can look at a reaction
 # as such:
 
 model.reactions["PFK"]
@@ -71,14 +71,14 @@ model.reactions["PFK"]
 
 model.reactions["CS"].stoichiometry
 
-#md # !!! tip "Tip: Create your own Model type!"
-#md #    For some applications, `CanonicalModel` might be too restrictive. Take a look at the docs of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) to see how simple it is to create your own model type. Further, if you adhere to the interface, _all_ the analysis in COBREXA will just work on it!
+#md # !!! tip "Tip: Create custom model types!"
+#md #     For some applications, `CanonicalModel` might be too restrictive. Creating a custom model type that perfectly fits a use-case can be done simply by overloading several functions. The documentation of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) describes the process closer. Further, all model types that adhere to the AbstractFBCModels' interface will "just work" with _all_ analysis functions in COBREXA!
 
 # ## Running FBA on modified models
 #
-# Since the canonical model is completely mutable, you can change it in any way
-# you like and feed it directly into [`flux_balance_analysis`](@ref). Let's
-# first find a "original" solution, so that we have a base solution for
+# Since the canonical model is completely mutable, we can change it in any way
+# we like and feed the result directly into [`flux_balance_analysis`](@ref).
+# Let's first find a "original" solution, so that we have a base solution for
 # comparing:
 
 import GLPK
@@ -123,8 +123,8 @@ base_model.reactions["EX_glc__D_e"]
 # scenarios for data processing efficiency and computational speed, it
 # unfortunately breaks this simple use-case.
 #
-# To fix the situation, you should always ensure to make an actual copy of the
-# model data by either carefully copying the changed parts (e.g., using a
+# To fix this situation, we must always remember to make an actual copy of the
+# model data, by either carefully copying the changed parts (e.g., using a
 # similar approach as with the "shallow" `copy()`), or simply by copying the
 # whole model structure as is with `deepcopy()`. Let's try again:
 
@@ -143,7 +143,7 @@ modified_model.reactions["EX_glc__D_e"].lower_bound = -123.0
       base_model.reactions["EX_glc__D_e"].lower_bound #src
 
 #md # !!! danger "Avoid overwriting base models when using in-place modifications"
-#md #     Whenever you are changing a copy of the model, make sure that you are  not changing it by a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
+#md #     Whenever changing a copy of the model, check that the base model is not inadvertently changed via a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
 
 # ## Observing the differences
 #
@@ -165,5 +165,5 @@ flux_changes =
 # ...and again see what changed most:
 sort(collect(flux_changes), by = last)
 
-#md # !!! tip "Always use a uniquely defined flux solutions if you compare fluxes"
+#md # !!! tip "Always use a uniquely defined flux solutions for flux comparisons"
 #md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.

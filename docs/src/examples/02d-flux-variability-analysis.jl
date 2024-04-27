@@ -45,7 +45,7 @@ solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer)
 
 # By default, FVA computes variability from the feasible region that is bounded
 # to be within 10% of the optimal objective value. That is not very strict, and
-# you can force much lower tolerance.
+# we can force much lower tolerance.
 
 # Here, we force the optimal region to be within 0.00001 units of the optimal
 # objective value:

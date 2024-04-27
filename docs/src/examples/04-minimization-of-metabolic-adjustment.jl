@@ -100,9 +100,9 @@ sort(collect(difference.fluxes), by = last)
 
 # ## Using a custom reference flux
 #
-# In certain situations, you might want to examine how the model would adjust
-# from a known reaction flux. You can supply it
-# manually as the second argument (instead of the reference model).
+# In certain situations, one might want to examine how the model would adjust
+# from a known reaction flux. We can supply it manually as the second argument
+# (instead of the reference model).
 
 ref = parsimonious_flux_balance_analysis(
     ecoli,
@@ -145,7 +145,7 @@ solution_close_to_measurement = metabolic_adjustment_minimization_analysis(
 # ## Efficient linear-metric MOMA
 #
 # The linear version of MOMA avoids having to use the quadratic optimizer in
-# the process, giving you more optimizer choices and (typically) much better
+# the process, giving more optimizer choices and (typically) much better
 # performance. Linear MOMA has the same interface as the quadratic one:
 
 linear_moma_solution = linear_metabolic_adjustment_minimization_analysis(
