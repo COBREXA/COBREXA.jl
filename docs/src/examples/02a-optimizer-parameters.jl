@@ -20,19 +20,19 @@
 # additional optimizer settings via the `settings` parameter of
 # [`flux_balance_analysis`](@ref). These include e.g.
 #
-# - [`set_optimizer_attribute`](@ref) allowing you to tune e.g.
-#   iteration limits, tolerances, or floating-point precision, see JuMP for
-#   more solver specific settings
-# - [`set_objective_sense`](@ref) allowing you to change and reverse the
+# - [`set_optimizer_attribute`](@ref), allowing you to tune e.g.
+#   iteration limits, tolerances, or floating-point precision (see JuMP
+#   documentation for more solver-specific settings)
+# - [`set_objective_sense`](@ref), allowing you to change and reverse the
 #   optimization direction, if required
-# - [`silence`](@ref) allowing you to to disable the debug output of the optimizer
-# - [`set_optimizer`](@ref) allowing you to change the optimizer
-#   implementation used (this is not quite useful in this case, but becomes
-#   beneficial with more complex, multi-stage optimization problems)
-# - [`set_time_limit_sec`](@ref) allowing you to set a time limit before the solver
-#   must terminate (useful for MILP solvers)
+# - [`silence`](@ref) for disabling the debug output of the optimizers
+# - [`set_optimizer`](@ref) for replacing the optimizer implementation used
+#   (this is not quite useful in this case, but becomes beneficial with more
+#   complex, multi-stage optimization problems)
+# - [`set_time_limit_sec`](@ref) for putting a time limit on the solver
+#   computation (this is quite useful for MILP solvers)
 #
-# To demonstrate this, we'll use the usual toy model:
+# To demonstrate this, let's use the usual toy model:
 
 using COBREXA
 import JSONFBCModels, Tulip
@@ -57,14 +57,14 @@ solution = flux_balance_analysis(
 @test !isnothing(solution) #src
 
 # To see some of the effects of the configuration changes, you may e.g.
-# deliberately cripple the optimizer's possibilities to a few iterations, which
-# will cause it to fail, return no solution, and verbosely describe what
-# happened:
+# deliberately cripple the optimizer's possibilities to a few iterations and
+# only a little time, which will cause it to fail, return no solution, and
+# verbosely describe what happened:
 
 solution = flux_balance_analysis(
     model,
     optimizer = Tulip.Optimizer,
-    settings = [set_optimizer_attribute("IPM_IterationsLimit", 2), set_time_limit_sec(1)],
+    settings = [set_optimizer_attribute("IPM_IterationsLimit", 2), set_time_limit_sec(0.1)],
 )
 
 println(solution)

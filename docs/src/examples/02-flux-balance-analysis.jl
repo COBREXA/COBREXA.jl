@@ -61,8 +61,8 @@ solution.objective
 
 solution.fluxes.PFK
 
-#md #!!! tip "Tip: Tab through the model structure"
-#md #    You can use [tab] to quickly see what is in a CT. Unfortunately, due to typesystem limitations, this only works for the topmost level of the tree.
+#md #!!! tip "Browsing the model structure"
+#md #    After typing `solution.` in the julia REPL, you can use [tab] to quickly see what is in the next level of the tree. Unfortunately, due to typesystem limitations, this only works for the topmost level of the tree.
 
 # ...or make a "table" of all fluxes through all reactions:
 

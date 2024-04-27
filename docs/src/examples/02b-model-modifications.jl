@@ -17,9 +17,9 @@
 # # Making adjustments to the model
 #
 # Typically, we do not need to solve the models as they come from the authors
-# (someone else already did that!), but we want to perform various perturbations
-# in the model structure and conditions, and explore how the model behaves in
-# the changed conditions.
+# (someone else already did that!), but we want to perform various
+# perturbations in the model structure and conditions, and explore how the
+# model behaves in the changed conditions.
 #
 # With COBREXA, there are 2 different approaches that one can take:
 # 1. We can change the model structure, and use the changed metabolic model.
@@ -28,15 +28,15 @@
 # 2. We can intercept the pipeline that converts the metabolic model to
 #    constraints and/or to the optimizer representation, and make modifications
 #    along that way. This is better suited to making global model adjustments,
-#    such as using combined objectives, or adding reaction-coupling constraints,
-#    or combining multiple models into a bigger one.
+#    such as using combined objectives, or adding reaction-coupling
+#    constraints, or combining multiple models into a bigger one.
 #
-# Here we demonstrate the first, "modeling" approach. The main advantage of this
-# approach is that the modified model is still a FBC model, and you can export,
-# save and share it via the AbstractFBCModels interace. The main disadvantage is
-# that the "common" FBC model interface does not easily express various
-# complicated constructions (communities, reaction coupling, enzyme constraints,
-# etc.) -- see the [example about modifying the
+# Here we demonstrate the first, "modeling" approach. The main advantage of
+# this approach is that the modified model is still a FBC model, and you can
+# export, save and share it via the AbstractFBCModels interace. The main
+# disadvantage is that the "common" FBC model interface does not easily express
+# various complicated constructions (communities, reaction coupling, enzyme
+# constraints, etc.) -- see the [example about modifying the
 # constraints](02c-constraint-modifications.md) for a closer look on how to
 # modify even such complex constructions.
 #
@@ -143,8 +143,8 @@ modified_model.reactions["EX_glc__D_e"].lower_bound = -123.0
 @test modified_model.reactions["EX_glc__D_e"].lower_bound != #src
       base_model.reactions["EX_glc__D_e"].lower_bound #src
 
-#md # !!! danger "Danger: Avoid overwriting base models when using in-place modifications"
-#md #    Whenever you are changing a copy of the model, make sure that you are  not changing it by a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
+#md # !!! danger "Avoid overwriting base models when using in-place modifications"
+#md #     Whenever you are changing a copy of the model, make sure that you are  not changing it by a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
 
 # ## Observing the differences
 #
@@ -166,5 +166,5 @@ flux_changes =
 # ...and again see what changed most:
 sort(collect(flux_changes), by = last)
 
-#md # !!! tip "Tip: For realistic comparisons always use a uniquely defined flux solution"
-#md #    Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.
+#md # !!! tip "Always use a uniquely defined flux solutions if you compare fluxes"
+#md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.
