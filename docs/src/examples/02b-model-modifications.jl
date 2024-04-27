@@ -26,10 +26,10 @@
 #    This is better for doing simple and small, but systematic modifications,
 #    such as removing metabolites, adding reactions, etc.
 # 2. We can intercept the pipeline that converts the metabolic model to
-#    constraints and/or to the optimizer representation, and make modifications
+#    constraints and to the optimizer representation, and make modifications
 #    along that way. This is better suited to making global model adjustments,
-#    such as using combined objectives, or adding reaction-coupling
-#    constraints, or combining multiple models into a bigger one.
+#    such as using combined objectives, adding reaction-coupling constraints,
+#    and combining multiple models into a bigger one.
 #
 # Here we demonstrate the first, "modeling" approach. The main advantage of
 # this approach is that the modified model is still a FBC model, and you can
@@ -37,8 +37,7 @@
 # disadvantage is that the "common" FBC model interface does not easily express
 # various complicated constructions (communities, reaction coupling, enzyme
 # constraints, etc.) -- see the [example about modifying the
-# constraints](02c-constraint-modifications.md) for a closer look on how to
-# modify even such complex constructions.
+# constraints](02c-constraint-modifications.md) for more details.
 #
 # ## Getting the base model
 
