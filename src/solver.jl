@@ -39,10 +39,12 @@ end
 
 export Switch
 
-Base.:-(x::Switch) = Switch(-s.a, -s.b)
-Base.:+(x::Real, s::Switch) = b + a
+Base.:-(s::Switch) = Switch(-s.a, -s.b)
+Base.:+(x::Real, s::Switch) = s + x
 Base.:+(s::Switch, x::Real) = Switch(s.a + x, s.b + x)
-Base.:*(x::Real, s::Switch) = b * a
+Base.:-(x::Real, s::Switch) = -s + x
+Base.:-(s::Switch, x::Real) = Switch(s.a - x, s.b - x)
+Base.:*(x::Real, s::Switch) = s * x
 Base.:*(s::Switch, x::Real) = x == 0 ? C.EqualTo(0) : Switch(s.a * x, s.b * x)
 Base.:/(s::Switch, x::Real) = Switch(s.a / x, s.b / x)
 
