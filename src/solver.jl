@@ -118,13 +118,6 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Add an empty constraint to a JuMP model (this does not do anything).
-"""
-constraint_jump!(_, _, _::Nothing) = nothing
-
-"""
-$(TYPEDSIGNATURES)
-
 Construct a JuMP `Model` that describes the precise constraint system into the
 JuMP `Model` created for solving in `optimizer`, with a given optional
 `objective` and optimization `sense` chosen from [`Maximal`](@ref),
