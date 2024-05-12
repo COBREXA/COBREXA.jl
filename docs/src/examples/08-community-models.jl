@@ -33,6 +33,7 @@ download_model(
 import JSONFBCModels
 import GLPK
 import AbstractFBCModels.CanonicalModel as CM
+import ConstraintTrees as C
 
 ecoli1 = load_model("e_coli_core.json", CM.Model)
 ecoli1.reactions["EX_glc__D_e"].lower_bound = -1000.0
@@ -44,10 +45,12 @@ ecoli2 = deepcopy(ecoli1)
 ecoli1.reactions["CYTBD"].lower_bound = ecoli1.reactions["CYTBD"].upper_bound = 0.0
 ecoli2.reactions["FBA"].lower_bound = ecoli2.reactions["FBA"].upper_bound = 0.0
 
-# solve
+# ## Analysing the community
+
+my_community = Dict("bug1" => (ecoli1, 0.2), "bug2" => (ecoli2, 0.8))
 
 solution = community_flux_balance_analysis(
-    ["bug1" => (ecoli1, 0.2), "bug2" => (ecoli2, 0.8)],
+    my_community,
     ["EX_glc__D_e" => (-10.0, 0.0)],
     optimizer = GLPK.Optimizer,
 )
@@ -60,11 +63,9 @@ solution = community_flux_balance_analysis(
     atol = TEST_TOLERANCE, #src
 ) #src
 
-# ## Compare
+# ## Investigating the solution
 
 # We can now e.g. observe the differences in individual pairs of exchanges:
-
-import ConstraintTrees as C
 
 C.zip(
     tuple,
@@ -73,12 +74,12 @@ C.zip(
     Tuple{Float64,Float64},
 )
 
-# ## Which composition is best?
+# ...or use [`screen`](@ref) to efficiently find out which composition is best:
 
 screen(0.0:0.1:1.0) do ratio2
     ratio1 = 1 - ratio2
     res = community_flux_balance_analysis(
-        ["bug1" => (ecoli1, ratio1), "bug2" => (ecoli2, ratio2)],
+        [("bug1" => (ecoli1, ratio1)), ("bug2" => (ecoli2, ratio2))],
         ["EX_glc__D_e" => (-10.0, 0.0)],
         interface = :sbo, # usually more reproducible
         optimizer = GLPK.Optimizer,
@@ -88,10 +89,25 @@ end
 
 # ...seems a lot like `bug1` will eventually disappear.
 
-# ## Note about interfaces
+# ## Inspecting the interfaces
+#
+# Not all interfaces are made equally! Fortunately, it is simple to create your
+# own interface, by just manually assigning reactions to semantic groups using
+# ConstraintTrees.
 
 # Some work:
 flux_balance_constraints(ecoli1, interface = :sbo).interface
 
 # Some generally don't do well:
 flux_balance_constraints(ecoli1, interface = :boundary).interface
+
+# Do it manually:
+own_interface = deepcopy(flux_balance_constraints(ecoli1))
+own_interface *=
+    :interface^C.ConstraintTree(
+        :biomass => own_interface.fluxes.BIOMASS_Ecoli_core_w_GAM,
+        :exchanges => C.ConstraintTree(
+            k => v for (k, v) in own_interface.fluxes if startswith(string(k), "EX_")
+        ),
+    )
+own_interface.interface.exchanges

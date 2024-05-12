@@ -22,8 +22,8 @@ using COBREXA
 # glycolysis pathway of *E. coli*. In essence, the method attempts to find
 # metabolite concentrations (NB: not fluxes) that maximize the smallest
 # thermodynamic driving force through each reaction. See Noor, et al., "Pathway
-#thermodynamics highlights kinetic obstacles in central metabolism.", PLoS
-#computational biology, 2014, for more details.
+# thermodynamics highlights kinetic obstacles in central metabolism.", PLoS
+# computational biology, 2014, for more details.
 
 # To do this, we will first need a model that includes glycolysis, which we can
 # download if it is not already present.
@@ -52,7 +52,7 @@ model = load_model("e_coli_core.json")
 # automatically, you may use the
 # [eQuilibrator.jl](https://github.com/stelmo/Equilibrator.jl) package.
 
-reaction_standard_gibbs_free_energies = Dict{String,Float64}(
+reaction_standard_gibbs_free_energies = Dict{String,Float64}( # units of the energies are kJ/mol
     "ENO" => -3.8108376097261782,
     "FBA" => 23.376920310319235,
     "GAPD" => 0.5307809794271634,
@@ -66,16 +66,13 @@ reaction_standard_gibbs_free_energies = Dict{String,Float64}(
     "TPI" => 5.621932460512994,
 )
 
-
-# (The units of the energies are kJ/mol.)
-
 # ## Running basic max min driving force analysis
 
 # If a reference flux is not specified, it is assumed that every reaction in the
 # model should be included in the thermodynamic model, and that each reaction
 # proceeds in the forward direction. This is usually not intended, and can be
 # prevented by inputting a reference flux dictionary as shown below. This
-# dictionary can be a flux solution, the sign of each flux is used to determine
+# dictionary can be a flux solution. The sign of each flux is used to determine
 # if the reaction runs forward or backward.
 
 # ## Using a reference solution
@@ -125,5 +122,4 @@ mmdf_solution = max_min_driving_force_analysis(
     optimizer = GLPK.Optimizer,
 )
 
-# TODO verify correctness
 @test isapprox(mmdf_solution.min_driving_force, 2.79911, atol = TEST_TOLERANCE) #src

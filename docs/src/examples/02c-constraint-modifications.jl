@@ -18,18 +18,10 @@
 #
 # In the [previous example about model
 # adjustments](02b-model-modifications.md), we noted that some constraint
-# systems may be to complex to be changed within the limits of the usual FBC
+# systems may be too complex to be changed within the limits of the usual FBC
 # model view, and we may require a sharper tool to do the changes we need. This
 # example shows how to do that by modifying the constraint systems that are
 # generated within COBREXA to represent the metabolic model contents.
-#
-# ## Background: Model-to-optimizer pipeline
-#
-# ## Background: Constraint trees
-#
-# ## Changing the model-to-optimizer pipeline
-#
-# TODO clean up the stuff below:
 
 using COBREXA
 
@@ -42,52 +34,88 @@ download_model(
 import JSONFBCModels
 import GLPK
 
-model = load_model("e_coli_core.json")
+model = load_model("e_coli_core.json") # flux balance type model
 
-# ## Customizing the model
+# ## Background: Constraint trees
 
-# We can also modify the model. The most explicit way to do this is
-# to make a new constraint tree representation of the model.
+# COBREXA uses [ConstraintTrees](https://github.com/COBREXA/ConstraintTrees.jl)
+# to represent model structures internally. This framework provides a powerful
+# unified interface over all constraints and variables in the model, making its
+# manipulation much more convenient.
 
 import ConstraintTrees as C
 
-ctmodel = flux_balance_constraints(model)
+# In general, constraint-based models use fluxes as variables, and all the
+# constraints are in terms of them (or derived quantities). We can get a
+# constraint tree for the usual flux-balance-style models quite easily:
 
-fermentation = ctmodel.fluxes.EX_ac_e.value + ctmodel.fluxes.EX_etoh_e.value
+ct = flux_balance_constraints(model)
 
-forced_mixed_fermentation =
-    ctmodel * :fermentation^C.Constraint(fermentation, (10.0, 1000.0)) # new modified model is created
+# The fluxes are represented by constraints for individual variables:
 
-vt = optimized_values(
-    forced_mixed_fermentation,
-    objective = forced_mixed_fermentation.objective.value,
+ct.fluxes
+
+# The "mass balance" is represented as equality constraints:
+
+ct.flux_stoichiometry
+
+# The objective is represented as a "transparent reference" to the variables
+# that specify the biomass. Notice that it has no bound (thus it's technically
+# not a constraint, just a "label" for something that has a sensible semantic
+# and can be constrained or optimized).
+
+ct.objective
+
+# ## Customizing the model
+
+# New values and constraints can be easily created from the existing ones. For
+# example, this is a total flux through exchanges of typical fermentation
+# products:
+
+total_fermentation = ct.fluxes.EX_ac_e.value + ct.fluxes.EX_etoh_e.value
+
+# With the value in hand, we can constraint it (enforcing that the model
+# outputs at least some fermentation products):
+
+fermentation_constraint = C.Constraint(total_fermentation, (10.0, 1000.0))
+
+# We can assign a name to the constraint, creating a small (singleton)
+# constraint tree:
+
+:fermentation^fermentation_constraint
+
+# Named constraints can be freely combined, and we combine our new constraint
+# with the whole original constraint tree, getting a differently constrained
+# system:
+
+fermenting_ct = ct * :fermentation^fermentation_constraint
+
+# Constraint trees can be "solved", simply by choosing the objective and sending
+# them to the appropriate function. Here, [`optimized_values`](@ref) rewrites
+# the constraints into a JuMP model, which is subsequently solved and the
+# solved variables are transformed back into semantically labeled values, in
+# the same structure as the original constraint tree.
+
+solution = optimized_values(
+    fermenting_ct,
+    objective = fermenting_ct.objective.value,
     optimizer = GLPK.Optimizer,
 )
 
-@test isapprox(vt.objective, 0.6337, atol = TEST_TOLERANCE) #src
+@test isapprox(solution.objective, 0.633738, atol = TEST_TOLERANCE) #src
 
-# Models that cannot be solved return `nothing`. In the example below, the
-# underlying model is modified.
+# Models that can not be solved (for any reason) would instead return
+# `nothing`. We demonstrate that by breaking the bounds of the original
+# constraint trees to an unsolvable state:
 
-ctmodel.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
+ct.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
 
-#TODO explicitly show here how false sharing looks like
+solution = optimized_values(ct, objective = ct.objective.value, optimizer = GLPK.Optimizer)
 
-vt = optimized_values(
-    ctmodel,
-    objective = ctmodel.objective.value,
-    optimizer = GLPK.Optimizer,
-)
+print(solution)
 
-@test isnothing(vt) #src
+@test isnothing(solution) #src
 
-# Models can also be piped into the analysis functions
-
-ctmodel.fluxes.ATPM.bound = C.Between(8.39, 10000.0) # revert
-vt = optimized_values(
-    ctmodel,
-    objective = ctmodel.objective.value,
-    optimizer = GLPK.Optimizer,
-)
-
-@test isapprox(vt.objective, 0.8739, atol = TEST_TOLERANCE) #src
+# Several functions exist to simplify the construction of more complicated
+# constraints. See the reference documentation for [generic constraint
+# builders](../reference/builders.md#Generic-constraints) for details.
