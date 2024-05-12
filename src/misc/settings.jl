@@ -37,9 +37,9 @@ export set_optimizer
 """
 $(TYPEDSIGNATURES)
 
-Change a JuMP optimizer attribute. The attributes are optimizer-specific, refer
-to the JuMP documentation and the documentation of the specific optimizer for
-usable keys and values.
+Change a named JuMP optimizer attribute. The attribute names are
+optimizer-specific, refer to the JuMP documentation and the documentation of
+the specific optimizer for usable keys and values.
 """
 set_optimizer_attribute(attribute_key, value) =
     opt_model -> J.set_optimizer_attribute(opt_model, attribute_key, value)
@@ -49,8 +49,8 @@ export set_optimizer_attribute
 """
     silence
 
-Modification that disable all output from the JuMP optimizer (shortcut for
-`set_silent` from JuMP).
+Disable all output from the JuMP optimizer (shortcut for `set_silent` from
+JuMP).
 """
 silence(opt_model) = J.set_silent(opt_model)
 
@@ -59,8 +59,9 @@ export silence
 """
 $(TYPEDSIGNATURES)
 
-Portable way to set a time limit in seconds for the optimizer computation.
+Set a time limit in seconds for the optimizer computation (shortcut for
+`set_time_limit_sec` from JuMP).
 """
-set_time_limit_sec(limit) = opt_model -> J.set_time_limit_sec(opt_model, limit)
+set_time_limit(limit::Real) = opt_model -> J.set_time_limit_sec(opt_model, limit)
 
-export set_time_limit_sec
+export set_time_limit

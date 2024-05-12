@@ -29,7 +29,7 @@
 # - [`set_optimizer`](@ref) for replacing the optimizer implementation used
 #   (this is not quite useful in this case, but becomes beneficial with more
 #   complex, multi-stage optimization problems)
-# - [`set_time_limit_sec`](@ref) for putting a time limit on the solver
+# - [`set_time_limit`](@ref) for putting a time limit on the solver
 #   computation (this is quite useful for MILP solvers)
 #
 # To demonstrate this, let's use the usual toy model:
@@ -64,7 +64,7 @@ solution = flux_balance_analysis(
 solution = flux_balance_analysis(
     model,
     optimizer = Tulip.Optimizer,
-    settings = [set_optimizer_attribute("IPM_IterationsLimit", 2), set_time_limit_sec(0.1)],
+    settings = [set_optimizer_attribute("IPM_IterationsLimit", 2), set_time_limit(0.1)],
 )
 
 println(solution)
