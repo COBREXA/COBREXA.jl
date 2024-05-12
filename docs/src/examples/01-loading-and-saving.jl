@@ -39,7 +39,7 @@ download_model(
     "b4db506aeed0e434c1f5f1fdd35feda0dfe5d82badcfda0e9d1342335ab31116",
 )
 
-#md #!!! tip "Tip: How do I get the model hash?"
+#md #!!! tip "How do I get the model hash?"
 #md #    We do not need to fill in the hash values immediately -- instead, it's possible to simply run the function once, and then copy the reported hash value from the warning message into the script.
 
 # ## Loading models
