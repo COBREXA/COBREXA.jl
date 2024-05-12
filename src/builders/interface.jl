@@ -58,7 +58,7 @@ function interface_constraints(
     prep(
         id::Symbol,
         (mod, interface, multiplier)::Tuple{C.ConstraintTree,C.ConstraintTreeElem,<:Real},
-    ) = prep(id, (mod, C.map(c -> c * multiplier, interface)))
+    ) = prep(id, (mod, scale_constraints(interface, multiplier)))
     prep(id::Symbol, (mod, interface)::Tuple{C.ConstraintTreeElem,C.ConstraintTreeElem}) =
         (id^(:network^mod * :interface^interface))
     prep_pair((a, b)) = prep(a, b)
