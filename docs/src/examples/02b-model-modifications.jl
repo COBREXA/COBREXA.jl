@@ -22,23 +22,22 @@
 # model behaves in the changed conditions.
 #
 # With COBREXA, there are 2 different approaches that one can take:
-# 1. We can change the model structure and use the changed metabolic model.
-#    This is better for doing simple and small but systematic modifications,
+# 1. We can change the model structure, and use the changed metabolic model.
+#    This is better for doing simple and small, but systematic modifications,
 #    such as removing metabolites, adding reactions, etc.
 # 2. We can intercept the pipeline that converts the metabolic model to
-#    constraints and then to the optimizer representation, and make small
-#    modifications along that way. This is better for various technical model
-#    adjustments, such as using combined objectives or adding reaction-coupling
-#    constraints.
+#    constraints and to the optimizer representation, and make modifications
+#    along that way. This is better suited to making global model adjustments,
+#    such as using combined objectives, adding reaction-coupling constraints,
+#    and combining multiple models into a bigger one.
 #
-# Here we demonstrate the first, "modelling" approach. The main advantage of
-# that approach is that the modified model is still a FBC model, and you can
+# Here we demonstrate the first, "modeling" approach. The main advantage of
+# this approach is that the modified model is still a FBC model, and we can
 # export, save and share it via the AbstractFBCModels interace. The main
 # disadvantage is that the "common" FBC model interface does not easily express
 # various complicated constructions (communities, reaction coupling, enzyme
 # constraints, etc.) -- see the [example about modifying the
-# constraints](02c-constraint-modifications.md) for a closer look on how to
-# modify even such complex constructions.
+# constraints](02c-constraint-modifications.md) for more details.
 #
 # ## Getting the base model
 
@@ -63,7 +62,7 @@ import AbstractFBCModels.CanonicalModel as CM
 model = convert(CM.Model, load_model("e_coli_core.json"))
 
 # The canonical model is quite easy to work with, made basically of the most
-# accessible Julia structures possible. For example, you can observe a reaction
+# accessible Julia structures possible. For example, we can look at a reaction
 # as such:
 
 model.reactions["PFK"]
@@ -72,11 +71,14 @@ model.reactions["PFK"]
 
 model.reactions["CS"].stoichiometry
 
+#md # !!! tip "Create custom model types!"
+#md #     For some applications, `CanonicalModel` might be too restrictive. Creating a custom model type that perfectly fits a use-case can be done simply by overloading several functions. The documentation of [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) describes the process closer. Further, all model types that adhere to the AbstractFBCModels' interface will "just work" with _all_ analysis functions in COBREXA!
+
 # ## Running FBA on modified models
 #
-# Since the canonical model is completely mutable, you can change it in any way
-# you like and feed it directly into [`flux_balance_analysis`](@ref). Let's
-# first find a "original" solution, so that we have a base solution for
+# Since the canonical model is completely mutable, we can change it in any way
+# we like and feed the result directly into [`flux_balance_analysis`](@ref).
+# Let's first find a "original" solution, so that we have a base solution for
 # comparing:
 
 import GLPK
@@ -102,9 +104,9 @@ low_glucose_solution.objective
 # ## Preventing reference-based sharing problems with `deepcopy`
 #
 # People often want to try different perturbations with a single base model. It
-# would therefore look feasible to save retain the "unmodified" model in a
-# single variable, and make copies of that with the modifications applied.
-# Let's observe what happens:
+# would therefore look feasible to save the "unmodified" model in a single
+# variable, and make copies of that with the modifications applied. Let's
+# observe what happens:
 
 base_model = convert(CM.Model, load_model("e_coli_core.json")) # load the base
 
@@ -121,8 +123,8 @@ base_model.reactions["EX_glc__D_e"]
 # scenarios for data processing efficiency and computational speed, it
 # unfortunately breaks this simple use-case.
 #
-# To fix the situation, you should always ensure to make an actual copy of the
-# model data by either carefully copying the changed parts (e.g., using a
+# To fix this situation, we must always remember to make an actual copy of the
+# model data, by either carefully copying the changed parts (e.g., using a
 # similar approach as with the "shallow" `copy()`), or simply by copying the
 # whole model structure as is with `deepcopy()`. Let's try again:
 
@@ -141,7 +143,7 @@ modified_model.reactions["EX_glc__D_e"].lower_bound = -123.0
       base_model.reactions["EX_glc__D_e"].lower_bound #src
 
 #md # !!! danger "Avoid overwriting base models when using in-place modifications"
-#md #     Whenever you are changing a copy of the model, make sure that you are not changing it by a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
+#md #     Whenever changing a copy of the model, check that the base model is not inadvertently changed via a reference. Always use some copy mechanism such as `copy` or `deepcopy` to prevent the default reference-based sharing.
 
 # ## Observing the differences
 #
@@ -163,5 +165,5 @@ flux_changes =
 # ...and again see what changed most:
 sort(collect(flux_changes), by = last)
 
-#md # !!! tip "For realistic comparisons always use a uniquely defined flux solution"
+#md # !!! tip "Always use a uniquely defined flux solutions for flux comparisons"
 #md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.

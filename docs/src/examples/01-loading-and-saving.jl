@@ -39,17 +39,17 @@ download_model(
     "b4db506aeed0e434c1f5f1fdd35feda0dfe5d82badcfda0e9d1342335ab31116",
 )
 
-# (You do not need to fill in the hash values immediately; simply run the
-# function once and then copy the reported hash value into your script.)
+#md #!!! tip "How do I get the model hash?"
+#md #    We do not need to fill in the hash values immediately -- instead, it's possible to simply run the function once, and then copy the reported hash value from the warning message into the script.
 
 # ## Loading models
 
-# To load the flux-balance constrained models, COBREXA uses the
-# [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl)
-# framework to import various kinds of models including SBML, JSON and the
-# legacy Matlab-formatted "COBRA toolbox" models.
+# To load genome-scale metabolic models, COBREXA uses the
+# [AbstractFBCModels](https://github.com/COBREXA/AbstractFBCModels.jl) framework
+# to import various kinds of models including SBML, JSON and the legacy
+# Matlab-formatted "COBRA toolbox" models.
 
-# All models can be loaded automatically using [`load_model`](@ref); but you
+# All models can be loaded automatically using [`load_model`](@ref); but one
 # must import the model-type specific packages to load the functionality. (This
 # step is required to keep the "base" COBREXA as efficient and fast-loading as
 # possible.)
@@ -60,7 +60,7 @@ model1 = load_model("e_coli_core.json")
 
 model2 = load_model("e_coli_core.xml")
 
-# You can explore the contents of the models using the AbstractFBCModels'
+# We can now explore the contents of the models using the AbstractFBCModels'
 # interface:
 import AbstractFBCModels as A
 
@@ -75,8 +75,8 @@ A.reactions(model2)
 # ### Converting model types
 
 # Normally, [`load_model`](@ref) is forced to guess the model type from the
-# filename suffix. You can help it by specifying the model type yourself (this
-# also allows you to work with non-standard file suffixes):
+# filename suffix. We can specify the model type ourselves (this also allows
+# the users to work with non-standard file suffixes):
 
 model = load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json")
 
@@ -89,13 +89,20 @@ model_converted_to_json = load_model("e_coli_core.xml", JSONFBCModels.JSONFBCMod
 model_in_julia_structures =
     load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
 
+#md #!!! tip "Compatibility with COBREXA v1.x"
+#md #    `CanonicalModel` is a newer, cleaned-up version of the `StandardModel` type used in COBREXA version 1. For all code that relied on `StandardModel`, the canonical one should work just as well.
+
 # The above command specifies all model types explicitly, leaving least room
-# for guessing-based errors. Note that it is also possible to convert all model
-# types to each other simply by using Julia's `convert`.
+# for guessing-based errors.
+#
+# If required, it is also possible to convert all model types to each other
+# simply by using Julia's `convert`:
+
+model_in_json_structure = convert(JSONFBCModels.JSONFBCModel, model_in_julia_structures)
 
 # ## Saving models
 
-# You can write your models to storage by using [`save_model`](@ref):
+# The models can be saved to file storage by using [`save_model`](@ref):
 save_model(model_converted_to_json, "e_coli_core_from_sbml.json")
 
 # Expectably, the file will contain the JSON with the model description:

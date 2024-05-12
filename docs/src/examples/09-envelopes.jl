@@ -15,6 +15,10 @@
 # limitations under the License.                                            #src
 
 # # Production envelopes
+# Production envelopes determine the flux of the model objective at different
+# values of specific reactions, spanning their variability. We can use the
+# builtin function [`objective_production_envelope`](@ref) to quickly simulate
+# this.
 
 using COBREXA
 

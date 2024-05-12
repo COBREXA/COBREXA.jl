@@ -51,7 +51,7 @@ solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
 # fluxes, the objective value, and possibly others (given by what the model
 # contains).
 #
-# You can explore the dot notation to explore the solution, extracting e.g. the
+# We can use the dot notation to explore the solution, extracting e.g. the
 # value of the objective:
 
 solution.objective
@@ -61,10 +61,9 @@ solution.objective
 
 solution.fluxes.PFK
 
+#md #!!! tip "Browsing the model structure"
+#md #    After typing `solution.` in the julia REPL, one can press [tab] to quickly see what is in the next level of the tree. Unfortunately (due to typesystem limitations) this currently works only for the topmost level of the tree.
+
 # ...or make a "table" of all fluxes through all reactions:
 
 collect(solution.fluxes)
-
-# ## Advanced: Finding flux balance via the low-level interface
-
-# TODO ConstraintTrees (maybe put this into a separate example?)
