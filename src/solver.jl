@@ -63,7 +63,7 @@ function substitute_jump(val::C.LinearValue, vars)
             J.add_to_expression!(e, w, vars[i])
         end
     end
-    e
+    return e
 end
 
 """
@@ -83,7 +83,7 @@ function substitute_jump(val::C.QuadraticValue, vars)
             J.add_to_expression!(e, w, vars[i], vars[j])
         end
     end
-    e
+    return e
 end
 
 """
@@ -205,7 +205,7 @@ convert the constraints into a suitable JuMP optimization model.
 """
 function optimized_model(om; output::C.ConstraintTreeElem)
     J.optimize!(om)
-    is_solved(om) ? C.substitute_values(output, J.value.(om[:x])) : nothing
+    return is_solved(om) ? C.substitute_values(output, J.value.(om[:x])) : nothing
 end
 
 export optimized_model
@@ -218,5 +218,5 @@ Like [`optimized_model`](@ref) but only returns the objective value (or
 """
 function optimized_objective(om)
     J.optimize!(om)
-    is_solved(om) ? J.objective_value(om) : nothing
+    return is_solved(om) ? J.objective_value(om) : nothing
 end
