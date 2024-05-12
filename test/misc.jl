@@ -5,7 +5,7 @@
 
 @testset "Switch bound" begin
     x = Switch(5, 10)
-    y = -((((((-x) + 1) * 4) / 2) / 2) - 1)
+    y = -(((0.5 * (((1 - x) + 1) * 4)) / 2) - 2)
     @test isapprox(x.a, y.a)
     @test isapprox(x.b, y.b)
 end
