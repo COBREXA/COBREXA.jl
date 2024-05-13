@@ -73,3 +73,19 @@ end
     )
     @test isnothing(r)
 end
+
+@testset "Many ways to specify an interface" begin
+    x = C.variables(keys = [:x, :y], bounds = (0, 1))
+    x *= :interface^x
+    c = interface_constraints([
+        :a => x,
+        :b => (x, 2),
+        :c => (x, :interface),
+        :d => (x, :interface, 3),
+    ])
+
+    @test issetequal(keys(c.interface), [:x, :y])
+    @test c.interface_balance.x.value.idxs == [1, 3, 5, 7, 9]
+    @test c.interface_balance.x.value.weights == [1.0, 2.0, 1.0, 3.0, -1.0]
+
+end
