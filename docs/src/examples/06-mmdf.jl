@@ -92,7 +92,7 @@ reference_flux = Dict(
     "PFK" => 1.0,
     "PGI" => 1.0,
     "PGK" => -1.0,
-    "PGM" => -1.0,
+    "PGM" => -0.0,
     "PYK" => 1.0,
     "TPI" => 1.0,
 )
