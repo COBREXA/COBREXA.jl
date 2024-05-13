@@ -121,4 +121,4 @@ mmdf_solution = max_min_driving_force_analysis(
 )
 
 @test isapprox(mmdf_solution.min_driving_force, 1.8805120168117213, atol = TEST_TOLERANCE) #src
-@test -6 < mmdf_solution.log_concentrations.pep_c < -5
+@test -6 < mmdf_solution.log_concentrations.pep_c < -5 #src
