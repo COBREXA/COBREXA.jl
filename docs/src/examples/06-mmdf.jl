@@ -106,6 +106,7 @@ mmdf_solution = max_min_driving_force_analysis(
     model;
     reaction_standard_gibbs_free_energies,
     reference_flux,
+    constant_concentrations = Dict("g3p_c" => exp(-8.5)),
     concentration_ratios = Dict(
         "atp" => ("atp_c", "adp_c", 10.0),
         "nadh" => ("nadh_c", "nad_c", 0.13),
@@ -119,5 +120,5 @@ mmdf_solution = max_min_driving_force_analysis(
     optimizer = GLPK.Optimizer,
 )
 
-@test isapprox(mmdf_solution.min_driving_force, 2.79911, atol = TEST_TOLERANCE) #src
-@test mmdf_solution.log_concentrations.pep_c > -7
+@test isapprox(mmdf_solution.min_driving_force, 1.8805120168117213, atol = TEST_TOLERANCE) #src
+@test -6 < mmdf_solution.log_concentrations.pep_c < -5
