@@ -39,10 +39,12 @@ end
 
 export Switch
 
-Base.:-(x::Switch) = Switch(-s.a, -s.b)
-Base.:+(x::Real, s::Switch) = b + a
+Base.:-(s::Switch) = Switch(-s.a, -s.b)
+Base.:+(x::Real, s::Switch) = Switch(x + s.a, x + s.b)
 Base.:+(s::Switch, x::Real) = Switch(s.a + x, s.b + x)
-Base.:*(x::Real, s::Switch) = b * a
+Base.:-(x::Real, s::Switch) = Switch(x - s.a, x - s.b)
+Base.:-(s::Switch, x::Real) = Switch(s.a - x, s.b - x)
+Base.:*(x::Real, s::Switch) = x == 0 ? C.EqualTo(0) : Switch(s.a * x, s.b * x)
 Base.:*(s::Switch, x::Real) = x == 0 ? C.EqualTo(0) : Switch(s.a * x, s.b * x)
 Base.:/(s::Switch, x::Real) = Switch(s.a / x, s.b / x)
 
@@ -61,7 +63,7 @@ function substitute_jump(val::C.LinearValue, vars)
             J.add_to_expression!(e, w, vars[i])
         end
     end
-    e
+    return e
 end
 
 """
@@ -81,7 +83,7 @@ function substitute_jump(val::C.QuadraticValue, vars)
             J.add_to_expression!(e, w, vars[i], vars[j])
         end
     end
-    e
+    return e
 end
 
 """
@@ -112,13 +114,6 @@ function constraint_jump!(model, expr, b::Switch)
     boolean = J.@variable(model, binary = true)
     J.@constraint(model, expr == b.a + boolean * (b.b - b.a))
 end
-
-"""
-$(TYPEDSIGNATURES)
-
-Add an empty constraint to a JuMP model (this does not do anything).
-"""
-constraint_jump!(_, _, _::Nothing) = nothing
 
 """
 $(TYPEDSIGNATURES)
@@ -203,7 +198,7 @@ convert the constraints into a suitable JuMP optimization model.
 """
 function optimized_model(om; output::C.ConstraintTreeElem)
     J.optimize!(om)
-    is_solved(om) ? C.substitute_values(output, J.value.(om[:x])) : nothing
+    return is_solved(om) ? C.substitute_values(output, J.value.(om[:x])) : nothing
 end
 
 export optimized_model
@@ -216,5 +211,5 @@ Like [`optimized_model`](@ref) but only returns the objective value (or
 """
 function optimized_objective(om)
     J.optimize!(om)
-    is_solved(om) ? J.objective_value(om) : nothing
+    return is_solved(om) ? J.objective_value(om) : nothing
 end

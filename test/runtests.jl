@@ -60,6 +60,9 @@ run_test_file("data_downloaded.jl")
 
 @testset "COBREXA test suite" begin
     run_doc_examples()
+    @testset "Miscellaneous tests" begin
+        run_test_file("misc.jl")
+    end
     run_test_file("aqua.jl")
 end
 

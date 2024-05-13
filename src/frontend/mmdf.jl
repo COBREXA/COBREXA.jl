@@ -157,23 +157,28 @@ function max_min_driving_force_constraints(
             end,
         ) + :min_driving_force^C.variable()
 
-    driving_forces = C.ConstraintTree(
+    driving_forces = C.Tree{Tuple{Bool,C.Constraint}}(
         let r = Symbol(rid),
             rf = reference_flux[rid],
             df = dGr0 + R * T * constraints.log_concentration_stoichiometry[r].value
 
             r => if isapprox(rf, 0.0, atol = reference_flux_atol)
-                C.Constraint(df, C.EqualTo(0))
+                (false, C.Constraint(df, C.EqualTo(0)))
             else
-                C.Constraint(rf > 0 ? -df : df, C.Between(0, Inf))
+                (true, C.Constraint(rf > 0 ? -df : df, C.Between(0, Inf)))
             end
         end for (rid, dGr0) in reaction_standard_gibbs_free_energies
     )
 
     constraints *
-    :driving_forces^driving_forces *
-    :min_driving_force_thresholds^C.map(driving_forces) do c
-        less_or_equal_constraint(constraints.min_driving_force, c)
+    :driving_forces^C.map(last, driving_forces) *
+    :min_driving_force_thresholds^C.map(driving_forces) do (do_bound, c)
+        if do_bound
+            less_or_equal_constraint(constraints.min_driving_force, c)
+        else
+            # ignores the bound but leaves te value in there
+            difference_constraint(constraints.min_driving_force, c, nothing)
+        end
     end *
     :concentration_ratio_constraints^C.ConstraintTree(
         Symbol(cid) => difference_constraint(

@@ -59,6 +59,7 @@ function frontend_parsimonious_optimized_values(
     args...;
     builder_kwargs = NamedTuple(),
     objective = identity,
+    objective_value = nothing,
     output = identity,
     sense = Maximal,
     optimizer,
@@ -76,6 +77,7 @@ function frontend_parsimonious_optimized_values(
     parsimonious_optimized_values(
         constraints;
         objective = objective(constraints),
+        objective_value,
         output = output(constraints),
         sense,
         settings,
