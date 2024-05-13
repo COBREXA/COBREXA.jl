@@ -30,6 +30,14 @@ end
     ).x == 0.0
 end
 
+@testset "Builders" begin
+    c = C.variables(keys = [:x, :y], bounds = C.Between(0, 1))
+    a = less_or_equal_constraint(c.x, c.y)
+    b = -greater_or_equal_constraint(c.y, c.x)
+    @test a.value.idxs == b.value.idxs && a.value.weights == b.value.weights
+    @test a.bound.lower == b.bound.lower && a.bound.upper == b.bound.upper
+end
+
 @testset "Bounds" begin
     x = COBREXA.positive_bound_contribution(Switch(1.0, 2.0))
     @test typeof(x) == C.Between
