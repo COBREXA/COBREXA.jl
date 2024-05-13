@@ -30,6 +30,7 @@ in [`parsimonious_flux_balance_analysis`](@ref).
 function parsimonious_optimized_values(
     constraints::C.ConstraintTreeElem;
     objective::C.Value,
+    objective_value::Maybe{Float64} = nothing,
     settings = [],
     parsimonious_objective::C.Value,
     parsimonious_optimizer = nothing,
@@ -42,15 +43,20 @@ function parsimonious_optimized_values(
     # arguments need to be kept in sync with
     # frontend_parsimonious_optimized_values
 
-    # first solve the optimization problem with the original objective
     om = optimization_model(constraints; objective, kwargs...)
     for m in settings
         m(om)
     end
-    J.optimize!(om)
-    is_solved(om) || return nothing
 
-    target_objective_value = J.objective_value(om)
+    # first solve the optimization problem with the original objective
+    # (if required)
+    target_objective_value = if isnothing(objective_value)
+        J.optimize!(om)
+        is_solved(om) || return nothing
+        J.objective_value(om)
+    else
+        float(objective_value) # make sure it's a pure floaty type
+    end
 
     # switch to parsimonizing the solution w.r.t. to the objective value
     isnothing(parsimonious_optimizer) || J.set_optimizer(om, parsimonious_optimizer)

@@ -51,3 +51,25 @@ end
     @test x.a.bound.lower == -10.0
     @test x.a.bound.upper == 10.0
 end
+
+@testset "Failing parsimonious objectives" begin
+    c = :x^C.variable(bound = (0, 1))
+    r = parsimonious_optimized_values(
+        c,
+        objective = c.x.value,
+        parsimonious_objective = c.x.value,
+        objective_value = 1.015,
+        tolerances = [absolute_tolerance_bound(0.01 * i) for i = 1:5],
+        optimizer = GLPK.Optimizer,
+    )
+    @test r.x > 0.99
+    r = parsimonious_optimized_values(
+        c,
+        objective = c.x.value,
+        parsimonious_objective = c.x.value,
+        objective_value = 1.0001,
+        tolerances = [absolute_tolerance_bound(0.00001)],
+        optimizer = GLPK.Optimizer,
+    )
+    @test isnothing(r)
+end
