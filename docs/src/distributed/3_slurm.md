@@ -15,7 +15,7 @@ relatively complex tasks:
 
 Fortunately, the package
 [`ClusterManagers.jl`](https://github.com/JuliaParallel/ClusterManagers.jl)
-does that for us. For simplicily, here we assume that the HPC is scheduled by
+does that for us. For simplicity, here we assume that the HPC is scheduled by
 [Slurm](https://slurm.schedmd.com/), but other scheduling environments are
 supported in a very similar way.
 
