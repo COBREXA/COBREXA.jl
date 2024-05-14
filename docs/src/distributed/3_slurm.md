@@ -57,6 +57,15 @@ results = flux_variability_analysis(..., workers=workers())
     [package documentation](https://github.com/JuliaParallel/ClusterManagers.jl/blob/master/README.md)
     for details.
 
+!!! warning "Using Julia environments with Distributed"
+    Sometimes the project configuration is not forwarded to the workers
+    automatically, resulting to package version mismatches and other problems.
+    When utilizing custom project folders (by running Julia with `julia
+    --project=...`), use the following form of `addprocs_slurm` instead:
+    ```julia
+    addprocs_slurm(available_workers, exeflags=`--project=$(Base.active_project())`)
+    ```
+
 ## Wrapping your script in a Slurm batch job
 
 To be able to submit your script for later processing using the [`sbatch` Slurm
