@@ -132,8 +132,8 @@ ecoli_core_reaction_kcats # units = 1/s
 # isozymes that can catalyze a reaction. A turnover number needs to be assigned
 # to each isozyme, as shown below. Additionally, some enzymes are composed of
 # multiple subunits, which differ in subunit stoichiometry. This also needs to
-# be accounted for. Assuming a stoichiometry of 1 for everything seems to be
-# okay if you do not have more information.
+# be accounted for. Assuming a stoichiometry of 1 for everything tends to work
+# just right OK if there is no better information available.
 
 reaction_isozymes = Dict{String,Dict{String,Isozyme}}() # a mapping from reaction IDs to isozyme IDs to isozyme structs.
 for rid in A.reactions(model)
@@ -151,7 +151,7 @@ for rid in A.reactions(model)
 end
 
 #md #!!! tip "Turnover number units"
-#md #    Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting that you should rescale the turnover numbers to 1/h if you want to use the conventional flux units.
+#md #    Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting to rescale the turnover numbers to 1/h in order to use the conventional flux units.
 
 # ## Enzyme molar masses
 
@@ -163,7 +163,7 @@ end
 #md # <details><summary><strong>Gene product masses</strong></summary>
 #md # ```
 # This data is downloaded from Uniprot for E. coli K12, gene mass in kDa. To
-# obtain these data yourself, go to [Uniprot](https://www.uniprot.org/) and
+# obtain these data manually, go to [Uniprot](https://www.uniprot.org/) and
 # search using these terms: `reviewed:yes AND organism:"Escherichia coli
 # (strain K12) [83333]"`.
 const ecoli_core_gene_product_masses = Dict(
@@ -314,7 +314,7 @@ const ecoli_core_gene_product_masses = Dict(
 ecoli_core_gene_product_masses # unit kDa = kg/mol
 
 #md #!!! tip "Molar mass units"
-#md #    Just as with the turnover numbers, take extreme care about the units of the molar masses. In literature they are usually reported in Da or kDa (g/mol). However, as noted above, flux units are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e` (where `k` is the turnover number) it suggests that the enzyme variable will have units of mmol/gDW. The molar masses come into play when setting the capacity limitations, e.g. usually a sum over all enzymes weighted by their molar masses as `e * M`. Thus, if your capacity limitation has units of g/gDW, then the molar masses must have units of g/mmol (i.e., kDa).
+#md #    Just as with the turnover numbers, take extreme care about the units of the molar masses. In literature they are usually reported in Da or kDa (g/mol). However, as noted above, flux units are typically mmol/gDW/h. Since the enzyme kinetic equation is `v = k * e` (where `k` is the turnover number) it suggests that the enzyme variable will have units of mmol/gDW. The molar masses come into play when setting the capacity limitations, e.g. usually a sum over all enzymes weighted by their molar masses as `e * M`. Thus, if the capacity limitation has units of g/gDW, then the molar masses must have units of g/mmol (i.e., kDa).
 
 # ## Capacity limitation
 
@@ -343,8 +343,8 @@ ec_solution.objective
 
 # One can also observe many interesting thing, e.g. the amount of gene product
 # material required for the system to run. Importantly, the units of these
-# values depends on the units you used to set the turnover numbers and protein
-# molar masses.
+# values depend on the units used to set the turnover numbers and protein molar
+# masses.
 
 ec_solution.gene_product_amounts
 

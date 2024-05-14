@@ -1,8 +1,8 @@
 
 # Local parallel processing
 
-To run an analysis in parallel, you first need to load the `Distributed`
-package and add a few worker processes. For example, you may start 5 local
+To run an analysis in parallel, we first need to load the `Distributed`
+package and add a few worker processes. For example, we may start 5 local
 processes (that may utilize 5 CPUs) as follows
 
 ```julia
@@ -12,10 +12,10 @@ addprocs(5)
 
 !!! note "`Distributed.jl` installation"
     `Distributed.jl` usually comes pre-installed with Julia distribution, but
-    you may still need to "enable" it by typing `] add Distributed`.
+    one may still need to "enable" it by typing `] add Distributed`.
 
-You may check that the workers are really there, using `workers()`. In this
-case, it should give you a vector of _worker IDs_, very likely equal to
+To check that the workers are really there, use `workers()`. In this
+case, it should return a vector of _worker IDs_, very likely equal to
 `[2,3,4,5,6]`.
 
 Each of the processes contains a self-sufficient image of Julia that can act
@@ -27,21 +27,21 @@ analysis scale.
 !!! warning "Using Julia environments with Distributed"
     In certain conditions, the Distributed package does not properly forward
     the project configuration to the workers, resulting to package version
-    mismatches and other problems. If you use custom project folders, use the
-    following form of `addprocs` instead:
+    mismatches and other problems. For pipelines that run in custom project
+    folders, use the following form of `addprocs` instead:
     ```julia
     addprocs(5, exeflags=`--project=$(Base.active_project())`)
     ```
 
-Packages (COBREXA and your selected solver) must be loaded at all processes,
-which you can ensure using the "everywhere" macro (from `Distributed` package):
+Packages (COBREXA and the selected solver) must be loaded at all processes,
+which may ensured using the "everywhere" macro (from `Distributed` package):
 ```julia
 @everywhere using COBREXA, GLPK
 ```
 
-Utilizing the prepared worker processes is then straightforward: You pass the
+Utilizing the prepared worker processes is then straightforward: We pass the
 list of workers to the selected analysis function using the `workers` keyword
-argument, and the parallel processing is automatically orchestrated for you:
+argument, and the parallel processing is orchestrated automatically:
 
 ```julia
 model = load_model("e_coli_core.xml")
