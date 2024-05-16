@@ -31,7 +31,7 @@ With ConstraintTrees, the typical workflow in COBREXA is as follows:
    - possibly, multiple types and groups of raw data can be soaked into the
      constraint tree
 3. Analysis functionality of COBREXA is used to solve the system described by
-   the constraitn tree, and extract useful information from the solutions.
+   the constraint tree, and extract useful information from the solutions.
 
 COBREXA mainly provides functionality to make this workflow easy to use for
 many various purposes:
@@ -91,13 +91,13 @@ many various purposes:
   - [`optimized_values`](@ref)
   - [`constraints_variability`](@ref)
 
-!!! tip "Exploring and customizing the frontend analysis functions"
-    If you want to know which builder function is used to create or modify some
-    kind of constraint tree in COBREXA, use the "link to source code" feature
-    in the frontend function's individual documentation. The source code of
-    front-end functions is written to be as easily re-usable as possible -- you
-    can simply copy-paste it into your program, and immediately start building
-    your own specialized and customized front-end functions.
+!!! tip "Exploring and customizing the front-end analysis functions"
+    To know which builder function is used to create or modify some kind of
+    constraint tree in COBREXA, use the "link to source code" feature in the
+    front-end function's individual documentation. The source code of front-end
+    functions is written to be as easily re-usable as possible -- one can
+    simply copy-paste it into the program, and immediately start building
+    specialized and customized front-end functions.
 
 Technical description of the constraint tree functionality, together with
 examples of basic functionality and many useful utility functions is available

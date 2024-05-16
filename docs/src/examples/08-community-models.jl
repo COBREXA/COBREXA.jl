@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Community FBA models
+# # Community FBA models (TODO)
 
 using COBREXA
 
@@ -91,9 +91,9 @@ end
 
 # ## Inspecting the interfaces
 #
-# Not all interfaces are made equally! Fortunately, it is simple to create your
-# own interface, by just manually assigning reactions to semantic groups using
-# ConstraintTrees.
+# Not all interfaces are made equally! Fortunately, it is simple to create a
+# custom interface, by just manually assigning reactions to semantic groups
+# using ConstraintTrees.
 
 # Some work:
 flux_balance_constraints(ecoli1, interface = :sbo).interface

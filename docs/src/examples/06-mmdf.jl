@@ -49,7 +49,7 @@ model = load_model("e_coli_core.json")
 # We will need ΔᵣG⁰ data for each reaction we want to include in the
 # thermodynamic model. To generate this data manually, use
 # [eQuilibrator](https://equilibrator.weizmann.ac.il/). To generate
-# automatically, you may use the
+# automatically, it is possible to use the
 # [eQuilibrator.jl](https://github.com/stelmo/Equilibrator.jl) package.
 
 reaction_standard_gibbs_free_energies = Dict{String,Float64}( # units of the energies are kJ/mol

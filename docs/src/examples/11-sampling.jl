@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Flux sampling
+# # Flux sampling (TODO)
 
 using COBREXA
 
@@ -28,8 +28,8 @@ import JSONFBCModels, GLPK
 
 model = load_model("e_coli_core.json")
 
-# note here: this needs the optimizer to generate warmup. If you have warmup,
-# you can do without one.
+# note here: this needs the optimizer to generate warmup. If we have warmup,
+# we can do without the optimizer
 s = flux_sample(
     model,
     optimizer = GLPK.Optimizer,
