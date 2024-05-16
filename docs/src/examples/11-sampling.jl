@@ -52,4 +52,4 @@ s = flux_sample(
 # of the values in these vectors is fixed. You can thus e.g. create a good
 # matrix for plotting the sample as 2D scatterplot:
 
-[ s.O2t s.CO2t ]
+[s.O2t s.CO2t]
