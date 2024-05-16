@@ -48,5 +48,5 @@ solution = loopless_flux_balance_analysis(model; optimizer = GLPK.Optimizer)
 @test isapprox(solution.objective, 0.8739215069684303, atol = TEST_TOLERANCE) #src
 
 # Loopless constraints can also be added to any model (e.g. enzyme constrained
-# models). See the source code [`loopless_flux_balance_constraints`](@ref) to
-# see how this can be done.
+# models). Refer to the source code of
+# [`loopless_flux_balance_constraints`](@ref) for guidance.
