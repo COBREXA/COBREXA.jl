@@ -17,9 +17,9 @@
 
 using COBREXA
 
-# Here we will construct a community FBA model of two  *E. coli* "core" models
-# that can interact by exchanging selected metabolites. To do this, we will need
-# the model, which we can download if it is not already present.
+# Here we construct a community FBA model of two  *E. coli* "core" models that
+# can interact by exchanging selected metabolites. To do this, we will need the
+# model, which we can download if it is not already present.
 
 download_model(
     "http://bigg.ucsd.edu/static/models/e_coli_core.json",
@@ -35,20 +35,29 @@ import GLPK
 import AbstractFBCModels.CanonicalModel as CM
 import ConstraintTrees as C
 
+# The core model has an artificial bound on input glucose; here we unblock that
+# one, and we are going to add a community-global glucose intake bound later.
+
 ecoli1 = load_model("e_coli_core.json", CM.Model)
 ecoli1.reactions["EX_glc__D_e"].lower_bound = -1000.0
 ecoli1.reactions["EX_glc__D_e"].upper_bound = 1000.0
 ecoli2 = deepcopy(ecoli1)
 
-# customize models a bit
+# To create a community that is actually interesting, we need some diversity.
+# Here we simply block a different reaction in each of the community members:
 
 ecoli1.reactions["CYTBD"].lower_bound = ecoli1.reactions["CYTBD"].upper_bound = 0.0
 ecoli2.reactions["FBA"].lower_bound = ecoli2.reactions["FBA"].upper_bound = 0.0
 
 # ## Analysing the community
 
+# To construct the community, we have to provide identifiers for the models
+# (these will be used in the constraint tree), and corresponding models with
+# the abundances.
 my_community = Dict("bug1" => (ecoli1, 0.2), "bug2" => (ecoli2, 0.8))
 
+# The community is constructed and analysed using
+# [`community_flux_balance_analysis`](@ref):
 solution = community_flux_balance_analysis(
     my_community,
     ["EX_glc__D_e" => (-10.0, 0.0)],
@@ -87,27 +96,72 @@ screen(0.0:0.1:1.0) do ratio2
     (ratio1, ratio2) => (isnothing(res) ? nothing : res.community_biomass)
 end
 
-# ...seems a lot like `bug1` will eventually disappear.
+# (The result seem like the `bug1` is eventually going to be completely
+# out-grown by the other one.)
 
-# ## Inspecting the interfaces
+# ## Note: interfaces of constraint systems
 #
-# Not all interfaces are made equally! Fortunately, it is simple to create a
-# custom interface, by just manually assigning reactions to semantic groups
-# using ConstraintTrees.
-
-# Some work:
+# Internally, the community is connected via *interfaces*, which are small
+# constraint trees (typically with no bounds attached) that describe parts of
+# the constraint system that can be easily attached to other parts.
+#
+# The best kind of interface to choose generally differs from model to model.
+# COBREXA gives a few "default" choices that cover a good part of sensible
+# metabolic modeling. For example, if the model contains SBO annotations, we
+# can ask for the interface created using the annotated reactions:
 flux_balance_constraints(ecoli1, interface = :sbo).interface
 
-# Some generally don't do well:
+# If there are no annotations, we can still at least detect the boundary
+# reactions and make an interface out of them:
 flux_balance_constraints(ecoli1, interface = :boundary).interface
 
-# Do it manually:
-own_interface = deepcopy(flux_balance_constraints(ecoli1))
-own_interface *=
+# The default kind of interface in [`community_flux_balance_analysis`](@ref) is
+# `:identifier_prefixes`, which relies on usual prefixes of reaction names
+# (such as `EX_` for exchanges).
+
+# If all of these methods fail, you can always make a good interface yourself:
+custom_model = flux_balance_constraints(ecoli1)
+custom_model *=
     :interface^C.ConstraintTree(
-        :biomass => own_interface.fluxes.BIOMASS_Ecoli_core_w_GAM,
+        :biomass => custom_model.fluxes.BIOMASS_Ecoli_core_w_GAM,
         :exchanges => C.ConstraintTree(
-            k => v for (k, v) in own_interface.fluxes if startswith(string(k), "EX_")
+            k => v for (k, v) in custom_model.fluxes if startswith(string(k), "EX_")
         ),
     )
-own_interface.interface.exchanges
+custom_model.interface.exchanges
+
+# To connect such interfaces into a community model, simply use function
+# [`interface_constraints`](@ref) (which is how
+# [`community_flux_balance_analysis`](@ref) constructs the community model
+# internally via [`community_flux_balance_constraints`](@ref)). The whole
+# pipeline might look roughly as follows:
+
+custom_community = interface_constraints(
+    "bug1" => (
+        custom_model * :handicap^C.Constraint(custom_model.fluxes.CYTBD.value, (-1000, 0)),
+        0.2,
+    ),
+    "bug2" => (
+        custom_model * :handicap^C.Constraint(custom_model.fluxes.FBA.value, (-1000, 0)),
+        0.8,
+    ),
+    bound = r -> r == (:exchanges, :EX_glc__D_e) ? C.Between(-10, 0) : nothing,
+)
+
+custom_community.interface.exchanges
+
+# For the model to work, we would need to add several other things which
+# [`community_flux_balance_constraints`](@ref) add automatically, such as the
+# equal-growth constraint:
+
+custom_community =
+    community_flux_balance_constraints(my_community, ["EX_glc__D_e" => (-10.0, 0.0)])
+
+# This can be solved with the usual means, reaching the same result as above:
+
+optimized_values(
+    custom_community,
+    objective = custom_community.community_biomass.value,
+    output = custom_community.community_biomass,
+    optimizer = GLPK.Optimizer,
+)

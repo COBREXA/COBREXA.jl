@@ -15,8 +15,12 @@
 # limitations under the License.                                            #src
 
 # # Gene knockouts
-# FBA is classically very good at predicting the effect of knocking out genes in
-# an organism.
+#
+# FBA is classically very good at predicting the effect of knocking out genes
+# in an organism. Here we demonstrate the ways of using the FBA to examine
+# knockouts in COBREXA.
+#
+# As usual, we need packages and models:
 
 using COBREXA
 
@@ -33,6 +37,8 @@ model = load_model("e_coli_core.json")
 
 # ## Single gene knockouts
 
+# Function [`gene_knockouts`](@ref) is a convenience wrapper for FBA that
+# computes and optimizes the knockout biomass productions for all genes:
 ko_objective_values = gene_knockouts(model, optimizer = GLPK.Optimizer)
 
 ko_dict = Dict(ko_objective_values)
@@ -43,13 +49,16 @@ ko_dict["b3919"]
 
 ko_dict["b3738"]
 
-# how many genes are critical?
+# From the result, we can see e.g. how many genes are critical:
 
 critical = count(isnothing, values(ko_dict))
 
 @test critical == 2 #src
 
 # ## Multiple gene knockouts
+
+# By default, [`gene_knockouts`](@ref) simply computes all gene knockouts. To
+# examine multi-gene knockouts, we specify them manually as an array of tuples:
 
 some_double_knockouts = gene_knockouts(
     model,
@@ -60,6 +69,10 @@ some_double_knockouts = gene_knockouts(
 @test isapprox(last(some_double_knockouts[1]), 0.13475540327383498, atol = TEST_TOLERANCE) #src
 @test isapprox(last(some_double_knockouts[2]), 0, atol = TEST_TOLERANCE) #src
 
+# With the array processing functionality of Julia it is quite straightforward
+# to generate the tuples for various specifications of knockout sets; for
+# example here we specify all double knockout where the second knocked-out gene
+# is `b3919`:
 knockouts_with_b3919 = gene_knockouts(
     model,
     tuple.(keys(ko_dict), "b3919"),
@@ -67,7 +80,7 @@ knockouts_with_b3919 = gene_knockouts(
     settings = [silence],
 )
 
-# how many genes are critical with b3919 missing?
+# Now, how many genes are critical given `b3919` is already missing?
 
 critical_without_b3919 = count(isnothing, last.(knockouts_with_b3919))
 

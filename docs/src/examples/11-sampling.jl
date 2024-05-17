@@ -14,7 +14,13 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Flux sampling (TODO)
+# # Flux sampling
+#
+# Flux sampling gives an interesting statistical insight into the behavior of
+# the model in the optimal feasible space, and the general "shape" of the
+# optimal- or near-optimal set of feasible states of a given model.
+
+# For demonstration, we need the usual packages and models:
 
 using COBREXA
 
@@ -28,8 +34,10 @@ import JSONFBCModels, GLPK
 
 model = load_model("e_coli_core.json")
 
-# note here: this needs the optimizer to generate warmup. If we have warmup,
-# we can do without the optimizer
+# Function [`flux_sample`](@ref) uses linear optimization to generate a set of
+# warm-up points (by default, the method to generate the warm-up is basically
+# FVA), and then runs the hit-and-run flux sampling algorithm on the
+# near-optimal feasible space of the model:
 s = flux_sample(
     model,
     optimizer = GLPK.Optimizer,
@@ -39,3 +47,9 @@ s = flux_sample(
 )
 
 @test 21.8 < sum(s.O2t) / length(s.O2t) < 22.0 #src
+
+# The result is a tree of vectors of sampled states for each value; the order
+# of the values in these vectors is fixed. You can thus e.g. create a good
+# matrix for plotting the sample as 2D scatterplot:
+
+[s.O2t s.CO2t]
