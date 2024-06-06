@@ -65,7 +65,7 @@ function interface_constraints(
 
     # first, collect everything into one huge network
     # (while also renumbering the interfaces)
-    modules = sum(prep_pair.(ps); init = C.ConstraintTree())
+    modules = C.sum(prep_pair.(ps); init = C.ConstraintTree())
 
     # TODO maybe split the interface-preparing function into a separate
     # function, so that others can easily make their own interface connectors

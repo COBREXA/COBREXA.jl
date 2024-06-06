@@ -82,9 +82,10 @@ loopless_constraints(;
     ),
     :loopless_nullspace => C.ConstraintTree(
         Symbol(:nullspace_base_, i) => C.Constraint(
-            value = sum(
+            value = C.sum(
                 coeff * loopless_driving_forces[r].value for
-                (coeff, r) in zip(col, internal_reactions)
+                (coeff, r) in zip(col, internal_reactions);
+                init = 0,
             ),
             bound = C.EqualTo(0),
         ) for (i, col) in enumerate(eachcol(internal_nullspace))

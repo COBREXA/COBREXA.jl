@@ -31,13 +31,13 @@ Construct a `ConstraintTrees.Value` out of a sum of all values directly present
 in a given constraint tree.
 """
 function sum_value(x...)
-    res = zero(C.LinearValue)
+    vals = C.Value[]
     for ct in x
         C.traverse(ct) do c
-            res += c.value
+            push!(vals, c.value)
         end
     end
-    res
+    return C.sum(vals, init = zero(C.LinearValue))
 end
 
 export sum_value
@@ -53,7 +53,7 @@ reference `target`.
 reference value, or `nothing` if the error of given key should not be
 considered.
 """
-squared_sum_error_value(constraints::C.ConstraintTree, target) = sum(
+squared_sum_error_value(constraints::C.ConstraintTree, target) = C.sum(
     (
         C.squared(C.value(c) - t) for
         (t, c) in ((target(k), c) for (k, c) in constraints) if !isnothing(t)

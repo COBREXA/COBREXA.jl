@@ -195,7 +195,7 @@ function simplified_enzyme_constrained_flux_balance_constraints(
 
     # prepare getters and data
 
-    isozyme_mass(i) = sum(
+    isozyme_mass(i) = C.sum(
         (
             (
                 haskey(gene_product_molar_masses, gid) ?

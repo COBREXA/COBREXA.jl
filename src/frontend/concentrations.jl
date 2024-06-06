@@ -46,7 +46,7 @@ function log_concentration_constraints(
 
     stoi = C.ConstraintTree(
         Symbol(rxn) => C.Constraint(
-            value = sum(
+            value = C.sum(
                 (
                     coeff * vars[Symbol(met)].value for
                     (met, coeff) in A.reaction_stoichiometry(model, rxn) if (met in metset)
