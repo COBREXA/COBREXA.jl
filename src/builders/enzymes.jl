@@ -58,7 +58,10 @@ function isozyme_flux_constraints(
 )
     C.ConstraintTree(
         rid => C.Constraint(
-            sum(kcat(rid, iid) * i.value for (iid, i) in ri if !isnothing(kcat(rid, iid))) - fluxes[rid].value,
+            C.sum(
+                kcat(rid, iid) * i.value for (iid, i) in ri if !isnothing(kcat(rid, iid));
+                init = zero(C.LinearValue),
+            ) - fluxes[rid].value,
             0.0,
         ) for (rid, ri) in isozyme_amounts if haskey(fluxes, rid)
     )
@@ -210,10 +213,11 @@ function enzyme_constraints(;
            gene_product_amounts_name^gene_product_amounts *
            gene_product_capacity_name^C.ConstraintTree(
                id => C.Constraint(;
-                   value = sum(
+                   value = C.sum(
                        gene_product_amounts[gp].value * gpmm for
                        (gp, gpmm) in ((gp, gene_product_molar_mass(gp)) for gp in gps) if
-                       !isnothing(gpmm) && haskey(gene_product_amounts, gp)
+                       !isnothing(gpmm) && haskey(gene_product_amounts, gp);
+                       init = zero(C.LinearValue),
                    ),
                    bound,
                ) for (id, gps, bound) in capacity_limits
@@ -286,10 +290,10 @@ function simplified_enzyme_constraints(;
 
     return C.ConstraintTree(
         id => C.Constraint(;
-            value = sum(
+            value = C.sum(
                 contribution(fluxes_forward, mass_cost_forward, f) for f in fs;
                 init = zero(C.LinearValue),
-            ) + sum(
+            ) + C.sum(
                 contribution(fluxes_reverse, mass_cost_reverse, f) for f in fs;
                 init = zero(C.LinearValue),
             ),
