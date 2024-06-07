@@ -99,6 +99,8 @@ parsimonious solutions (such as the general lack of unnecessary loops). On the
 other hand, like with plain flux balance analysis there is no strong guarantee
 of uniqueness of the solution.
 
+Notably, this is equivalent to the CycleFreeFlux algorithm.
+
 Solver configuration arguments are forwarded to
 [`parsimonious_optimized_values`](@ref).
 """

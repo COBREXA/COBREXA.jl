@@ -97,6 +97,9 @@ linear_solution =
 
 linear_solution.fluxes
 
+#md #!!! tip "CycleFreeFlux"
+#md #    Linear parsimonious FBA is basically equivalent to the CycleFreeFlux algorithm, and one may use it for the same purpose with the same benefits.
+
 @test isapprox(linear_solution.parsimonious_objective, 518.422; atol = TEST_TOLERANCE) #src
 @test isapprox( #src
     sum(abs.(values(linear_solution.fluxes))), #src
