@@ -45,26 +45,26 @@ difference = C.zip(-, solution, moma_solution, Float64)</code></pre><pre class="
   :flux_stoichiometry =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
   :fluxes             =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :objective          =&gt; 0.150152</code></pre><pre><code class="language-julia hljs">sort(collect(difference.fluxes), by = last)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">95-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
-      :FORt =&gt; -15.937900590627706
-  :EX_h2o_e =&gt; -12.259737504822729
+      :FORt =&gt; -15.937900590627708
+  :EX_h2o_e =&gt; -12.25973750482275
       :ACKr =&gt; -12.23112377824434
      :ACt2r =&gt; -12.231123778242587
-       :PDH =&gt; -10.669672606178635
-  :EX_co2_e =&gt; -9.924850036343344
-    :ATPS4r =&gt; -8.65593952998418
-       :PPC =&gt; -4.689341153719472
-      :FRD7 =&gt; -4.073826730909942
- :EX_etoh_e =&gt; -3.7271169823956485
+       :PDH =&gt; -10.669672606178668
+  :EX_co2_e =&gt; -9.924850036343367
+    :ATPS4r =&gt; -8.655939529984154
+       :PPC =&gt; -4.689341153719435
+      :FRD7 =&gt; -4.073826730909896
+ :EX_etoh_e =&gt; -3.727116982395617
             ⋮
-     :ACALD =&gt; 5.651479388908677
-      :THD2 =&gt; 6.715243508127161
-      :CO2t =&gt; 9.924850036343429
-   :EX_ac_e =&gt; 12.23112377824229
+     :ACALD =&gt; 5.6514793889087
+      :THD2 =&gt; 6.71524350812716
+      :CO2t =&gt; 9.924850036343452
+   :EX_ac_e =&gt; 12.231123778242294
       :PTAr =&gt; 12.231123778252899
-      :H2Ot =&gt; 12.259737504822978
-  :EX_for_e =&gt; 15.937900592298137
+      :H2Ot =&gt; 12.259737504822999
+  :EX_for_e =&gt; 15.937900592298138
        :PFL =&gt; 15.937900592299496
-    :EX_h_e =&gt; 20.94183649468956</code></pre><h2 id="Using-a-custom-reference-flux"><a class="docs-heading-anchor" href="#Using-a-custom-reference-flux">Using a custom reference flux</a><a id="Using-a-custom-reference-flux-1"></a><a class="docs-heading-anchor-permalink" href="#Using-a-custom-reference-flux" title="Permalink"></a></h2><p>In certain situations, one might want to examine how the model would adjust from a known reaction flux. We can supply it manually as the second argument (instead of the reference model).</p><pre><code class="language-julia hljs">ref = parsimonious_flux_balance_analysis(
+    :EX_h_e =&gt; 20.94183649468959</code></pre><h2 id="Using-a-custom-reference-flux"><a class="docs-heading-anchor" href="#Using-a-custom-reference-flux">Using a custom reference flux</a><a id="Using-a-custom-reference-flux-1"></a><a class="docs-heading-anchor-permalink" href="#Using-a-custom-reference-flux" title="Permalink"></a></h2><p>In certain situations, one might want to examine how the model would adjust from a known reaction flux. We can supply it manually as the second argument (instead of the reference model).</p><pre><code class="language-julia hljs">ref = parsimonious_flux_balance_analysis(
     ecoli,
     optimizer = Clarabel.Optimizer,
     settings = [silence],
@@ -122,23 +122,23 @@ sort(collect(linear_moma_solution.fluxes), by = last)</code></pre><pre class="do
     collect(C.zip(-, linear_moma_solution.fluxes, moma_solution.fluxes, Float64)),
     by = last,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">95-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
-        :GAPD =&gt; -2.217421474277602
-         :ENO =&gt; -2.1841385417330255
-        :FRD7 =&gt; -2.0818742855030417
-  :EX_acald_e =&gt; -1.9243624065292229
-      :EX_h_e =&gt; -1.7636376825706002
-         :PDH =&gt; -1.3871400070221487
-      :GLCpts =&gt; -1.1700704237440451
-      :SUCCt3 =&gt; -1.091417461127648
-   :EX_succ_e =&gt; -1.091417460921988
-      :NADH16 =&gt; -1.091417460614137
+        :GAPD =&gt; -2.217421474277616
+         :ENO =&gt; -2.184138541733036
+        :FRD7 =&gt; -2.0818742855029955
+  :EX_acald_e =&gt; -1.9243624065292773
+      :EX_h_e =&gt; -1.7636376825705735
+         :PDH =&gt; -1.3871400070221824
+      :GLCpts =&gt; -1.1700704237440487
+      :SUCCt3 =&gt; -1.0914174611276093
+   :EX_succ_e =&gt; -1.0914174609219498
+      :NADH16 =&gt; -1.0914174606140996
               ⋮
-        :CO2t =&gt; 0.4467050816543736
-        :H2Ot =&gt; 1.046555418943484
-         :FUM =&gt; 1.091417460658668
-         :MDH =&gt; 1.0914174620392645
- :EX_glc__D_e =&gt; 1.170070423744047
-       :ACALD =&gt; 1.712501384039891
-      :ACALDt =&gt; 1.9243624065292242
-         :PGM =&gt; 2.184138541733022
-         :PGK =&gt; 2.2174214742776126</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03-parsimonious-flux-balance/">« Parsimonious flux balance analysis</a><a class="docs-footer-nextpage" href="../05-enzyme-constrained-models/">Enzyme constrained models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 17 May 2024 07:25">Friday 17 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+        :CO2t =&gt; 0.4467050816543967
+        :H2Ot =&gt; 1.0465554189435053
+         :FUM =&gt; 1.0914174606586293
+         :MDH =&gt; 1.091417462039225
+ :EX_glc__D_e =&gt; 1.1700704237440505
+       :ACALD =&gt; 1.7125013840399141
+      :ACALDt =&gt; 1.9243624065292788
+         :PGM =&gt; 2.1841385417330326
+         :PGK =&gt; 2.217421474277627</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03-parsimonious-flux-balance/">« Parsimonious flux balance analysis</a><a class="docs-footer-nextpage" href="../05-enzyme-constrained-models/">Enzyme constrained models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 7 June 2024 09:59">Friday 7 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -358,24 +358,24 @@ end
   :fluxes_forward           =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :fluxes_reverse           =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :gene_product_amounts     =&gt; ConstraintTrees.Tree{Float64}(#= 97 elements =#)
-  :objective                =&gt; 0.706993</code></pre><p>In this case, the result is the same as with the full analysis:</p><pre><code class="language-julia hljs">simplified_ec_solution.capacity_limits.total_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">49.99999999999997</code></pre><p>Gene product amounts are not present in the model but are reconstructed nevertheless (they are uniquely determined by the flux):</p><pre><code class="language-julia hljs">simplified_ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 97 elements:
+  :objective                =&gt; 0.706993</code></pre><p>In this case, the result is the same as with the full analysis:</p><pre><code class="language-julia hljs">simplified_ec_solution.capacity_limits.total_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">50.00000000000007</code></pre><p>Gene product amounts are not present in the model but are reconstructed nevertheless (they are uniquely determined by the flux):</p><pre><code class="language-julia hljs">simplified_ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 97 elements:
   :b0008 =&gt; 0.00482419
   :b0114 =&gt; 0.00550415
   :b0115 =&gt; 0.00550415
   :b0116 =&gt; 0.00550415
   :b0118 =&gt; 0.00243563
-  :b0351 =&gt; -3.84062e-18
-  :b0474 =&gt; 2.62429e-18
-  :b0485 =&gt; 1.72249e-19
+  :b0351 =&gt; 3.90848e-18
+  :b0474 =&gt; 0.0
+  :b0485 =&gt; -5.16748e-19
   :b0720 =&gt; 0.00187026
-  :b0721 =&gt; 3.96651e-19
-  :b0722 =&gt; 3.96651e-19
-  :b0723 =&gt; 3.96651e-19
-  :b0724 =&gt; 3.96651e-19
-  :b0726 =&gt; -2.04058e-18
-  :b0727 =&gt; -2.04058e-18
-  :b0728 =&gt; -2.91883e-17
-  :b0729 =&gt; -2.91883e-17
+  :b0721 =&gt; 0.0
+  :b0722 =&gt; 0.0
+  :b0723 =&gt; 0.0
+  :b0724 =&gt; 0.0
+  :b0726 =&gt; 4.66418e-18
+  :b0727 =&gt; 4.66418e-18
+  :b0728 =&gt; 0.0
+  :b0729 =&gt; 0.0
   :b0767 =&gt; 0.000794011
   :b0809 =&gt; 0.0
-  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../04-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../06-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 17 May 2024 07:25">Friday 17 May 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../04-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../06-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Friday 7 June 2024 09:59">Friday 7 June 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
