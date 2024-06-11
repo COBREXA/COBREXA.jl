@@ -166,7 +166,7 @@ flux_changes =
 sort(collect(flux_changes), by = last)
 
 #md # !!! tip "Always use a uniquely defined flux solutions for flux comparisons"
-#md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.
+#md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03b-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.
 
 # ## Coupling constraints
 #
