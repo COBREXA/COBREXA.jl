@@ -17,7 +17,7 @@
 # # Making adjustments to the constraint system
 #
 # In the [previous example about model
-# adjustments](02b-model-modifications.md), we noted that some constraint
+# adjustments](02c-model-modifications.md), we noted that some constraint
 # systems may be too complex to be changed within the limits of the usual FBC
 # model view, and we may require a sharper tool to do the changes we need. This
 # example shows how to do that by modifying the constraint systems that are

@@ -53,7 +53,7 @@ function flux_balance_constraints(
     bal = A.balance(model)
     obj = A.objective(model)
     cpls = Symbol.(A.couplings(model))
-    cT = SparseArrays.SparseMtrisCSC(A.coupling(model)')
+    cT = SparseArrays.SparseMatrixCSC(A.coupling(model)')
     clbs, cubs = A.coupling_bounds(model)
 
     # The iteration through stoichiometry would be better done with eachrow(),
