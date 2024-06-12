@@ -11,7 +11,7 @@
 [docs-img-dev]: https://img.shields.io/badge/docs-latest-0af.svg
 [docs-url-dev]: https://cobrexa.github.io/COBREXA.jl/dev/
 [docs-url-examples]: https://cobrexa.github.io/COBREXA.jl/dev/examples/
-[docs-url-fba]: https://cobrexa.github.io/COBREXA.jl/dev/examples/02-flux-balance-analysis/
+[docs-url-fba]: https://cobrexa.github.io/COBREXA.jl/dev/examples/02a-flux-balance-analysis/
 
 [docker-url]: https://github.com/COBREXA/COBREXA.jl/pkgs/container/cobrexa.jl
 [docker-img]: https://ghcr-badge.egpl.dev/cobrexa/cobrexa.jl/size?color=%2362a0ea&tag=latest&label=docker&trim=
