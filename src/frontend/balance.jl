@@ -52,6 +52,9 @@ function flux_balance_constraints(
     stoi = A.stoichiometry(model)
     bal = A.balance(model)
     obj = A.objective(model)
+    cpls = Symbol.(A.couplings(model))
+    cT = SparseArrays.SparseMatrixCSC(A.coupling(model)')
+    clbs, cubs = A.coupling_bounds(model)
 
     # The iteration through stoichiometry would be better done with eachrow(),
     # unfortunately it seems to be enormously inefficient on column-major
@@ -69,6 +72,14 @@ function flux_balance_constraints(
                 end,
                 bound = C.EqualTo(b),
             ) for (met, row_idx, b) in zip(mets, 1:stoiT.n, bal)
+        ) *
+        :coupling^C.ConstraintTree(
+            cpl => C.Constraint(
+                value = let i = cT.colptr[row_idx], e = cT.colptr[row_idx+1] - 1
+                    C.LinearValue(idxs = cT.rowval[i:e], weights = cT.nzval[i:e])
+                end,
+                bound = clb == cub ? C.EqualTo(clb) : C.Between(clb, cub),
+            ) for (cpl, row_idx, clb, cub) in zip(cpls, 1:cT.n, clbs, cubs)
         ) *
         :objective^C.Constraint(C.LinearValue(SparseArrays.sparse(obj))),
     )

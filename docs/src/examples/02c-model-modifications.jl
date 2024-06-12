@@ -37,7 +37,7 @@
 # disadvantage is that the "common" FBC model interface does not easily express
 # various complicated constructions (communities, reaction coupling, enzyme
 # constraints, etc.) -- see the [example about modifying the
-# constraints](02c-constraint-modifications.md) for more details.
+# constraints](02d-constraint-modifications.md) for more details.
 #
 # ## Getting the base model
 
@@ -166,4 +166,28 @@ flux_changes =
 sort(collect(flux_changes), by = last)
 
 #md # !!! tip "Always use a uniquely defined flux solutions for flux comparisons"
-#md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.
+#md #     Since the usual flux balance allows a lot of freedom in the "solved" flux and the only value that is "reproducible" by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. [parsimonious FBA](03b-parsimonious-flux-balance.md) to obtain uniquely determined and safely comparable flux solutions.
+
+# ## Coupling constraints
+#
+# Some model types support additional constraints over the reaction fluxes,
+# which are historically called "coupling". These allow to e.g. place a bound
+# on a total flux through several reactions.
+#
+# Canonical model supports these as "couplings":
+
+model.couplings["total_energy_intake"] = CM.Coupling(
+    lower_bound = 0,
+    upper_bound = 5,
+    reaction_weights = Dict("EX_glc__D_e" => -1.0, "EX_fru_e" => -1.0, "EX_pyr_e" => -1.0),
+)
+
+# The values of any coupling constraints can be inspected directly in the
+# solved model:
+
+solution_with_coupling = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
+
+solution_with_coupling.coupling.total_energy_intake
+
+@test 0 <= solution_with_coupling.coupling.total_energy_intake <= 5 #src
+@test isapprox(solution_with_coupling.objective, 0.4155977750928965, atol = TEST_TOLERANCE) #src
