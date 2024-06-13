@@ -31,13 +31,6 @@ Modules = [COBREXA]
 Pages = ["src/builders/objectives.jl"]
 ```
 
-## FBC constraint systems
-
-```@autodocs
-Modules = [COBREXA]
-Pages = ["src/builders/fbc.jl"]
-```
-
 ## Analysis-specific constriants
 
 ```@autodocs
