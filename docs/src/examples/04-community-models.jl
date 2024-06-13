@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Community FBA models (TODO)
+# # Community FBA models
 
 using COBREXA
 
