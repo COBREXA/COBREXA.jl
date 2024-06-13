@@ -51,9 +51,6 @@ t = @elapsed @everywhere begin
     import Tulip, GLPK, JuMP
 end
 
-# load the test models
-run_test_file("data_downloaded.jl")
-
 # TODO data_static and data_downloaded need to be interned into the demos.
 # Instead let's make a single "doc running directory" that runs all the
 # documentation, which doesn't get erased to improve the test caching.
