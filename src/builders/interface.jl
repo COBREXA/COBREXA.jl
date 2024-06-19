@@ -75,6 +75,7 @@ function interface_constraints(
     interface_sum = foldl(modules, init = C.ConstraintTree()) do accs, (id, ms)
         C.imerge(accs, ms.interface) do path, acc, m
             ignore(id, path) ? missing :
+            ismissing(m) ? acc :
             ismissing(acc) ? C.Constraint(value = m.value) :
             C.Constraint(value = acc.value + m.value)
         end
