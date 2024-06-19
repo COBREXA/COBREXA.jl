@@ -111,7 +111,7 @@ function isozyme_gene_product_amount_constraints(isozyme_amounts, isozyme_stoich
             end
         end
     end
-    res
+    return res
 end
 
 export isozyme_gene_product_amount_constraints
@@ -255,7 +255,7 @@ function simplified_isozyme_gene_product_amount_constraints(x...)
             end
         end
     end
-    res
+    return res
 end
 
 export simplified_isozyme_gene_product_amount_constraints
