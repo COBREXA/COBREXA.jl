@@ -43,6 +43,7 @@ function community_flux_balance_constraints(
     interface = :identifier_prefixes,
     interface_exchanges = x -> x.interface.exchanges,
     interface_biomass = x -> x.interface.biomass,
+    default_community_exchange_bound = nothing,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
     @assert isapprox(sum(a for (_, (_, a)) in model_abundances), 1) "community member abundances must sum to 1"
@@ -58,7 +59,8 @@ function community_flux_balance_constraints(
         );
         out_interface = :community_exchanges,
         out_balance = :community_balance,
-        bound = x -> get(bounds_lookup, String(last(x)), nothing),
+        bound = x ->
+            get(bounds_lookup, String(last(x)), default_community_exchange_bound),
     )
 
     growth_sums = [
