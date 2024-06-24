@@ -26,13 +26,17 @@ The relative abundances of the organisms are known in advance; this function
 predicts the maximum achievable community growth rate.
 
 `model_abundances` is a dictionary-like object that maps model identifiers to
-tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such
-as: `"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` is a
+tuples of models (usually subtypes of `AbstractFBCModel`) and their abundances
+(such as: `"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` is a
 dictionary-like object that can be additionally used to restrict selected
 community exchange reactions (keys should be reaction IDs, the values are
 converted to `ConstraintTrees`-like bounds). Bounds otherwise default to
 parameter `default_community_exchange_bound`, which itself defaults to
 `nothing` (i.e., unbounded).
+
+If required, constraint trees may be supplied instead of `AbstracFBCModel`s in
+`model_abundances`. These must provide an interface compatible with
+`interface_exchanges` and `interface_biomass`.
 
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
@@ -53,9 +57,11 @@ function community_flux_balance_constraints(
 
     constraints = interface_constraints(
         (
-            Symbol(k) => let
+            Symbol(k) => if m isa A.AbstractFBCModel
                 c = flux_balance_constraints(m; interface)
                 (c, interface_exchanges(c), a)
+            else
+                (m, interface_exchanges(m), a)
             end for (k, (m, a)) in model_abundances
         );
         out_interface = :community_exchanges,
