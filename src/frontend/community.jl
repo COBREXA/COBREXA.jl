@@ -26,12 +26,13 @@ The relative abundances of the organisms are known in advance; this function
 predicts the maximum achievable community growth rate.
 
 `model_abundances` is a dictionary-like object that maps model identifiers to
-tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such as:
-`"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` is a dictionary-like
-object that can be additionally used to restrict selected community exchange
-reactions (keys should be reaction IDs, the values are converted to
-`ConstraintTrees`-like bounds). Bounds otherwise default to `nothing`
-(unbounded).
+tuples of models (subtypes of `AbstractFBCModel`) and their abundances (such
+as: `"bug1" => (bug1, 0.5), ...`). `community_exchange_bounds` is a
+dictionary-like object that can be additionally used to restrict selected
+community exchange reactions (keys should be reaction IDs, the values are
+converted to `ConstraintTrees`-like bounds). Bounds otherwise default to
+parameter `default_community_exchange_bound`, which itself defaults to
+`nothing` (i.e., unbounded).
 
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
@@ -43,6 +44,7 @@ function community_flux_balance_constraints(
     interface = :identifier_prefixes,
     interface_exchanges = x -> x.interface.exchanges,
     interface_biomass = x -> x.interface.biomass,
+    default_community_exchange_bound = nothing,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
     @assert isapprox(sum(a for (_, (_, a)) in model_abundances), 1) "community member abundances must sum to 1"
@@ -58,7 +60,8 @@ function community_flux_balance_constraints(
         );
         out_interface = :community_exchanges,
         out_balance = :community_balance,
-        bound = x -> get(bounds_lookup, String(last(x)), nothing),
+        bound = x ->
+            get(bounds_lookup, String(last(x)), default_community_exchange_bound),
     )
 
     growth_sums = [
