@@ -41,7 +41,9 @@ $(TYPEDSIGNATURES)
 A constraint tree of variables with positive contributions to the values in `cs`.
 """
 unsigned_positive_contribution_variables(cs::C.ConstraintTree) =
-    C.variables_for(c -> positive_bound_contribution(c.bound), cs)
+    C.variables_for(cs) do c
+        positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf)))
+    end
 
 export unsigned_positive_contribution_variables
 
@@ -51,7 +53,10 @@ $(TYPEDSIGNATURES)
 A constraint tree of variables with negative contributions to the values in `cs`.
 """
 unsigned_negative_contribution_variables(cs::C.ConstraintTree) =
-    C.variables_for(c -> positive_bound_contribution(-c.bound), cs)
+    C.variables_for(cs) do c
+        positive_bound_contribution(-something(c.bound, C.Between(-Inf, Inf)))
+    end
+
 
 export unsigned_negative_contribution_variables
 
