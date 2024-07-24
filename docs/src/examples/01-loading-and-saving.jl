@@ -39,8 +39,8 @@ download_model(
     "b4db506aeed0e434c1f5f1fdd35feda0dfe5d82badcfda0e9d1342335ab31116",
 )
 
-#md #!!! tip "How do I get the model hash?"
-#md #    We do not need to fill in the hash values immediately -- instead, it's possible to simply run the function once, and then copy the reported hash value from the warning message into the script.
+#md # !!! tip "How do I get the model hash?"
+#md #     We do not need to fill in the hash values immediately -- instead, it's possible to simply run the function once, and then copy the reported hash value from the warning message into the script.
 
 # ## Loading models
 
@@ -89,8 +89,8 @@ model_converted_to_json = load_model("e_coli_core.xml", JSONFBCModels.JSONFBCMod
 model_in_julia_structures =
     load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
 
-#md #!!! tip "Compatibility with COBREXA v1.x"
-#md #    `CanonicalModel` is a newer, cleaned-up version of the `StandardModel` type used in COBREXA version 1. For all code that relied on `StandardModel`, the canonical one should work just as well.
+#md # !!! tip "Compatibility with COBREXA v1.x"
+#md #     `CanonicalModel` is a newer, cleaned-up version of the `StandardModel` type used in COBREXA version 1. For all code that relied on `StandardModel`, the canonical one should work just as well.
 
 # The above command specifies all model types explicitly, leaving least room
 # for guessing-based errors.
