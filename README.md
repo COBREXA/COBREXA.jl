@@ -59,7 +59,7 @@ COBREXA.jl is best installed using Julia's packaging system.
 
 ### Guides
 
-To start quickly, [follow the examples in the documentaiton][docs-url-examples].
+To start quickly, [follow the examples in the documentation][docs-url-examples].
 
 We recommend to start with the usual [Flux Balance Analysis example][docs-url-fba].
 
@@ -87,8 +87,9 @@ docker run -ti --rm ghcr.io/cobrexa/docker/cobrexa.jl:latest
 ```
 
 In the container, you should get a `julia` shell with the important packages
-already installed, and you may immediately continue the above tutorial from
-`using COBREXA`.
+already installed, and you may immediately import the package with `using
+COBREXA`, and start running COBREXA analyses (such as the ones in the
+[documentation examples][docs-url-examples]).
 
 If you require precise reproducibility, use a tag like `v1.2.2` instead of
 `latest` (all releases since 1.2.2 are tagged this way).
