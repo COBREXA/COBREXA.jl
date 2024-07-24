@@ -121,15 +121,17 @@ flux_balance_constraints(ecoli, interface = :boundary).interface
 # (such as `EX_` for exchanges).
 
 # Even if all of these methods fail, a suitable interface yourself can be
-# produced manually:
+# produced manually. (Additionally, we can do useful stuff, such as removing
+# the unnecessary bounds from the exchange descriptions.)
 custom_model = flux_balance_constraints(ecoli)
-custom_model *=
+custom_model *= remove_bounds(
     :interface^C.ConstraintTree(
         :biomass => custom_model.fluxes.BIOMASS_Ecoli_core_w_GAM,
         :exchanges => C.ConstraintTree(
             k => v for (k, v) in custom_model.fluxes if startswith(string(k), "EX_")
         ),
-    )
+    ),
+)
 custom_model.interface.exchanges
 
 # ## Connecting the community constraints manually
