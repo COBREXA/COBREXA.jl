@@ -61,8 +61,8 @@ solution.objective
 
 solution.fluxes.PFK
 
-#md #!!! tip "Browsing the model structure"
-#md #    After typing `solution.` in the Julia REPL, one can press [tab] to quickly see what is in the next level of the tree. Unfortunately (due to type system limitations) this currently works only for the topmost level of the tree.
+#md # !!! tip "Browsing the model structure"
+#md #     After typing `solution.` in the Julia REPL, one can press [tab] to quickly see what is in the next level of the tree. Unfortunately (due to type system limitations) this currently works only for the topmost level of the tree.
 
 # ...or make a "table" of all fluxes through all reactions:
 
