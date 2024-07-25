@@ -97,8 +97,8 @@ reference_flux = Dict(
     "TPI" => 1.0,
 )
 
-#!!! warning "Only the signs are extracted from the reference solution"
-#    It is most convenient to pass a flux solution into `reference_flux`, but take care about the fluxes with value near 0: Their desired sign may be a subject to floating-point robustness error. By default, `max_min_driving_force_analysis` considers everything that is approximately zero (via `isapprox`) to have zero flux, with the appropriate implications to concentration balance.
+#md # !!! warning "Only the signs are extracted from the reference solution"
+#md #     It is most convenient to pass a flux solution into `reference_flux`, but take care about the fluxes with value near 0: Their desired sign may be a subject to floating-point robustness error. By default, `max_min_driving_force_analysis` considers everything that is approximately zero (via `isapprox`) to have zero flux, with the appropriate implications to concentration balance.
 
 # ## Solving the MMDF problem
 
