@@ -31,7 +31,7 @@ download_model(
 )
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -39,7 +39,7 @@ model = load_model("e_coli_core.json")
 
 # Function [`gene_knockouts`](@ref) is a convenience wrapper for FBA that
 # computes and optimizes the knockout biomass productions for all genes:
-ko_objective_values = gene_knockouts(model, optimizer = GLPK.Optimizer)
+ko_objective_values = gene_knockouts(model, optimizer = HiGHS.Optimizer)
 
 ko_dict = Dict(ko_objective_values)
 
@@ -63,7 +63,7 @@ critical = count(isnothing, values(ko_dict))
 some_double_knockouts = gene_knockouts(
     model,
     [("b3919", "b3738"), ("b0118", "b0720")],
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 @test isapprox(last(some_double_knockouts[1]), 0.13475540327383498, atol = TEST_TOLERANCE) #src
@@ -76,7 +76,7 @@ some_double_knockouts = gene_knockouts(
 knockouts_with_b3919 = gene_knockouts(
     model,
     tuple.(keys(ko_dict), "b3919"),
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
     settings = [silence],
 )
 

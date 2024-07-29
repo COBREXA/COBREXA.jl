@@ -27,7 +27,7 @@ download_model(
     "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
 )
 
-import JSONFBCModels, GLPK
+import JSONFBCModels, HiGHS
 import ConstraintTrees as C
 
 model = load_model("e_coli_core.json")
@@ -47,7 +47,7 @@ screen(-10:0) do o2_bound
     optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end
@@ -65,7 +65,7 @@ screen(Iterators.product(-10:2:0, 0:2:10)) do (o2_bound, co2_bound)
     optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end
@@ -91,7 +91,7 @@ screen(
     optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end
@@ -117,7 +117,7 @@ screen(
     (transport, exchange, bound.upper) => optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end

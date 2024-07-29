@@ -71,11 +71,11 @@ solution.fluxes
 # fluxes. We can set the optimizer and parsimonious optimizer separately using
 # keyword arguments:
 
-import GLPK
+import HiGHS
 
 solution = parsimonious_flux_balance_analysis(
     model;
-    optimizer = GLPK.Optimizer, # GLPK is good for LP but cannot do QP
+    optimizer = HiGHS.Optimizer, # HiGHS is good for LP but cannot do QP
     settings = [silence],
     parsimonious_optimizer = Clarabel.Optimizer, # Clarabel is not very precise but can solve QP
 )
@@ -91,7 +91,7 @@ solution = parsimonious_flux_balance_analysis(
 # at all:
 
 linear_solution =
-    linear_parsimonious_flux_balance_analysis(model; optimizer = GLPK.Optimizer)
+    linear_parsimonious_flux_balance_analysis(model; optimizer = HiGHS.Optimizer)
 
 #
 

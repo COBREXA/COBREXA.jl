@@ -36,7 +36,7 @@ download_model(
 # reference solution" typically refers to Euclidean ("L2") distance which
 # requires a QP solver, but Manhattan ("L1") distance is also demonstrated
 # below.
-import Clarabel, GLPK
+import Clarabel, HiGHS
 
 # Because we will have to perform some perturbation, we import the model in
 # canonical Julia structures:
@@ -151,7 +151,7 @@ solution_close_to_measurement = metabolic_adjustment_minimization_analysis(
 linear_moma_solution = linear_metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     ecoli;
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
     settings = [silence],
 )
 

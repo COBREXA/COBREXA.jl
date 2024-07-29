@@ -37,10 +37,10 @@ download_model(
 )
 
 # Additionally to COBREXA, and the model format package, we will need a solver
-# -- let's use GLPK here:
+# -- let's use HiGHS here:
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -117,7 +117,7 @@ mmdf_solution = max_min_driving_force_analysis(
     concentration_upper_bound = 1e-1, # mol/L
     T = 298.15, # Kelvin
     R = 8.31446261815324e-3, # kJ/K/mol
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 @test isapprox(mmdf_solution.min_driving_force, 1.8805120168117213, atol = TEST_TOLERANCE) #src

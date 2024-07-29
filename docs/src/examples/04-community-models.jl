@@ -31,7 +31,7 @@ download_model(
 # and a few supporting packages.
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 import AbstractFBCModels.CanonicalModel as CM
 import ConstraintTrees as C
 
@@ -62,7 +62,7 @@ my_community = Dict("bug1" => (ecoli1, 0.2), "bug2" => (ecoli2, 0.8))
 solution = community_flux_balance_analysis(
     my_community,
     ["EX_glc__D_e" => (-10.0, 0.0)],
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 @test isapprox(solution.community_biomass, 0.5237157737585179, atol = TEST_TOLERANCE) #src
@@ -92,7 +92,7 @@ screen(0.0:0.1:1.0) do ratio2
         [("bug1" => (ecoli1, ratio1)), ("bug2" => (ecoli2, ratio2))],
         ["EX_glc__D_e" => (-10.0, 0.0)],
         interface = :sbo, # usually more reproducible
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
     )
     (ratio1, ratio2) => (isnothing(res) ? nothing : res.community_biomass)
 end
@@ -181,7 +181,7 @@ custom_solution = optimized_values(
     custom_community,
     objective = custom_community.community_biomass.value,
     output = custom_community.community_biomass,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 @test isapprox(custom_solution, solution.community_biomass, atol = TEST_TOLERANCE) #src

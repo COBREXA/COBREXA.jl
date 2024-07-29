@@ -20,7 +20,7 @@ case, it should return a vector of _worker IDs_, very likely equal to
 
 Each of the processes contains a self-sufficient image of Julia that can act
 independently; in turn the additional processes also consume some memory. Each
-process with loaded `COBREXA.jl` and a simple solver such as GLPK may consume
+process with loaded `COBREXA.jl` and a simple solver such as HiGHS may consume
 around 500MB of RAM, which should be taken into account when planning the
 analysis scale.
 
@@ -36,7 +36,7 @@ analysis scale.
 Packages (COBREXA and the selected solver) must be loaded at all processes,
 which may ensured using the "everywhere" macro (from `Distributed` package):
 ```julia
-@everywhere using COBREXA, GLPK
+@everywhere using COBREXA, HiGHS
 ```
 
 Utilizing the prepared worker processes is then straightforward: We pass the
@@ -47,7 +47,7 @@ argument, and the parallel processing is orchestrated automatically:
 model = load_model("e_coli_core.xml")
 result = flux_variability_analysis(
     model,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
     workers = workers()
 )
 ```

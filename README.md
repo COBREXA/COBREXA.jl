@@ -55,7 +55,7 @@ COBREXA.jl is best installed using Julia's packaging system.
    dependencies.
 4. You may want to install [additional constraint-solver software compatible
    with JuMP](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers).
-   Type e.g. `] add GLPK` to install the popular GLPK solver.
+   Type e.g. `] add HiGHS` to install the HiGHS solver.
 
 ### Guides
 

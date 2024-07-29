@@ -32,7 +32,7 @@ download_model(
 )
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -46,7 +46,7 @@ envelope = objective_production_envelope(
     model,
     ["EX_o2_e", "EX_co2_e"];
     breaks = 5,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 @test count(isnothing, envelope.objective_values) == 18 #src

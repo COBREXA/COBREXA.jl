@@ -20,7 +20,7 @@ using Aqua
 using Clarabel
 using Distributed
 import AbstractFBCModels as A
-using GLPK # for MILPs
+using HiGHS # for MILPs
 
 # testing constants
 const TEST_TOLERANCE = 1e-3
@@ -48,7 +48,7 @@ end
 W = addprocs(2)
 t = @elapsed @everywhere begin
     using COBREXA
-    import Tulip, GLPK, JuMP
+    import Tulip, HiGHS, JuMP
 end
 
 # TODO data_static and data_downloaded need to be interned into the demos.

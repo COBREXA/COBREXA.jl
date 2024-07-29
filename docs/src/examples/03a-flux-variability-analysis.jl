@@ -30,13 +30,13 @@ download_model(
     "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
 )
 
-import JSONFBCModels, GLPK
+import JSONFBCModels, HiGHS
 
 model = load_model("e_coli_core.json")
 
 # The "usual" form of FBA is available via the eponymous function:
 
-solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer)
+solution = flux_variability_analysis(model, optimizer = HiGHS.Optimizer)
 
 @test isapprox(solution.ACALD[1], -2.542370370370188, atol = TEST_TOLERANCE) #src
 @test isapprox(solution.ACALD[2], 0.0, atol = TEST_TOLERANCE) #src
@@ -52,7 +52,7 @@ solution = flux_variability_analysis(model, optimizer = GLPK.Optimizer)
 
 very_close = flux_variability_analysis(
     model,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
     objective_bound = absolute_tolerance_bound(1e-5),
 )
 
@@ -60,7 +60,7 @@ very_close = flux_variability_analysis(
 
 one_percent_close = flux_variability_analysis(
     model,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
     objective_bound = relative_tolerance_bound(0.99),
 )
 

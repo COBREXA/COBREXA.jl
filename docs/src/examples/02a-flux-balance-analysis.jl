@@ -29,10 +29,10 @@ download_model(
 )
 
 # Additionally to COBREXA and the model format package, we will need a solver
-# -- let's use GLPK here:
+# -- let's use HiGHS here:
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -43,7 +43,7 @@ model = load_model("e_coli_core.json")
 # is captured in the default behavior of function
 # [`flux_balance_analysis`](@ref):
 
-solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
+solution = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
 
 @test isapprox(solution.objective, 0.8739, atol = TEST_TOLERANCE) #src
 
