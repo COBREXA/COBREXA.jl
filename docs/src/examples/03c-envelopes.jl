@@ -47,9 +47,19 @@ envelope = objective_production_envelope(
     ["EX_o2_e", "EX_co2_e"];
     breaks = 5,
     optimizer = HiGHS.Optimizer,
-)
+);
+
+# We can now see the computed breaks (by default, these are computed from
+# FVA-style variability):
+
+envelope.breaks
+
+# ...and the actual 2D envelope:
+
+envelope.objective_values
 
 @test count(isnothing, envelope.objective_values) == 18 #src
 
-# Documentation of the function describes ways to set custom bounds for the
-# examined reaction flux ranges and several other customizations.
+# The ways to set custom bounds for the examined reaction flux ranges (and
+# several other customizations) are described in the documentation of
+# [`objective_production_envelope`](@ref).
