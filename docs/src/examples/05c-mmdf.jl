@@ -121,4 +121,38 @@ mmdf_solution = max_min_driving_force_analysis(
 )
 
 @test isapprox(mmdf_solution.min_driving_force, 1.8805120168117213, atol = TEST_TOLERANCE) #src
-@test -6 < mmdf_solution.log_concentrations.pep_c < -5 #src
+
+# One may be also interested in seeing the FVA-like feasible concentration
+# ranges in such model. The most straightforward way to find these is to use
+# the associated constraint-system-building function
+# [`max_min_driving_force_constraints`](@ref) together with
+# [`constraints_variability`](@ref) as follows:
+
+mmdf_system = max_min_driving_force_constraints(
+    model;
+    reaction_standard_gibbs_free_energies,
+    reference_flux,
+    constant_concentrations = Dict("g3p_c" => exp(-8.5)),
+    concentration_ratios = Dict(
+        "atp" => ("atp_c", "adp_c", 10.0),
+        "nadh" => ("nadh_c", "nad_c", 0.13),
+    ),
+    proton_metabolites = ["h_c"],
+    water_metabolites = ["h2o_c"],
+    concentration_lower_bound = 1e-6, # mol/L
+    concentration_upper_bound = 1e-1, # mol/L
+    T = 298.15, # Kelvin
+    R = 8.31446261815324e-3, # kJ/K/mol
+)
+
+cva_solution = constraints_variability(
+    mmdf_system,
+    mmdf_system.log_concentrations,
+    objective = mmdf_system.min_driving_force.value,
+    optimizer = HiGHS.Optimizer,
+)
+
+@test isapprox(first(cva_solution.f6p_c), -10.48090864932676, atol = TEST_TOLERANCE) #src
+@test isapprox(last(cva_solution.f6p_c), -3.3638010436255863, atol = TEST_TOLERANCE) #src
+@test isapprox(first(cva_solution.g3p_c), -8.5, atol = TEST_TOLERANCE) #src
+@test isapprox(last(cva_solution.g3p_c), -8.5, atol = TEST_TOLERANCE) #src
