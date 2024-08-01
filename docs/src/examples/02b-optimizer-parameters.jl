@@ -51,15 +51,14 @@ model = load_model("e_coli_core.json")
 solution = flux_balance_analysis(
     model,
     optimizer = Tulip.Optimizer,
-    settings = [silence, set_optimizer_attribute("IPM_IterationsLimit", 1000)],
+    settings = [set_optimizer_attribute("IPM_IterationsLimit", 1000)],
 )
 
 @test !isnothing(solution) #src
 
 # To see some of the effects of the configuration changes, we may e.g.
 # deliberately cripple the optimizer's possibilities to a few iterations and
-# only a little time, which will cause it to fail, return no solution, and
-# verbosely describe what happened:
+# only a little time, which will cause it to fail and return no solution:
 
 solution = flux_balance_analysis(
     model,
@@ -71,7 +70,24 @@ println(solution)
 
 @test isnothing(solution) #src
 
+# To see what failed, users may examine the solver output. Because all solver
+# output is silenced by default for efficiency reasons, we need to explicitly
+# pass in the [`unsilence`](@ref) setting:
+
+solution = flux_balance_analysis(
+    model,
+    optimizer = Tulip.Optimizer,
+    settings = [
+        set_optimizer_attribute("IPM_IterationsLimit", 2),
+        set_time_limit(0.1),
+        unsilence,
+    ],
+)
+
 # Applicable optimizer attributes are documented in the documentations of the
 # respective optimizers. To browse the possibilities, one might want to see the
 # [JuMP documentation page that summarizes the references to the available
 # optimizers](https://jump.dev/JuMP.jl/stable/installation/#Supported-solvers).
+#
+# Default solver settings can be examined and changed via
+# [`Configuration`](@ref).

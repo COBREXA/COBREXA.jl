@@ -57,6 +57,15 @@ silence(opt_model) = J.set_silent(opt_model)
 export silence
 
 """
+    unsilence
+
+Enable output from the JuMP optimizer (shortcut for `unset_silent` from JuMP).
+"""
+unsilence(opt_model) = J.unset_silent(opt_model)
+
+export silence
+
+"""
 $(TYPEDSIGNATURES)
 
 Set a time limit in seconds for the optimizer computation (shortcut for

@@ -75,6 +75,11 @@ Base.@kwdef mutable struct Configuration
     Default numerical tolerance for sampling functions.
     """
     sampler_tolerance = 1e-6
+
+    """
+    Default settings first applied to all JuMP `Model`s.
+    """
+    default_solver_settings = [silence]
 end
 
 """

@@ -73,12 +73,8 @@ some_double_knockouts = gene_knockouts(
 # to generate the tuples for various specifications of knockout sets; for
 # example here we specify all double knockout where the second knocked-out gene
 # is `b3919`:
-knockouts_with_b3919 = gene_knockouts(
-    model,
-    tuple.(keys(ko_dict), "b3919"),
-    optimizer = HiGHS.Optimizer,
-    settings = [silence],
-)
+knockouts_with_b3919 =
+    gene_knockouts(model, tuple.(keys(ko_dict), "b3919"), optimizer = HiGHS.Optimizer)
 
 # Now, how many genes are critical given `b3919` is already missing?
 

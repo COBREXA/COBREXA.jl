@@ -40,11 +40,7 @@ model = load_model("e_coli_core.json")
 # The pFBA is, in its most default form, implemented in function
 # [`parsimonious_flux_balance_analysis`](@ref):
 
-solution = parsimonious_flux_balance_analysis(
-    model;
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)
+solution = parsimonious_flux_balance_analysis(model; optimizer = Clarabel.Optimizer)
 
 #
 
@@ -75,9 +71,8 @@ import HiGHS
 
 solution = parsimonious_flux_balance_analysis(
     model;
-    optimizer = HiGHS.Optimizer, # HiGHS is good for LP but cannot do QP
-    settings = [silence],
-    parsimonious_optimizer = Clarabel.Optimizer, # Clarabel is not very precise but can solve QP
+    optimizer = HiGHS.Optimizer, # HiGHS is used only for LP here
+    parsimonious_optimizer = Clarabel.Optimizer, # Clarabel is great for solving QPs
 )
 
 @test isapprox(solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
