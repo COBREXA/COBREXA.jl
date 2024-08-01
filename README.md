@@ -53,6 +53,8 @@ Compared to the other modeling toolkits, COBREXA.jl offers:
 - Performance at the level of "raw" user workflow operations, because all
   analysis code are compiled and optimized by Julia. This reduces the
   computation time and memory required to analyze very large models.
+- A wide range of pre-implemented HPC-compatible analysis functions, with
+  [tested examples available in the documentation][docs-url-examples].
 
 ## Getting started
 
