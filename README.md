@@ -37,6 +37,25 @@ exa-scale metabolic modeling in [Julia](https://julialang.org/).
 For COBREXA.jl releases before version 2.0 (released in 2023 and earlier),
 please see [the legacy COBREXA repository with version 0.x and 1.x][legacy-url].
 
+## Why use COBREXA.jl?
+
+Compared to the other modeling toolkits, COBREXA.jl offers:
+
+- Almost effortless parallelization to scale-up to HPC environments. This
+  allows the users to quickly run huge analyses.
+- A straightforward way to construct new kinds of constraint systems by
+  re-using and re-combining the existing ones with newly implemented
+  functionality, provided by
+  [ConstraintTrees.jl](https://github.com/COBREXA/ConstraintTrees.jl)
+  middleware. This vastly simplifies reconstruction of complex systems, such as
+  multi-compartment ("community") growth-balanced models with both per-member
+  and global resource-allocation and metabolite availability constraints.
+- Performance at the level of "raw" user workflow operations, because all
+  analysis code are compiled and optimized by Julia. This reduces the
+  computation time and memory required to analyze very large models.
+- A wide range of pre-implemented HPC-compatible analysis functions, with
+  [tested examples available in the documentation][docs-url-examples].
+
 ## Getting started
 
 [COBREXA.jl documentation][docs-url-stable]
