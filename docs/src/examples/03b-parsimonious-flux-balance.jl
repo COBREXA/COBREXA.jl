@@ -82,7 +82,7 @@ solution = parsimonious_flux_balance_analysis(
 
 @test isapprox(solution.objective, 0.873922; atol = TEST_TOLERANCE) #src
 
-# ## Using linear parsimonious
+# ## Using linear (L1) parsimonious constraints
 
 # For efficiency reasons, it is also possible to use a pFBA version that
 # optimizes the L1 norm instead of the L2 one (i.e., minimizing a sum of
