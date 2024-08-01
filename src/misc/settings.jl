@@ -63,7 +63,7 @@ Enable output from the JuMP optimizer (shortcut for `unset_silent` from JuMP).
 """
 unsilence(opt_model) = J.unset_silent(opt_model)
 
-export silence
+export unsilence
 
 """
 $(TYPEDSIGNATURES)
