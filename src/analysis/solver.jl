@@ -34,7 +34,7 @@ function optimized_values(
     # arguments need to be kept in sync with frontend_optimized_values
 
     om = optimization_model(constraints; kwargs...)
-    for m in settings
+    for m in [configuration.default_solver_settings; settings]
         m(om)
     end
 

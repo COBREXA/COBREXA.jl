@@ -61,7 +61,7 @@ function screen_optimization_model(
 )
     worker_cache = worker_local_data(constraints) do c
         om = COBREXA.optimization_model(c; objective, sense, optimizer)
-        for s in settings
+        for s in [configuration.default_solver_settings; settings]
             s(om)
         end
         return om

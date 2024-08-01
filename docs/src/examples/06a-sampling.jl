@@ -30,7 +30,7 @@ download_model(
     "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
 )
 
-import JSONFBCModels, GLPK
+import JSONFBCModels, HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -40,7 +40,7 @@ model = load_model("e_coli_core.json")
 # near-optimal feasible space of the model:
 s = flux_sample(
     model,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
     objective_bound = relative_tolerance_bound(0.99),
     n_chains = 2,
     collect_iterations = [10],

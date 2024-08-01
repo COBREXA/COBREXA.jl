@@ -36,7 +36,7 @@ download_model(
 # reference solution" typically refers to Euclidean ("L2") distance which
 # requires a QP solver, but Manhattan ("L1") distance is also demonstrated
 # below.
-import Clarabel, GLPK
+import Clarabel, HiGHS
 
 # Because we will have to perform some perturbation, we import the model in
 # canonical Julia structures:
@@ -60,11 +60,7 @@ limited_ecoli.reactions["CYTBD"].upper_bound = 10.0
 # just right. For later comparison, we first get the optimal parsimonious flux
 # distribution in the perturbed model:
 
-solution = parsimonious_flux_balance_analysis(
-    limited_ecoli,
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)
+solution = parsimonious_flux_balance_analysis(limited_ecoli, optimizer = Clarabel.Optimizer)
 
 # Now, how much is the flux going to differ if we assume the bacterium did only
 # minimal adjustment from the previous state with unlimited CYTBD?
@@ -73,7 +69,6 @@ moma_solution = metabolic_adjustment_minimization_analysis(
     limited_ecoli, # the model to be examined
     ecoli; # the model that gives the reference flux
     optimizer = Clarabel.Optimizer,
-    settings = [silence],
 )
 
 @test isapprox(moma_solution.objective, 0.241496699165187, atol = TEST_TOLERANCE) #src
@@ -104,17 +99,12 @@ sort(collect(difference.fluxes), by = last)
 # from a known reaction flux. We can supply it manually as the second argument
 # (instead of the reference model).
 
-ref = parsimonious_flux_balance_analysis(
-    ecoli,
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)
+ref = parsimonious_flux_balance_analysis(ecoli, optimizer = Clarabel.Optimizer)
 
 ref_closest_solution = metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     ref.fluxes;
     optimizer = Clarabel.Optimizer,
-    settings = [silence],
 )
 
 @test isapprox( #src
@@ -137,7 +127,6 @@ solution_close_to_measurement = metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     measured_fluxes;
     optimizer = Clarabel.Optimizer,
-    settings = [silence],
 )
 
 @test isapprox(solution_close_to_measurement.objective, 0.272247, atol = TEST_TOLERANCE) #src
@@ -151,8 +140,7 @@ solution_close_to_measurement = metabolic_adjustment_minimization_analysis(
 linear_moma_solution = linear_metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     ecoli;
-    optimizer = GLPK.Optimizer,
-    settings = [silence],
+    optimizer = HiGHS.Optimizer,
 )
 
 sort(collect(linear_moma_solution.fluxes), by = last)

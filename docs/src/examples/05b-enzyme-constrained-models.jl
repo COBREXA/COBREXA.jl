@@ -31,11 +31,11 @@ download_model(
 )
 
 # Additionally to COBREXA and the model format package, we will need a solver
-# -- let's use GLPK here:
+# -- let's use HiGHS here:
 
 import AbstractFBCModels as A
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -333,7 +333,7 @@ ec_solution = enzyme_constrained_flux_balance_analysis(
     reaction_isozymes,
     gene_product_molar_masses = ecoli_core_gene_product_masses,
     capacity = total_enzyme_capacity,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 # We can notice that the objective function is a little lower than with
@@ -383,7 +383,7 @@ simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
     reaction_isozymes,
     gene_product_molar_masses = ecoli_core_gene_product_masses,
     capacity = total_enzyme_capacity,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 # In this case, the result is the same as with the full analysis:

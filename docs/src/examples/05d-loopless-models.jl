@@ -30,10 +30,10 @@ download_model(
 )
 
 # Additionally to COBREXA and the JSON model format package. We will also need a
-# solver that can solve mixed interger linear programs like GLPK.
+# solver which can solve mixed-interger linear programs, such as HiGHS.
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json")
 
@@ -43,7 +43,7 @@ model = load_model("e_coli_core.json")
 # based on `model` where loopless constraints are added to all fluxes. This is
 # the direct approach.
 
-solution = loopless_flux_balance_analysis(model; optimizer = GLPK.Optimizer)
+solution = loopless_flux_balance_analysis(model; optimizer = HiGHS.Optimizer)
 
 @test isapprox(solution.objective, 0.8739215069684303, atol = TEST_TOLERANCE) #src
 

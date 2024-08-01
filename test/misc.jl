@@ -40,8 +40,8 @@ end
     @test optimized_values(
         c,
         objective = c.x.value,
-        optimizer = GLPK.Optimizer,
-        settings = [set_objective_sense(Minimal), set_optimizer(GLPK.Optimizer)],
+        optimizer = HiGHS.Optimizer,
+        settings = [set_objective_sense(Minimal), set_optimizer(HiGHS.Optimizer)],
     ).x == 0.0
 end
 
@@ -75,7 +75,7 @@ end
         parsimonious_objective = c.x.value,
         objective_value = 1.015,
         tolerances = [absolute_tolerance_bound(0.01 * i) for i = 1:5],
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
     )
     @test r.x > 0.99
     r = parsimonious_optimized_values(
@@ -84,7 +84,7 @@ end
         parsimonious_objective = c.x.value,
         objective_value = 1.0001,
         tolerances = [absolute_tolerance_bound(0.00001)],
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
     )
     @test isnothing(r)
 end

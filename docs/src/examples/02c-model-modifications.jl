@@ -81,9 +81,9 @@ model.reactions["CS"].stoichiometry
 # Let's first find a "original" solution, so that we have a base solution for
 # comparing:
 
-import GLPK
+import HiGHS
 
-base_solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
+base_solution = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
 base_solution.objective
 
 # Now, for example, we can limit the intake of glucose by the model:
@@ -96,7 +96,7 @@ model.reactions["EX_glc__D_e"].lower_bound = -5.0
 
 # ...and solve the modified model:
 #
-low_glucose_solution = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
+low_glucose_solution = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
 low_glucose_solution.objective
 
 @test isapprox(low_glucose_solution.objective, 0.41559777, atol = TEST_TOLERANCE) #src
@@ -185,7 +185,7 @@ model.couplings["total_energy_intake"] = CM.Coupling(
 # The values of any coupling constraints can be inspected directly in the
 # solved model:
 
-solution_with_coupling = flux_balance_analysis(model, optimizer = GLPK.Optimizer)
+solution_with_coupling = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
 
 solution_with_coupling.coupling.total_energy_intake
 

@@ -44,7 +44,7 @@ function parsimonious_optimized_values(
     # frontend_parsimonious_optimized_values
 
     om = optimization_model(constraints; objective, kwargs...)
-    for m in settings
+    for m in [configuration.default_solver_settings; settings]
         m(om)
     end
 
@@ -60,7 +60,7 @@ function parsimonious_optimized_values(
 
     # switch to parsimonizing the solution w.r.t. to the objective value
     isnothing(parsimonious_optimizer) || J.set_optimizer(om, parsimonious_optimizer)
-    for m in parsimonious_settings
+    for m in [configuration.default_solver_settings; parsimonious_settings]
         m(om)
     end
 

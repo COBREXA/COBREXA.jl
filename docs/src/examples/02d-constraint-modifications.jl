@@ -32,7 +32,7 @@ download_model(
 )
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model("e_coli_core.json") # flux balance type model
 
@@ -99,7 +99,7 @@ fermenting_ct = ct * :fermentation^fermentation_constraint
 solution = optimized_values(
     fermenting_ct,
     objective = fermenting_ct.objective.value,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )
 
 @test isapprox(solution.objective, 0.633738, atol = TEST_TOLERANCE) #src
@@ -110,7 +110,7 @@ solution = optimized_values(
 
 ct.fluxes.ATPM.bound = C.Between(1000.0, 10000.0)
 
-solution = optimized_values(ct, objective = ct.objective.value, optimizer = GLPK.Optimizer)
+solution = optimized_values(ct, objective = ct.objective.value, optimizer = HiGHS.Optimizer)
 
 print(solution)
 

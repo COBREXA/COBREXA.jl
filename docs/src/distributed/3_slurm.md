@@ -37,7 +37,7 @@ The Julia script that does a parallel analysis in a Slurm cluster may look as
 follows:
 
 ```julia
-using COBREXA, Distributed, ClusterManagers, GLPK
+using COBREXA, Distributed, ClusterManagers, HiGHS
 
 available_workers = parse(Int, ENV["SLURM_NTASKS"])
 
