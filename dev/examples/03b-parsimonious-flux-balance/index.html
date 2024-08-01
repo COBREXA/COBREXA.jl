@@ -8,11 +8,7 @@ download_model(
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>Notably, we need an optimizer that can solve quadratic (QP) models:</p><pre><code class="language-julia hljs">import Clarabel
 
 import JSONFBCModels
-model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><p>The pFBA is, in its most default form, implemented in function <a href="../../reference/frontend/#COBREXA.parsimonious_flux_balance_analysis-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>parsimonious_flux_balance_analysis</code></a>:</p><pre><code class="language-julia hljs">solution = parsimonious_flux_balance_analysis(
-    model;
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
+model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><p>The pFBA is, in its most default form, implemented in function <a href="../../reference/frontend/#COBREXA.parsimonious_flux_balance_analysis-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>parsimonious_flux_balance_analysis</code></a>:</p><pre><code class="language-julia hljs">solution = parsimonious_flux_balance_analysis(model; optimizer = Clarabel.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling               =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
   :flux_stoichiometry     =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
   :fluxes                 =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
@@ -37,20 +33,19 @@ model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documen
   :D_LACt2                  =&gt; -4.43927e-11
   :ENO                      =&gt; 14.7161
   :ETOHt2r                  =&gt; -4.18493e-11
-  ⋮                         =&gt; ⋮</code></pre><h2 id="Using-different-solvers-for-the-problem-stages"><a class="docs-heading-anchor" href="#Using-different-solvers-for-the-problem-stages">Using different solvers for the problem stages</a><a id="Using-different-solvers-for-the-problem-stages-1"></a><a class="docs-heading-anchor-permalink" href="#Using-different-solvers-for-the-problem-stages" title="Permalink"></a></h2><p>Sometimes it is useful to employ a dedicated LP solver to find the solution to the original FBA problem, and then a dedicated QP solver to minimize the fluxes. We can set the optimizer and parsimonious optimizer separately using keyword arguments:</p><pre><code class="language-julia hljs">import GLPK
+  ⋮                         =&gt; ⋮</code></pre><h2 id="Using-different-solvers-for-the-problem-stages"><a class="docs-heading-anchor" href="#Using-different-solvers-for-the-problem-stages">Using different solvers for the problem stages</a><a id="Using-different-solvers-for-the-problem-stages-1"></a><a class="docs-heading-anchor-permalink" href="#Using-different-solvers-for-the-problem-stages" title="Permalink"></a></h2><p>Sometimes it is useful to employ a dedicated LP solver to find the solution to the original FBA problem, and then a dedicated QP solver to minimize the fluxes. We can set the optimizer and parsimonious optimizer separately using keyword arguments:</p><pre><code class="language-julia hljs">import HiGHS
 
 solution = parsimonious_flux_balance_analysis(
     model;
-    optimizer = GLPK.Optimizer, # GLPK is good for LP but cannot do QP
-    settings = [silence],
-    parsimonious_optimizer = Clarabel.Optimizer, # Clarabel is not very precise but can solve QP
+    optimizer = HiGHS.Optimizer, # HiGHS is used only for LP here
+    parsimonious_optimizer = Clarabel.Optimizer, # Clarabel is great for solving QPs
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling               =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
   :flux_stoichiometry     =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
   :fluxes                 =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :objective              =&gt; 0.873922
   :parsimonious_objective =&gt; 11414.2</code></pre><h2 id="Using-linear-(L1)-parsimonious-constraints"><a class="docs-heading-anchor" href="#Using-linear-(L1)-parsimonious-constraints">Using linear (L1) parsimonious constraints</a><a id="Using-linear-(L1)-parsimonious-constraints-1"></a><a class="docs-heading-anchor-permalink" href="#Using-linear-(L1)-parsimonious-constraints" title="Permalink"></a></h2><p>For efficiency reasons, it is also possible to use a pFBA version that optimizes the L1 norm instead of the L2 one (i.e., minimizing a sum of absolute values instead of the sum of squares). In turn, the uniqueness property of the solution is lost, but we do not need a QP-capable optimizer at all:</p><pre><code class="language-julia hljs">linear_solution =
-    linear_parsimonious_flux_balance_analysis(model; optimizer = GLPK.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 8 elements:
+    linear_parsimonious_flux_balance_analysis(model; optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 8 elements:
   :coupling                 =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
   :directional_flux_balance =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :flux_stoichiometry       =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
@@ -61,10 +56,10 @@ solution = parsimonious_flux_balance_analysis(
   :parsimonious_objective   =&gt; 518.422</code></pre><pre><code class="language-julia hljs">linear_solution.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 95 elements:
   :ACALD                    =&gt; 0.0
   :ACALDt                   =&gt; 0.0
-  :ACKr                     =&gt; 0.0
+  :ACKr                     =&gt; 5.03064e-14
   :ACONTa                   =&gt; 6.00725
   :ACONTb                   =&gt; 6.00725
-  :ACt2r                    =&gt; 0.0
+  :ACt2r                    =&gt; 5.03064e-14
   :ADK1                     =&gt; 0.0
   :AKGDH                    =&gt; 5.06438
   :AKGt2r                   =&gt; 0.0
@@ -78,4 +73,4 @@ solution = parsimonious_flux_balance_analysis(
   :D_LACt2                  =&gt; 0.0
   :ENO                      =&gt; 14.7161
   :ETOHt2r                  =&gt; 0.0
-  ⋮                         =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03a-flux-variability-analysis/">« Flux variability analysis (FVA)</a><a class="docs-footer-nextpage" href="../03c-envelopes/">Production envelopes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 12:45">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ⋮                         =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03a-flux-variability-analysis/">« Flux variability analysis (FVA)</a><a class="docs-footer-nextpage" href="../03c-envelopes/">Production envelopes »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 17:48">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

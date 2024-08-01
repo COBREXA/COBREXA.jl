@@ -8,44 +8,40 @@ download_model(
 )
 
 import JSONFBCModels
-import GLPK
+import HiGHS
 
-model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><h2 id="Single-gene-knockouts"><a class="docs-heading-anchor" href="#Single-gene-knockouts">Single gene knockouts</a><a id="Single-gene-knockouts-1"></a><a class="docs-heading-anchor-permalink" href="#Single-gene-knockouts" title="Permalink"></a></h2><p>Function <a href="../../reference/frontend/#COBREXA.gene_knockouts"><code>gene_knockouts</code></a> is a convenience wrapper for FBA that computes and optimizes the knockout biomass productions for all genes:</p><pre><code class="language-julia hljs">ko_objective_values = gene_knockouts(model, optimizer = GLPK.Optimizer)
+model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><h2 id="Single-gene-knockouts"><a class="docs-heading-anchor" href="#Single-gene-knockouts">Single gene knockouts</a><a id="Single-gene-knockouts-1"></a><a class="docs-heading-anchor-permalink" href="#Single-gene-knockouts" title="Permalink"></a></h2><p>Function <a href="../../reference/frontend/#COBREXA.gene_knockouts"><code>gene_knockouts</code></a> is a convenience wrapper for FBA that computes and optimizes the knockout biomass productions for all genes:</p><pre><code class="language-julia hljs">ko_objective_values = gene_knockouts(model, optimizer = HiGHS.Optimizer)
 
 ko_dict = Dict(ko_objective_values)
 
 
 ko_dict[&quot;b3919&quot;]
 
-ko_dict[&quot;b3738&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.37422987493310866</code></pre><p>From the result, we can see e.g. how many genes are critical:</p><pre><code class="language-julia hljs">critical = count(isnothing, values(ko_dict))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2</code></pre><h2 id="Multiple-gene-knockouts"><a class="docs-heading-anchor" href="#Multiple-gene-knockouts">Multiple gene knockouts</a><a id="Multiple-gene-knockouts-1"></a><a class="docs-heading-anchor-permalink" href="#Multiple-gene-knockouts" title="Permalink"></a></h2><p>By default, <a href="../../reference/frontend/#COBREXA.gene_knockouts"><code>gene_knockouts</code></a> simply computes all gene knockouts. To examine multi-gene knockouts, we specify them manually as an array of tuples:</p><pre><code class="language-julia hljs">some_double_knockouts = gene_knockouts(
+ko_dict[&quot;b3738&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.3742298749331098</code></pre><p>From the result, we can see e.g. how many genes are critical:</p><pre><code class="language-julia hljs">critical = count(isnothing, values(ko_dict))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2</code></pre><h2 id="Multiple-gene-knockouts"><a class="docs-heading-anchor" href="#Multiple-gene-knockouts">Multiple gene knockouts</a><a id="Multiple-gene-knockouts-1"></a><a class="docs-heading-anchor-permalink" href="#Multiple-gene-knockouts" title="Permalink"></a></h2><p>By default, <a href="../../reference/frontend/#COBREXA.gene_knockouts"><code>gene_knockouts</code></a> simply computes all gene knockouts. To examine multi-gene knockouts, we specify them manually as an array of tuples:</p><pre><code class="language-julia hljs">some_double_knockouts = gene_knockouts(
     model,
     [(&quot;b3919&quot;, &quot;b3738&quot;), (&quot;b0118&quot;, &quot;b0720&quot;)],
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2-element Vector{Pair{Tuple{String, String}, Float64}}:
- (&quot;b3919&quot;, &quot;b3738&quot;) =&gt; 0.13475540327383498
- (&quot;b0118&quot;, &quot;b0720&quot;) =&gt; -1.0222950287826093e-15</code></pre><p>With the array processing functionality of Julia it is quite straightforward to generate the tuples for various specifications of knockout sets; for example here we specify all double knockout where the second knocked-out gene is <code>b3919</code>:</p><pre><code class="language-julia hljs">knockouts_with_b3919 = gene_knockouts(
-    model,
-    tuple.(keys(ko_dict), &quot;b3919&quot;),
-    optimizer = GLPK.Optimizer,
-    settings = [silence],
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">137-element Vector{Pair{Tuple{String, String}}}:
- (&quot;b3236&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590305
- (&quot;b1621&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b1241&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
+ (&quot;b3919&quot;, &quot;b3738&quot;) =&gt; 0.13475540327382504
+ (&quot;b0118&quot;, &quot;b0720&quot;) =&gt; 0.0</code></pre><p>With the array processing functionality of Julia it is quite straightforward to generate the tuples for various specifications of knockout sets; for example here we specify all double knockout where the second knocked-out gene is <code>b3919</code>:</p><pre><code class="language-julia hljs">knockouts_with_b3919 =
+    gene_knockouts(model, tuple.(keys(ko_dict), &quot;b3919&quot;), optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">137-element Vector{Pair{Tuple{String, String}}}:
+ (&quot;b3236&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b1621&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b1241&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
  (&quot;b2276&quot;, &quot;b3919&quot;) =&gt; nothing
- (&quot;b3925&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b0979&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b2296&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b4232&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
+ (&quot;b3925&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b0979&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b2296&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b4232&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
  (&quot;b2282&quot;, &quot;b3919&quot;) =&gt; nothing
  (&quot;b2283&quot;, &quot;b3919&quot;) =&gt; nothing
                     ⋮
- (&quot;b0903&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b1723&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b0810&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b0356&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
+ (&quot;b0903&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b1723&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b0810&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b0356&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
  (&quot;b2277&quot;, &quot;b3919&quot;) =&gt; nothing
- (&quot;b1276&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
- (&quot;b4153&quot;, &quot;b3919&quot;) =&gt; 0.70403694785902
+ (&quot;b1276&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
+ (&quot;b4153&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
  (&quot;b2279&quot;, &quot;b3919&quot;) =&gt; nothing
- (&quot;b0726&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590158</code></pre><p>Now, how many genes are critical given <code>b3919</code> is already missing?</p><pre><code class="language-julia hljs">critical_without_b3919 = count(isnothing, last.(knockouts_with_b3919))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">23</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05d-loopless-models/">« Loopless flux balance analysis (ll-FBA)</a><a class="docs-footer-nextpage" href="../06a-sampling/">Flux sampling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 12:45">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (&quot;b0726&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238</code></pre><p>Now, how many genes are critical given <code>b3919</code> is already missing?</p><pre><code class="language-julia hljs">critical_without_b3919 = count(isnothing, last.(knockouts_with_b3919))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">23</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05d-loopless-models/">« Loopless flux balance analysis (ll-FBA)</a><a class="docs-footer-nextpage" href="../06a-sampling/">Flux sampling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 17:48">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

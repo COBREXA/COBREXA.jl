@@ -3,9 +3,9 @@
     &quot;http://bigg.ucsd.edu/static/models/e_coli_core.json&quot;,
     &quot;e_coli_core.json&quot;,
     &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>Additionally to COBREXA and the model format package, we will need a solver – let&#39;s use GLPK here:</p><pre><code class="language-julia hljs">import AbstractFBCModels as A
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>Additionally to COBREXA and the model format package, we will need a solver – let&#39;s use HiGHS here:</p><pre><code class="language-julia hljs">import AbstractFBCModels as A
 import JSONFBCModels
-import GLPK
+import HiGHS
 
 model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><p>Enzyme constrained models require parameters that are usually not used by conventional constraint based models. These include reaction specific turnover numbers, molar masses of enzymes, and protein capacity bounds.</p><h2 id="Reaction-turnover-numbers"><a class="docs-heading-anchor" href="#Reaction-turnover-numbers">Reaction turnover numbers</a><a id="Reaction-turnover-numbers-1"></a><a class="docs-heading-anchor-permalink" href="#Reaction-turnover-numbers" title="Permalink"></a></h2><p>Enzyme constrained models require reaction turnover numbers, which are often isozyme specfic. Many machine learning tools, or experimental data sets, can be used to estimate these parameters.</p><details><summary><strong>Data for reaction turnover numbers</strong></summary><p>This data is taken from: <em>Heckmann, David, et al. &quot;Machine learning applied to enzyme turnover numbers reveals protein structural correlates and improves metabolic models.&quot; Nature communications 9.1 (2018): 1-10.</em></p><pre><code class="language-julia hljs">const ecoli_core_reaction_kcats = Dict(
     &quot;ACALD&quot; =&gt; 568.11,
@@ -306,7 +306,7 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
     reaction_isozymes,
     gene_product_molar_masses = ecoli_core_gene_product_masses,
     capacity = total_enzyme_capacity,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 13 elements:
   :coupling                     =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements …
   :directional_flux_balance     =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements…
@@ -320,7 +320,7 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
   :isozyme_flux_reverse_balance =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
   :isozyme_forward_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
   :isozyme_reverse_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
-  :objective                    =&gt; 0.706993</code></pre><p>We can notice that the objective function is a little lower than with unconstrained E. coli core:</p><pre><code class="language-julia hljs">ec_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572322</code></pre><p>One can also observe many interesting thing, e.g. the amount of gene product material required for the system to run. Importantly, the units of these values depend on the units used to set the turnover numbers and protein molar masses.</p><pre><code class="language-julia hljs">ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 130 elements:
+  :objective                    =&gt; 0.706993</code></pre><p>We can notice that the objective function is a little lower than with unconstrained E. coli core:</p><pre><code class="language-julia hljs">ec_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572326</code></pre><p>One can also observe many interesting thing, e.g. the amount of gene product material required for the system to run. Importantly, the units of these values depend on the units used to set the turnover numbers and protein molar masses.</p><pre><code class="language-julia hljs">ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 130 elements:
   :b0008 =&gt; 0.00482419
   :b0114 =&gt; 0.00550415
   :b0115 =&gt; 0.00550415
@@ -328,7 +328,7 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
   :b0118 =&gt; 0.00243563
   :b0351 =&gt; 0.0
   :b0356 =&gt; 0.0
-  :b0474 =&gt; -4.41985e-18
+  :b0474 =&gt; 0.0
   :b0485 =&gt; 0.0
   :b0720 =&gt; 0.00187026
   :b0721 =&gt; 0.0
@@ -346,7 +346,7 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
     reaction_isozymes,
     gene_product_molar_masses = ecoli_core_gene_product_masses,
     capacity = total_enzyme_capacity,
-    optimizer = GLPK.Optimizer,
+    optimizer = HiGHS.Optimizer,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 9 elements:
   :capacity_limits          =&gt; ConstraintTrees.Tree{Float64}(#= 1 element =#)
   :coupling                 =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
@@ -356,24 +356,24 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
   :fluxes_forward           =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :fluxes_reverse           =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
   :gene_product_amounts     =&gt; ConstraintTrees.Tree{Float64}(#= 97 elements =#)
-  :objective                =&gt; 0.706993</code></pre><p>In this case, the result is the same as with the full analysis:</p><pre><code class="language-julia hljs">simplified_ec_solution.capacity_limits.total_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">50.00000000000007</code></pre><p>Gene product amounts are not present in the model but are reconstructed nevertheless (they are uniquely determined by the flux):</p><pre><code class="language-julia hljs">simplified_ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 97 elements:
+  :objective                =&gt; 0.706993</code></pre><p>In this case, the result is the same as with the full analysis:</p><pre><code class="language-julia hljs">simplified_ec_solution.capacity_limits.total_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">50.00000000000001</code></pre><p>Gene product amounts are not present in the model but are reconstructed nevertheless (they are uniquely determined by the flux):</p><pre><code class="language-julia hljs">simplified_ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 97 elements:
   :b0008 =&gt; 0.00482419
   :b0114 =&gt; 0.00550415
   :b0115 =&gt; 0.00550415
   :b0116 =&gt; 0.00550415
   :b0118 =&gt; 0.00243563
-  :b0351 =&gt; 3.90848e-18
+  :b0351 =&gt; 0.0
   :b0474 =&gt; 0.0
-  :b0485 =&gt; -5.16748e-19
+  :b0485 =&gt; 0.0
   :b0720 =&gt; 0.00187026
   :b0721 =&gt; 0.0
   :b0722 =&gt; 0.0
   :b0723 =&gt; 0.0
   :b0724 =&gt; 0.0
-  :b0726 =&gt; 4.66418e-18
-  :b0727 =&gt; 4.66418e-18
+  :b0726 =&gt; 0.0
+  :b0727 =&gt; 0.0
   :b0728 =&gt; 0.0
   :b0729 =&gt; 0.0
   :b0767 =&gt; 0.000794011
   :b0809 =&gt; 0.0
-  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05a-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../05c-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 12:45">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05a-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../05c-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 17:48">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

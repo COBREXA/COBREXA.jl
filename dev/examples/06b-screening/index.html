@@ -7,7 +7,7 @@ download_model(
     &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
 )
 
-import JSONFBCModels, GLPK
+import JSONFBCModels, HiGHS
 import ConstraintTrees as C
 
 model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><p>Screening is done as follows: We specify a range of values to examine (in the example below to an actual range of <code>-10</code> to <code>0</code>), but any vector-like list of things can be used), and write a short &quot;analysis&quot; function that takes one of the values from the range as an argument and runs an analysis for that given value.</p><p>Here, we solve 11 different optimization problems for different bounds of the oxygen exchange:</p><pre><code class="language-julia hljs">screen(-10:0) do o2_bound
@@ -16,28 +16,28 @@ model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documen
     optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Float64}:
- 0.5590505997120273
- 0.5265539556675345
- 0.4940573116230468
- 0.4615606675785596
- 0.42764555150603667
- 0.3916484512109158
- 0.3556513509157937
- 0.31965425062066916
- 0.28365715032555294
- 0.24766005003042965
- 0.21166294973531516</code></pre><h2 id="Screening-in-multiple-dimensions"><a class="docs-heading-anchor" href="#Screening-in-multiple-dimensions">Screening in multiple dimensions</a><a id="Screening-in-multiple-dimensions-1"></a><a class="docs-heading-anchor-permalink" href="#Screening-in-multiple-dimensions" title="Permalink"></a></h2><p>The simplest way to screen through multi-dimensional arrays is to use an iterator product. In the result, we receive a whole matrix of results instead of a vector.</p><pre><code class="language-julia hljs">screen(Iterators.product(-10:2:0, 0:2:10)) do (o2_bound, co2_bound)
+ 0.5590505997120256
+ 0.5265539556675367
+ 0.4940573116230476
+ 0.4615606675785586
+ 0.4276455515060357
+ 0.3916484512109149
+ 0.35565135091579403
+ 0.31965425062067315
+ 0.28365715032555233
+ 0.24766005003043148
+ 0.2116629497353106</code></pre><h2 id="Screening-in-multiple-dimensions"><a class="docs-heading-anchor" href="#Screening-in-multiple-dimensions">Screening in multiple dimensions</a><a id="Screening-in-multiple-dimensions-1"></a><a class="docs-heading-anchor-permalink" href="#Screening-in-multiple-dimensions" title="Permalink"></a></h2><p>The simplest way to screen through multi-dimensional arrays is to use an iterator product. In the result, we receive a whole matrix of results instead of a vector.</p><pre><code class="language-julia hljs">screen(Iterators.product(-10:2:0, 0:2:10)) do (o2_bound, co2_bound)
     c = flux_balance_constraints(model)
     c.fluxes.EX_o2_e.bound = C.EqualTo(o2_bound)
     c.fluxes.EX_co2_e.bound = C.EqualTo(co2_bound)
     optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">6×6 Matrix{Float64}:
@@ -59,7 +59,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×4×2 Array{Float64, 3}:
@@ -86,7 +86,7 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
     (transport, exchange, bound.upper) =&gt; optimized_values(
         c,
         objective = c.objective.value,
-        optimizer = GLPK.Optimizer,
+        optimizer = HiGHS.Optimizer,
         output = c.objective,
     )
 end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×4×2 Array{Pair{Tuple{Symbol, Symbol, Float64}, Float64}, 3}:
@@ -100,4 +100,4 @@ end</code></pre><pre class="documenter-example-output"><code class="nohighlight 
  (:H2Ot, :EX_h2o_e, 1.0)=&gt;0.454097  …  (:H2Ot, :EX_nh4_e, 1.0)=&gt;0.494176
  (:CO2t, :EX_h2o_e, 1.0)=&gt;0.454097     (:CO2t, :EX_nh4_e, 1.0)=&gt;0.550176
   (:O2t, :EX_h2o_e, 1.0)=&gt;0.391648      (:O2t, :EX_nh4_e, 1.0)=&gt;0.391648
- (:NH4t, :EX_h2o_e, 1.0)=&gt;0.454097     (:NH4t, :EX_nh4_e, 1.0)=&gt;0.550176</code></pre><p>Notably, this approach makes various indexing and ordering errors quite improbable.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06a-sampling/">« Flux sampling</a><a class="docs-footer-nextpage" href="../../structure/">Core concepts and structure »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 12:45">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (:NH4t, :EX_h2o_e, 1.0)=&gt;0.454097     (:NH4t, :EX_nh4_e, 1.0)=&gt;0.550176</code></pre><p>Notably, this approach makes various indexing and ordering errors quite improbable.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06a-sampling/">« Flux sampling</a><a class="docs-footer-nextpage" href="../../structure/">Core concepts and structure »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 17:48">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

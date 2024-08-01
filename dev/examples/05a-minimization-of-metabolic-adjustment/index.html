@@ -5,7 +5,7 @@ download_model(
     &quot;http://bigg.ucsd.edu/static/models/e_coli_core.json&quot;,
     &quot;e_coli_core.json&quot;,
     &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>We shall use both quadratic and linear solvers – the &quot;closest to some reference solution&quot; typically refers to Euclidean (&quot;L2&quot;) distance which requires a QP solver, but Manhattan (&quot;L1&quot;) distance is also demonstrated below.</p><pre><code class="language-julia hljs">import Clarabel, GLPK</code></pre><p>Because we will have to perform some perturbation, we import the model in canonical Julia structures:</p><pre><code class="language-julia hljs">import JSONFBCModels
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>We shall use both quadratic and linear solvers – the &quot;closest to some reference solution&quot; typically refers to Euclidean (&quot;L2&quot;) distance which requires a QP solver, but Manhattan (&quot;L1&quot;) distance is also demonstrated below.</p><pre><code class="language-julia hljs">import Clarabel, HiGHS</code></pre><p>Because we will have to perform some perturbation, we import the model in canonical Julia structures:</p><pre><code class="language-julia hljs">import JSONFBCModels
 import AbstractFBCModels.CanonicalModel as CM
 ecoli = load_model(&quot;e_coli_core.json&quot;, CM.Model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Model(
   reactions = Dict{String, AbstractFBCModels.CanonicalModel.Reaction}(&quot;ACALD&quot; =…
@@ -24,11 +24,7 @@ ecoli = load_model(&quot;e_coli_core.json&quot;, CM.Model)</code></pre><pre clas
   notes = Dict(&quot;original_bigg_ids&quot; =&gt; [&quot;CYTBD&quot;]),
 )
 </code></pre><p>To do the perturbation, we create a model of a strain which has mild issues with running the CYTBD reaction. We use <code>deepcopy</code> to completely avoid any reference sharing issues.</p><pre><code class="language-julia hljs">limited_ecoli = deepcopy(ecoli)
-limited_ecoli.reactions[&quot;CYTBD&quot;].upper_bound = 10.0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10.0</code></pre><h2 id="Finding-parsimonious-solutions"><a class="docs-heading-anchor" href="#Finding-parsimonious-solutions">Finding parsimonious solutions</a><a id="Finding-parsimonious-solutions-1"></a><a class="docs-heading-anchor-permalink" href="#Finding-parsimonious-solutions" title="Permalink"></a></h2><p>Becuase we are interested in realistic flux distributions, we have to use an analysis method which gives one – in this case, the parsimonious FBA will do just right. For later comparison, we first get the optimal parsimonious flux distribution in the perturbed model:</p><pre><code class="language-julia hljs">solution = parsimonious_flux_balance_analysis(
-    limited_ecoli,
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
+limited_ecoli.reactions[&quot;CYTBD&quot;].upper_bound = 10.0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">10.0</code></pre><h2 id="Finding-parsimonious-solutions"><a class="docs-heading-anchor" href="#Finding-parsimonious-solutions">Finding parsimonious solutions</a><a id="Finding-parsimonious-solutions-1"></a><a class="docs-heading-anchor-permalink" href="#Finding-parsimonious-solutions" title="Permalink"></a></h2><p>Becuase we are interested in realistic flux distributions, we have to use an analysis method which gives one – in this case, the parsimonious FBA will do just right. For later comparison, we first get the optimal parsimonious flux distribution in the perturbed model:</p><pre><code class="language-julia hljs">solution = parsimonious_flux_balance_analysis(limited_ecoli, optimizer = Clarabel.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling               =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
   :flux_stoichiometry     =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
   :fluxes                 =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
@@ -37,7 +33,6 @@ limited_ecoli.reactions[&quot;CYTBD&quot;].upper_bound = 10.0</code></pre><pre c
     limited_ecoli, # the model to be examined
     ecoli; # the model that gives the reference flux
     optimizer = Clarabel.Optimizer,
-    settings = [silence],
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling                     =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements …
   :flux_stoichiometry           =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements…
@@ -68,17 +63,12 @@ difference = C.zip(-, solution, moma_solution, Float64)</code></pre><pre class="
       :H2Ot =&gt; 12.259737504822999
   :EX_for_e =&gt; 15.937900592298138
        :PFL =&gt; 15.937900592299496
-    :EX_h_e =&gt; 20.94183649468959</code></pre><h2 id="Using-a-custom-reference-flux"><a class="docs-heading-anchor" href="#Using-a-custom-reference-flux">Using a custom reference flux</a><a id="Using-a-custom-reference-flux-1"></a><a class="docs-heading-anchor-permalink" href="#Using-a-custom-reference-flux" title="Permalink"></a></h2><p>In certain situations, one might want to examine how the model would adjust from a known reaction flux. We can supply it manually as the second argument (instead of the reference model).</p><pre><code class="language-julia hljs">ref = parsimonious_flux_balance_analysis(
-    ecoli,
-    optimizer = Clarabel.Optimizer,
-    settings = [silence],
-)
+    :EX_h_e =&gt; 20.94183649468959</code></pre><h2 id="Using-a-custom-reference-flux"><a class="docs-heading-anchor" href="#Using-a-custom-reference-flux">Using a custom reference flux</a><a id="Using-a-custom-reference-flux-1"></a><a class="docs-heading-anchor-permalink" href="#Using-a-custom-reference-flux" title="Permalink"></a></h2><p>In certain situations, one might want to examine how the model would adjust from a known reaction flux. We can supply it manually as the second argument (instead of the reference model).</p><pre><code class="language-julia hljs">ref = parsimonious_flux_balance_analysis(ecoli, optimizer = Clarabel.Optimizer)
 
 ref_closest_solution = metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     ref.fluxes;
     optimizer = Clarabel.Optimizer,
-    settings = [silence],
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling                     =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements …
   :flux_stoichiometry           =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements…
@@ -91,7 +81,6 @@ solution_close_to_measurement = metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     measured_fluxes;
     optimizer = Clarabel.Optimizer,
-    settings = [silence],
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling                     =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements …
   :flux_stoichiometry           =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements…
@@ -100,51 +89,50 @@ solution_close_to_measurement = metabolic_adjustment_minimization_analysis(
   :objective                    =&gt; 0.272247</code></pre><h2 id="Efficient-linear-metric-MOMA"><a class="docs-heading-anchor" href="#Efficient-linear-metric-MOMA">Efficient linear-metric MOMA</a><a id="Efficient-linear-metric-MOMA-1"></a><a class="docs-heading-anchor-permalink" href="#Efficient-linear-metric-MOMA" title="Permalink"></a></h2><p>The linear version of MOMA avoids having to use the quadratic optimizer in the process, giving more optimizer choices and (typically) much better performance. Linear MOMA has the same interface as the quadratic one:</p><pre><code class="language-julia hljs">linear_moma_solution = linear_metabolic_adjustment_minimization_analysis(
     limited_ecoli,
     ecoli;
-    optimizer = GLPK.Optimizer,
-    settings = [silence],
+    optimizer = HiGHS.Optimizer,
 )
 
 sort(collect(linear_moma_solution.fluxes), by = last)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">95-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
-         :PGK =&gt; -15.434651933306446
-         :PGM =&gt; -15.106655803899917
-        :H2Ot =&gt; -11.549940543000623
-        :CO2t =&gt; -8.778386666898763
- :EX_glc__D_e =&gt; -8.3220121909862
-       :ACALD =&gt; -5.755385239519794
-      :ALCD2x =&gt; -5.755385239519794
-     :ETOHt2r =&gt; -5.755385239519794
-     :EX_o2_e =&gt; -4.999999999999998
-    :EX_nh4_e =&gt; -3.6644190017734593
+         :PGK =&gt; -15.434651933306435
+         :PGM =&gt; -15.106655803899905
+        :H2Ot =&gt; -11.54994054300062
+        :CO2t =&gt; -8.778386666898754
+ :EX_glc__D_e =&gt; -8.322012190986193
+       :ACALD =&gt; -5.755385239519781
+      :ALCD2x =&gt; -5.755385239519781
+     :ETOHt2r =&gt; -5.755385239519781
+     :EX_o2_e =&gt; -5.0
+    :EX_nh4_e =&gt; -3.664419001773459
               ⋮
-    :EX_co2_e =&gt; 8.778386666898763
-         :PDH =&gt; 9.282532599166629
-       :CYTBD =&gt; 9.999999999999993
-    :EX_h2o_e =&gt; 11.549940543000623
-      :NADH16 =&gt; 11.992044684138182
-      :ATPS4r =&gt; 12.02045138184385
-      :EX_h_e =&gt; 13.320018125191705
-         :ENO =&gt; 15.106655803899917
-        :GAPD =&gt; 15.434651933306446</code></pre><p>How much does the flux distribution differ from the L2 solution?</p><pre><code class="language-julia hljs">sort(
+    :EX_co2_e =&gt; 8.778386666898754
+         :PDH =&gt; 9.282532599166617
+       :CYTBD =&gt; 10.0
+    :EX_h2o_e =&gt; 11.54994054300062
+      :NADH16 =&gt; 11.99204468413819
+      :ATPS4r =&gt; 12.020451381843891
+      :EX_h_e =&gt; 13.32001812519156
+         :ENO =&gt; 15.106655803899905
+        :GAPD =&gt; 15.434651933306435</code></pre><p>How much does the flux distribution differ from the L2 solution?</p><pre><code class="language-julia hljs">sort(
     collect(C.zip(-, linear_moma_solution.fluxes, moma_solution.fluxes, Float64)),
     by = last,
 )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">95-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
-        :GAPD =&gt; -2.217421474277616
-         :ENO =&gt; -2.184138541733036
-        :FRD7 =&gt; -2.0818742855029955
+        :GAPD =&gt; -2.217421474277627
+         :ENO =&gt; -2.1841385417330486
+        :FRD7 =&gt; -2.0818742855029964
   :EX_acald_e =&gt; -1.9243624065292773
-      :EX_h_e =&gt; -1.7636376825705735
-         :PDH =&gt; -1.3871400070221824
-      :GLCpts =&gt; -1.1700704237440487
-      :SUCCt3 =&gt; -1.0914174611276093
-   :EX_succ_e =&gt; -1.0914174609219498
-      :NADH16 =&gt; -1.0914174606140996
+      :EX_h_e =&gt; -1.7636376825707192
+         :PDH =&gt; -1.3871400070221949
+      :GLCpts =&gt; -1.1700704237440558
+      :SUCCt3 =&gt; -1.0914174611276102
+   :EX_succ_e =&gt; -1.0914174609219507
+      :NADH16 =&gt; -1.0914174606140925
               ⋮
-        :CO2t =&gt; 0.4467050816543967
-        :H2Ot =&gt; 1.0465554189435053
-         :FUM =&gt; 1.0914174606586293
-         :MDH =&gt; 1.091417462039225
- :EX_glc__D_e =&gt; 1.1700704237440505
-       :ACALD =&gt; 1.7125013840399141
+        :CO2t =&gt; 0.4467050816544056
+        :H2Ot =&gt; 1.046555418943509
+         :FUM =&gt; 1.0914174606586302
+         :MDH =&gt; 1.0914174620392267
+ :EX_glc__D_e =&gt; 1.1700704237440576
+       :ACALD =&gt; 1.7125013840399266
       :ACALDt =&gt; 1.9243624065292788
-         :PGM =&gt; 2.1841385417330326
-         :PGK =&gt; 2.217421474277627</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../04-community-models/">« Community FBA models</a><a class="docs-footer-nextpage" href="../05b-enzyme-constrained-models/">Enzyme constrained models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 12:45">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+         :PGM =&gt; 2.184138541733045
+         :PGK =&gt; 2.2174214742776375</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../04-community-models/">« Community FBA models</a><a class="docs-footer-nextpage" href="../05b-enzyme-constrained-models/">Enzyme constrained models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Thursday 1 August 2024 17:48">Thursday 1 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
