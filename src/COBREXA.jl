@@ -46,7 +46,6 @@ import SparseArrays
 import StableRNGs
 
 include("types.jl")
-include("config.jl")
 
 # core functionality
 include("io.jl")
@@ -92,5 +91,8 @@ include("misc/breaks.jl")
 include("misc/maybe.jl")
 include("misc/settings.jl")
 include("misc/trees.jl")
+
+# configuration (initializes with values from other source files, thus last)
+include("config.jl")
 
 end # module COBREXA
