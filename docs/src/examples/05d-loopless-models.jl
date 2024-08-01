@@ -30,7 +30,7 @@ download_model(
 )
 
 # Additionally to COBREXA and the JSON model format package. We will also need a
-# solver that can solve mixed interger linear programs like HiGHS.
+# solver which can solve mixed-interger linear programs, such as HiGHS.
 
 import JSONFBCModels
 import HiGHS
