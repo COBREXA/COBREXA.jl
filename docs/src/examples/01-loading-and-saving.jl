@@ -76,18 +76,21 @@ A.reactions(model2)
 
 # Normally, [`load_model`](@ref) is forced to guess the model type from the
 # filename suffix. We can specify the model type ourselves (this also allows
-# the users to work with non-standard file suffixes):
+# the users to work with non-standard file suffixes, and saves some overhead
+# and uncertainty in the guessing process):
 
-model = load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json")
+import JSONFBCModels: JSONFBCModel
+
+model = load_model(JSONFBCModel, "e_coli_core.json")
 
 # Sometimes it is useful to convert the model data to another type, such as the
 # SBML to a JSON model structure:
 
-model_converted_to_json = load_model("e_coli_core.xml", JSONFBCModels.JSONFBCModel)
+model_converted_to_json = load_model("e_coli_core.xml", JSONFBCModel)
 
 # Or to the "Canonical Julia model" from AbstractFBCModels:
 model_in_julia_structures =
-    load_model(JSONFBCModels.JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
+    load_model(JSONFBCModel, "e_coli_core.json", A.CanonicalModel.Model)
 
 #md # !!! tip "Compatibility with COBREXA v1.x"
 #md #     `CanonicalModel` is a newer, cleaned-up version of the `StandardModel` type used in COBREXA version 1. For all code that relied on `StandardModel`, the canonical one should work just as well.
@@ -98,7 +101,7 @@ model_in_julia_structures =
 # If required, it is also possible to convert all model types to each other
 # simply by using Julia's `convert`:
 
-model_in_json_structure = convert(JSONFBCModels.JSONFBCModel, model_in_julia_structures)
+model_in_json_structure = convert(JSONFBCModel, model_in_julia_structures)
 
 # ## Saving models
 
@@ -109,3 +112,32 @@ save_model(model_converted_to_json, "e_coli_core_from_sbml.json")
 println(open("e_coli_core_from_sbml.json") do f
     read(f, 100)
 end |> String, "...")
+
+# Note that without the conversion, it may happen that you save the model in an unexpected format!
+save_model(model_in_julia_structures, "e_coli_saved_wrongly.json")
+println(open("e_coli_saved_wrongly.json") do f
+    read(f, 100)
+end |> String, "...")
+
+# The above code has saved the `CanonicalModel` in the way specified by the
+# `CanonicalModel` structure -- which is, in this case, a binary dump of the
+# Julia objects, instead of the expected JSON. To prevent this, you can either
+# specify the output type yourself:
+
+save_model(model_in_julia_structures, "e_coli_saved_right.json", JSONFBCModel)
+
+# ...or use [`save_converted_model`](@ref) to guess the model type
+# automatically from the extension:
+
+save_converted_model(model_in_julia_structures, "e_coli_saved_automatically_right.json")
+println(open("e_coli_saved_automatically_right.json") do f
+    read(f, 100)
+end |> String, "...")
+
+@test load_model("e_coli_saved_automatically_right.json") isa JSONFBCModel #src
+
+# As with [`load_model`](@ref), there is some overhead and uncertainty
+# associated with [`save_converted_model`](@ref) guessing the model type from
+# extension. For that reason, it is adviseable to rely on the guessing
+# functionality only in interactive use in REPL, and avoid it in automated
+# scriptage altogether.
