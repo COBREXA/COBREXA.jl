@@ -31,9 +31,9 @@ end
 $(TYPEDSIGNATURES)
 
 Like [`load_model`](@ref) that guesses the input type, but immediately converts
-to the model type given by second argument.
+to the model type given by argument `convert_to`.
 """
-function load_model(path::String, ::Type{O}) where {O<:A.AbstractFBCModel}
+function load_model(path::String, convert_to::Type{O}) where {O<:A.AbstractFBCModel}
     convert(O, A.load(path))
 end
 
@@ -44,21 +44,21 @@ Load a FBC model representation from known `model_type`. Uses
 `AbstractFBCModels.load`.
 """
 function load_model(model_type::Type{I}, path::String) where {I<:A.AbstractFBCModel}
-    A.load(model_type, path)
+    A.load(I, path)
 end
 
 """
 $(TYPEDSIGNATURES)
 
 Like [`load_model`](@ref) with the type specified, but immediately converts to
-the "output" model type given by third argument.
+the model type given by argument `convert_to`.
 """
 function load_model(
     model_type::Type{I},
     path::String,
-    ::Type{O},
+    convert_to::Type{O},
 ) where {I<:A.AbstractFBCModel,O<:A.AbstractFBCModel}
-    convert(O, A.load(model_type, path))
+    convert(O, A.load(I, path))
 end
 
 export load_model
