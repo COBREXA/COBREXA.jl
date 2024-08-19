@@ -91,6 +91,8 @@ function save_model(
     A.save(convert(O, model), path)
 end
 
+export save_model
+
 """
 $(TYPEDSIGNATURES)
 
@@ -105,7 +107,7 @@ function save_converted_model(model::T, path::String) where {T<:A.AbstractFBCMod
     save_model(model, path, A.guess_model_type_from_filename(path))
 end
 
-export save_model
+export save_converted_model
 
 """
 $(TYPEDSIGNATURES)
