@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Making adjustments to the model · COBREXA.jl</title><meta name="title" content="Making adjustments to the model · COBREXA.jl"/><meta property="og:title" content="Making adjustments to the model · COBREXA.jl"/><meta property="twitter:title" content="Making adjustments to the model · COBREXA.jl"/><meta name="description" content="Documentation for COBREXA.jl."/><meta property="og:description" content="Documentation for COBREXA.jl."/><meta property="twitter:description" content="Documentation for COBREXA.jl."/><meta property="og:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/02c-model-modifications/"/><meta property="twitter:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/02c-model-modifications/"/><link rel="canonical" href="https://cobrexa.github.io/COBREXA.jl/stable/examples/02c-model-modifications/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="COBREXA.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="COBREXA.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">COBREXA.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../">Contents</a></li><li><a class="tocitem" href="../01-loading-and-saving/">Loading and saving models</a></li><li><a class="tocitem" href="../02a-flux-balance-analysis/">Flux balance analysis (FBA)</a></li><li><a class="tocitem" href="../02b-optimizer-parameters/">Changing optimizer parameters</a></li><li class="is-active"><a class="tocitem" href>Making adjustments to the model</a><ul class="internal"><li><a class="tocitem" href="#Getting-the-base-model"><span>Getting the base model</span></a></li><li><a class="tocitem" href="#Running-FBA-on-modified-models"><span>Running FBA on modified models</span></a></li><li><a class="tocitem" href="#Preventing-reference-based-sharing-problems-with-deepcopy"><span>Preventing reference-based sharing problems with <code>deepcopy</code></span></a></li><li><a class="tocitem" href="#Observing-the-differences"><span>Observing the differences</span></a></li><li><a class="tocitem" href="#Coupling-constraints"><span>Coupling constraints</span></a></li></ul></li><li><a class="tocitem" href="../02d-constraint-modifications/">Making adjustments to the constraint system</a></li><li><a class="tocitem" href="../03a-flux-variability-analysis/">Flux variability analysis (FVA)</a></li><li><a class="tocitem" href="../03b-parsimonious-flux-balance/">Parsimonious flux balance analysis</a></li><li><a class="tocitem" href="../03c-envelopes/">Production envelopes</a></li><li><a class="tocitem" href="../04-community-models/">Community FBA models</a></li><li><a class="tocitem" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis</a></li><li><a class="tocitem" href="../05b-enzyme-constrained-models/">Enzyme constrained models</a></li><li><a class="tocitem" href="../05c-mmdf/">Thermodynamic models</a></li><li><a class="tocitem" href="../05d-loopless-models/">Loopless flux balance analysis (ll-FBA)</a></li><li><a class="tocitem" href="../05e-knockouts/">Gene knockouts</a></li><li><a class="tocitem" href="../06a-sampling/">Flux sampling</a></li><li><a class="tocitem" href="../06b-screening/">Screening through many model variants</a></li></ul></li><li><a class="tocitem" href="../../structure/">Core concepts and structure</a></li><li><span class="tocitem">Parallel, distributed and HPC processing</span><ul><li><a class="tocitem" href="../../distributed/">Contents</a></li><li><a class="tocitem" href="../../distributed/1_functions/">Parallel processing overview</a></li><li><a class="tocitem" href="../../distributed/2_parallel/">Local parallel processing</a></li><li><a class="tocitem" href="../../distributed/3_slurm/">Working in a HPC environment</a></li></ul></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="../../reference/">Contents</a></li><li><a class="tocitem" href="../../reference/analysis/">Specialized analysis functions</a></li><li><a class="tocitem" href="../../reference/builders/">Constraint system builders</a></li><li><a class="tocitem" href="../../reference/core/">Core functionality</a></li><li><a class="tocitem" href="../../reference/frontend/">Front-end user interface</a></li><li><a class="tocitem" href="../../reference/misc/">Miscellaneous functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Making adjustments to the model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Making adjustments to the model</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl/blob/master/docs/src/examples/02c-model-modifications.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Making-adjustments-to-the-model"><a class="docs-heading-anchor" href="#Making-adjustments-to-the-model">Making adjustments to the model</a><a id="Making-adjustments-to-the-model-1"></a><a class="docs-heading-anchor-permalink" href="#Making-adjustments-to-the-model" title="Permalink"></a></h1><p>Typically, we do not need to solve the models as they come from the authors (someone else already did that!), but we want to perform various perturbations in the model structure and conditions, and explore how the model behaves in the changed conditions.</p><p>With COBREXA, there are 2 different approaches that one can take:</p><ol><li>We can change the model structure, and use the changed metabolic model. This is better for doing simple and small, but systematic modifications, such as removing metabolites, adding reactions, etc.</li><li>We can intercept the pipeline that converts the metabolic model to constraints and to the optimizer representation, and make modifications along that way. This is better suited to making global model adjustments, such as using combined objectives, adding reaction-coupling constraints, and combining multiple models into a bigger one.</li></ol><p>Here we demonstrate the first, &quot;modeling&quot; approach. The main advantage of this approach is that the modified model is still a FBC model, and we can export, save and share it via the AbstractFBCModels interace. The main disadvantage is that the &quot;common&quot; FBC model interface does not easily express various complicated constructions (communities, reaction coupling, enzyme constraints, etc.) – see the <a href="../02d-constraint-modifications/">example about modifying the constraints</a> for more details.</p><h2 id="Getting-the-base-model"><a class="docs-heading-anchor" href="#Getting-the-base-model">Getting the base model</a><a id="Getting-the-base-model-1"></a><a class="docs-heading-anchor-permalink" href="#Getting-the-base-model" title="Permalink"></a></h2><pre><code class="language-julia hljs">using COBREXA
+
+download_model(
+    &quot;http://bigg.ucsd.edu/static/models/e_coli_core.json&quot;,
+    &quot;e_coli_core.json&quot;,
+    &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
+)
+
+import JSONFBCModels</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr36"><span class="sgr1">[ Info: </span></span>using cached `e_coli_core.json&#39;</code></pre><p>For applying the modifications, we will use the canonical model as exported from package <code>AbstractFBCModels</code>. There are other possibilities, but the canonical one is easiest to use for common purposes.</p><pre><code class="language-julia hljs">import AbstractFBCModels.CanonicalModel as CM</code></pre><p>We can now load the model:</p><pre><code class="language-julia hljs">model = convert(CM.Model, load_model(&quot;e_coli_core.json&quot;))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Model(
+  reactions = Dict{String, AbstractFBCModels.CanonicalModel.Reaction}(&quot;ACALD&quot; =…
+  metabolites = Dict{String, AbstractFBCModels.CanonicalModel.Metabolite}(&quot;glu_…
+  genes = Dict{String, AbstractFBCModels.CanonicalModel.Gene}(&quot;b4301&quot; =&gt; Abstra…
+  couplings = Dict{String, AbstractFBCModels.CanonicalModel.Coupling}(),
+)
+</code></pre><p>The canonical model is quite easy to work with, made basically of the most accessible Julia structures possible. For example, we can look at a reaction as such:</p><pre><code class="language-julia hljs">model.reactions[&quot;PFK&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Reaction(
+  name = &quot;Phosphofructokinase&quot;,
+  lower_bound = 0.0,
+  upper_bound = 1000.0,
+  stoichiometry = Dict(&quot;adp_c&quot; =&gt; 1.0, &quot;atp_c&quot; =&gt; -1.0, &quot;f6p_c&quot; =&gt; -1.0, &quot;fdp_c…
+  objective_coefficient = 0.0,
+  gene_association_dnf = [[&quot;b1723&quot;], [&quot;b3916&quot;]],
+  annotations = Dict(&quot;bigg.reaction&quot; =&gt; [&quot;PFK&quot;], &quot;metanetx.reaction&quot; =&gt; [&quot;MNXR1…
+  notes = Dict(&quot;original_bigg_ids&quot; =&gt; [&quot;PFK&quot;]),
+)
+</code></pre><pre><code class="language-julia hljs">model.reactions[&quot;CS&quot;].stoichiometry</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 6 entries:
+  &quot;coa_c&quot;   =&gt; 1.0
+  &quot;h2o_c&quot;   =&gt; -1.0
+  &quot;accoa_c&quot; =&gt; -1.0
+  &quot;cit_c&quot;   =&gt; 1.0
+  &quot;oaa_c&quot;   =&gt; -1.0
+  &quot;h_c&quot;     =&gt; 1.0</code></pre><div class="admonition is-success"><header class="admonition-header">Create custom model types!</header><div class="admonition-body"><p>For some applications, <code>CanonicalModel</code> might be too restrictive. Creating a custom model type that perfectly fits a use-case can be done simply by overloading several functions. The documentation of <a href="https://github.com/COBREXA/AbstractFBCModels.jl">AbstractFBCModels</a> describes the process closer. Further, all model types that adhere to the AbstractFBCModels&#39; interface will &quot;just work&quot; with <em>all</em> analysis functions in COBREXA!</p></div></div><h2 id="Running-FBA-on-modified-models"><a class="docs-heading-anchor" href="#Running-FBA-on-modified-models">Running FBA on modified models</a><a id="Running-FBA-on-modified-models-1"></a><a class="docs-heading-anchor-permalink" href="#Running-FBA-on-modified-models" title="Permalink"></a></h2><p>Since the canonical model is completely mutable, we can change it in any way we like and feed the result directly into <a href="../../reference/frontend/#COBREXA.flux_balance_analysis-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>flux_balance_analysis</code></a>. Let&#39;s first find a &quot;original&quot; solution, so that we have a base solution for comparing:</p><pre><code class="language-julia hljs">import HiGHS
+
+base_solution = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
+base_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.8739215069684304</code></pre><p>Now, for example, we can limit the intake of glucose by the model:</p><pre><code class="language-julia hljs">model.reactions[&quot;EX_glc__D_e&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Reaction(
+  name = &quot;D-Glucose exchange&quot;,
+  lower_bound = -10.0,
+  upper_bound = 1000.0,
+  stoichiometry = Dict(&quot;glc__D_e&quot; =&gt; -1.0),
+  objective_coefficient = 0.0,
+  gene_association_dnf = nothing,
+  annotations = Dict(&quot;sabiork&quot; =&gt; [&quot;7002&quot;, &quot;601&quot;], &quot;metanetx.reaction&quot; =&gt; [&quot;MNX…
+  notes = Dict(&quot;original_bigg_ids&quot; =&gt; [&quot;EX_glc_e&quot;]),
+)
+</code></pre><p>Since the original intake limit is 10 units, let&#39;s try limiting that to 5:</p><pre><code class="language-julia hljs">model.reactions[&quot;EX_glc__D_e&quot;].lower_bound = -5.0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-5.0</code></pre><p>...and solve the modified model:</p><pre><code class="language-julia hljs">low_glucose_solution = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
+low_glucose_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.415597775092906</code></pre><h2 id="Preventing-reference-based-sharing-problems-with-deepcopy"><a class="docs-heading-anchor" href="#Preventing-reference-based-sharing-problems-with-deepcopy">Preventing reference-based sharing problems with <code>deepcopy</code></a><a id="Preventing-reference-based-sharing-problems-with-deepcopy-1"></a><a class="docs-heading-anchor-permalink" href="#Preventing-reference-based-sharing-problems-with-deepcopy" title="Permalink"></a></h2><p>People often want to try different perturbations with a single base model. It would therefore look feasible to save the &quot;unmodified&quot; model in a single variable, and make copies of that with the modifications applied. Let&#39;s observe what happens:</p><pre><code class="language-julia hljs">base_model = convert(CM.Model, load_model(&quot;e_coli_core.json&quot;)) # load the base
+
+modified_model = base_model # seemingly make a &quot;copy&quot; for modification
+
+modified_model.reactions[&quot;EX_glc__D_e&quot;].lower_bound = -123.0 # modify the glucose intake limit</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-123.0</code></pre><p>Surprisingly, the base model got modified too!</p><pre><code class="language-julia hljs">base_model.reactions[&quot;EX_glc__D_e&quot;]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Reaction(
+  name = &quot;D-Glucose exchange&quot;,
+  lower_bound = -123.0,
+  upper_bound = 1000.0,
+  stoichiometry = Dict(&quot;glc__D_e&quot; =&gt; -1.0),
+  objective_coefficient = 0.0,
+  gene_association_dnf = nothing,
+  annotations = Dict(&quot;sabiork&quot; =&gt; [&quot;7002&quot;, &quot;601&quot;], &quot;metanetx.reaction&quot; =&gt; [&quot;MNX…
+  notes = Dict(&quot;original_bigg_ids&quot; =&gt; [&quot;EX_glc_e&quot;]),
+)
+</code></pre><p>This is because Julia uses reference-based sharing whenever anything mutable is copied using the <code>=</code> operator. While this is extremely useful in many scenarios for data processing efficiency and computational speed, it unfortunately breaks this simple use-case.</p><p>To fix this situation, we must always remember to make an actual copy of the model data, by either carefully copying the changed parts (e.g., using a similar approach as with the &quot;shallow&quot; <code>copy()</code>), or simply by copying the whole model structure as is with <code>deepcopy()</code>. Let&#39;s try again:</p><pre><code class="language-julia hljs">base_model = convert(CM.Model, load_model(&quot;e_coli_core.json&quot;))
+modified_model = deepcopy(base_model) # this forces an actual copy of the data
+modified_model.reactions[&quot;EX_glc__D_e&quot;].lower_bound = -123.0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-123.0</code></pre><p>With <code>deepcopy</code>, the result works as intended:</p><pre><code class="language-julia hljs">(
+    modified_model.reactions[&quot;EX_glc__D_e&quot;].lower_bound,
+    base_model.reactions[&quot;EX_glc__D_e&quot;].lower_bound,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(-123.0, -10.0)</code></pre><div class="admonition is-danger"><header class="admonition-header">Avoid overwriting base models when using in-place modifications</header><div class="admonition-body"><p>Whenever changing a copy of the model, check that the base model is not inadvertently changed via a reference. Always use some copy mechanism such as <code>copy</code> or <code>deepcopy</code> to prevent the default reference-based sharing.</p></div></div><h2 id="Observing-the-differences"><a class="docs-heading-anchor" href="#Observing-the-differences">Observing the differences</a><a id="Observing-the-differences-1"></a><a class="docs-heading-anchor-permalink" href="#Observing-the-differences" title="Permalink"></a></h2><p>We already have a <code>base_solution</code> and <code>low_glucose_solution</code> from above. What is the easiest way to see what has changed? We can quite easily compute squared distance between all dictionary entries using Julia function for merging dictionaries (called <code>mergewith</code>).</p><p>With that, we can extract the plain difference in fluxes:</p><pre><code class="language-julia hljs">flux_differences = mergewith(-, base_solution.fluxes, low_glucose_solution.fluxes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 95 elements:
+  :ACALD                    =&gt; 0.0
+  :ACALDt                   =&gt; 0.0
+  :ACKr                     =&gt; 0.0
+  :ACONTa                   =&gt; 2.56379
+  :ACONTb                   =&gt; 2.56379
+  :ACt2r                    =&gt; 0.0
+  :ADK1                     =&gt; 0.0
+  :AKGDH                    =&gt; 2.06931
+  :AKGt2r                   =&gt; 0.0
+  :ALCD2x                   =&gt; 0.0
+  :ATPM                     =&gt; 0.0
+  :ATPS4r                   =&gt; 20.6429
+  :BIOMASS_Ecoli_core_w_GAM =&gt; 0.458324
+  :CO2t                     =&gt; -10.4958
+  :CS                       =&gt; 2.56379
+  :CYTBD                    =&gt; 19.9319
+  :D_LACt2                  =&gt; 0.0
+  :ENO                      =&gt; 7.13113
+  :ETOHt2r                  =&gt; 0.0
+  ⋮                         =&gt; ⋮</code></pre><p>...and see what were the biggest directional differences:</p><pre><code class="language-julia hljs">sort(collect(flux_differences), by = last)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">95-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
+        :H2Ot =&gt; -13.834417820645202
+        :CO2t =&gt; -10.495804428171123
+     :EX_o2_e =&gt; -9.965936361749836
+         :PGK =&gt; -7.816778467951078
+         :PGM =&gt; -7.131126165065294
+ :EX_glc__D_e =&gt; -5.0
+    :EX_nh4_e =&gt; -2.499147645170859
+       :GLUDy =&gt; -2.381954266930288
+      :SUCOAS =&gt; -2.0693072054856274
+     :EX_pi_e =&gt; -1.6860355124504807
+              ⋮
+         :ENO =&gt; 7.131126165065294
+        :GAPD =&gt; 7.816778467951078
+      :EX_h_e =&gt; 9.193974061423127
+         :O2t =&gt; 9.965936361749836
+    :EX_co2_e =&gt; 10.495804428171123
+    :EX_h2o_e =&gt; 13.834417820645202
+      :NADH16 =&gt; 17.86256551801404
+       :CYTBD =&gt; 19.931872723499673
+      :ATPS4r =&gt; 20.642858106791966</code></pre><p>...or compute the squared distance, to see the &quot;absolute&quot; changes:</p><pre><code class="language-julia hljs">flux_changes =
+    mergewith((x, y) -&gt; (x - y)^2, base_solution.fluxes, low_glucose_solution.fluxes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 95 elements:
+  :ACALD                    =&gt; 0.0
+  :ACALDt                   =&gt; 0.0
+  :ACKr                     =&gt; 0.0
+  :ACONTa                   =&gt; 6.57303
+  :ACONTb                   =&gt; 6.57303
+  :ACt2r                    =&gt; 0.0
+  :ADK1                     =&gt; 0.0
+  :AKGDH                    =&gt; 4.28203
+  :AKGt2r                   =&gt; 0.0
+  :ALCD2x                   =&gt; 0.0
+  :ATPM                     =&gt; 0.0
+  :ATPS4r                   =&gt; 426.128
+  :BIOMASS_Ecoli_core_w_GAM =&gt; 0.210061
+  :CO2t                     =&gt; 110.162
+  :CS                       =&gt; 6.57303
+  :CYTBD                    =&gt; 397.28
+  :D_LACt2                  =&gt; 0.0
+  :ENO                      =&gt; 50.853
+  :ETOHt2r                  =&gt; 0.0
+  ⋮                         =&gt; ⋮</code></pre><p>...and again see what changed most:</p><pre><code class="language-julia hljs">sort(collect(flux_changes), by = last)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">95-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
+    :ACALD =&gt; 0.0
+   :ACALDt =&gt; 0.0
+     :ACKr =&gt; 0.0
+    :ACt2r =&gt; 0.0
+     :ADK1 =&gt; 0.0
+   :AKGt2r =&gt; 0.0
+   :ALCD2x =&gt; 0.0
+     :ATPM =&gt; 0.0
+  :D_LACt2 =&gt; 0.0
+  :ETOHt2r =&gt; 0.0
+           ⋮
+  :EX_o2_e =&gt; 99.31988756644756
+      :O2t =&gt; 99.31988756644756
+     :CO2t =&gt; 110.16191059441655
+ :EX_co2_e =&gt; 110.16191059441655
+ :EX_h2o_e =&gt; 191.39111643618554
+     :H2Ot =&gt; 191.39111643618554
+   :NADH16 =&gt; 319.07124688534424
+    :CYTBD =&gt; 397.27955026579025
+   :ATPS4r =&gt; 426.12759081714677</code></pre><div class="admonition is-success"><header class="admonition-header">Always use a uniquely defined flux solutions for flux comparisons</header><div class="admonition-body"><p>Since the usual flux balance allows a lot of freedom in the &quot;solved&quot; flux and the only value that is &quot;reproducible&quot; by the analysis is the objective, one should never compare the flux distributions directly. Typically, that may result in false-positive (and sometimes false-negative) differences. Use e.g. <a href="../03b-parsimonious-flux-balance/">parsimonious FBA</a> to obtain uniquely determined and safely comparable flux solutions.</p></div></div><h2 id="Coupling-constraints"><a class="docs-heading-anchor" href="#Coupling-constraints">Coupling constraints</a><a id="Coupling-constraints-1"></a><a class="docs-heading-anchor-permalink" href="#Coupling-constraints" title="Permalink"></a></h2><p>Some model types support additional constraints over the reaction fluxes, which are historically called &quot;coupling&quot;. These allow to e.g. place a bound on a total flux through several reactions.</p><p>Canonical model supports these as &quot;couplings&quot;:</p><pre><code class="language-julia hljs">model.couplings[&quot;total_energy_intake&quot;] = CM.Coupling(
+    lower_bound = 0,
+    upper_bound = 5,
+    reaction_weights = Dict(&quot;EX_glc__D_e&quot; =&gt; -1.0, &quot;EX_fru_e&quot; =&gt; -1.0, &quot;EX_pyr_e&quot; =&gt; -1.0),
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Coupling(
+  name = nothing,
+  reaction_weights = Dict(&quot;EX_pyr_e&quot; =&gt; -1.0, &quot;EX_glc__D_e&quot; =&gt; -1.0, &quot;EX_fru_e&quot;…
+  lower_bound = 0.0,
+  upper_bound = 5.0,
+  annotations = Dict{String, Vector{String}}(),
+  notes = Dict{String, Vector{String}}(),
+)
+</code></pre><p>The values of any coupling constraints can be inspected directly in the solved model:</p><pre><code class="language-julia hljs">solution_with_coupling = flux_balance_analysis(model, optimizer = HiGHS.Optimizer)
+
+solution_with_coupling.coupling.total_energy_intake</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5.0</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../02b-optimizer-parameters/">« Changing optimizer parameters</a><a class="docs-footer-nextpage" href="../02d-constraint-modifications/">Making adjustments to the constraint system »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Monday 19 August 2024 14:52">Monday 19 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
