@@ -16,7 +16,7 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 
 [compat]
-AbstractFBCModels = "0.3"
+AbstractFBCModels = "1"
 Aqua = "0.7"
 Clarabel = "0.6"
 ConstraintTrees = "1.1"
