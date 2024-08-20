@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Community FBA models · COBREXA.jl</title><meta name="title" content="Community FBA models · COBREXA.jl"/><meta property="og:title" content="Community FBA models · COBREXA.jl"/><meta property="twitter:title" content="Community FBA models · COBREXA.jl"/><meta name="description" content="Documentation for COBREXA.jl."/><meta property="og:description" content="Documentation for COBREXA.jl."/><meta property="twitter:description" content="Documentation for COBREXA.jl."/><meta property="og:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/04-community-models/"/><meta property="twitter:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/04-community-models/"/><link rel="canonical" href="https://cobrexa.github.io/COBREXA.jl/stable/examples/04-community-models/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="COBREXA.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="COBREXA.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">COBREXA.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../">Contents</a></li><li><a class="tocitem" href="../01-loading-and-saving/">Loading and saving models</a></li><li><a class="tocitem" href="../02a-flux-balance-analysis/">Flux balance analysis (FBA)</a></li><li><a class="tocitem" href="../02b-optimizer-parameters/">Changing optimizer parameters</a></li><li><a class="tocitem" href="../02c-model-modifications/">Making adjustments to the model</a></li><li><a class="tocitem" href="../02d-constraint-modifications/">Making adjustments to the constraint system</a></li><li><a class="tocitem" href="../03a-flux-variability-analysis/">Flux variability analysis (FVA)</a></li><li><a class="tocitem" href="../03b-parsimonious-flux-balance/">Parsimonious flux balance analysis</a></li><li><a class="tocitem" href="../03c-envelopes/">Production envelopes</a></li><li class="is-active"><a class="tocitem" href>Community FBA models</a><ul class="internal"><li><a class="tocitem" href="#Analysing-the-community"><span>Analysing the community</span></a></li><li><a class="tocitem" href="#Investigating-the-solution"><span>Investigating the solution</span></a></li><li><a class="tocitem" href="#Note:-interfaces-of-constraint-systems"><span>Note: interfaces of constraint systems</span></a></li><li><a class="tocitem" href="#Connecting-the-community-constraints-manually"><span>Connecting the community constraints manually</span></a></li></ul></li><li><a class="tocitem" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis</a></li><li><a class="tocitem" href="../05b-enzyme-constrained-models/">Enzyme constrained models</a></li><li><a class="tocitem" href="../05c-mmdf/">Thermodynamic models</a></li><li><a class="tocitem" href="../05d-loopless-models/">Loopless flux balance analysis (ll-FBA)</a></li><li><a class="tocitem" href="../05e-knockouts/">Gene knockouts</a></li><li><a class="tocitem" href="../06a-sampling/">Flux sampling</a></li><li><a class="tocitem" href="../06b-screening/">Screening through many model variants</a></li></ul></li><li><a class="tocitem" href="../../structure/">Core concepts and structure</a></li><li><span class="tocitem">Parallel, distributed and HPC processing</span><ul><li><a class="tocitem" href="../../distributed/">Contents</a></li><li><a class="tocitem" href="../../distributed/1_functions/">Parallel processing overview</a></li><li><a class="tocitem" href="../../distributed/2_parallel/">Local parallel processing</a></li><li><a class="tocitem" href="../../distributed/3_slurm/">Working in a HPC environment</a></li></ul></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="../../reference/">Contents</a></li><li><a class="tocitem" href="../../reference/analysis/">Specialized analysis functions</a></li><li><a class="tocitem" href="../../reference/builders/">Constraint system builders</a></li><li><a class="tocitem" href="../../reference/core/">Core functionality</a></li><li><a class="tocitem" href="../../reference/frontend/">Front-end user interface</a></li><li><a class="tocitem" href="../../reference/misc/">Miscellaneous functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Community FBA models</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Community FBA models</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl/blob/master/docs/src/examples/04-community-models.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Community-FBA-models"><a class="docs-heading-anchor" href="#Community-FBA-models">Community FBA models</a><a id="Community-FBA-models-1"></a><a class="docs-heading-anchor-permalink" href="#Community-FBA-models" title="Permalink"></a></h1><pre><code class="language-julia hljs">using COBREXA</code></pre><p>Here we construct a community FBA model of two  <em>E. coli</em> &quot;core&quot; models that can interact by exchanging selected metabolites. To do this, we will need the model, which we can download if it is not already present.</p><pre><code class="language-julia hljs">download_model(
+    &quot;http://bigg.ucsd.edu/static/models/e_coli_core.json&quot;,
+    &quot;e_coli_core.json&quot;,
+    &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>Additionally to COBREXA and the model format package, we will need a solver and a few supporting packages.</p><pre><code class="language-julia hljs">import JSONFBCModels
+import HiGHS
+import AbstractFBCModels.CanonicalModel as CM
+import ConstraintTrees as C</code></pre><p>The core model has an artificial bound on input glucose; here we unblock that one, and we are going to add a community-global glucose intake bound later.</p><pre><code class="language-julia hljs">ecoli = load_model(&quot;e_coli_core.json&quot;, CM.Model)
+ecoli.reactions[&quot;EX_glc__D_e&quot;].lower_bound = -1000.0
+ecoli.reactions[&quot;EX_glc__D_e&quot;].upper_bound = 1000.0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1000.0</code></pre><p>To create a community that is actually interesting, we need some diversity. Here we simply block a different reaction in each of the community members:</p><pre><code class="language-julia hljs">ecoli1 = deepcopy(ecoli)
+ecoli1.reactions[&quot;CYTBD&quot;].lower_bound = ecoli1.reactions[&quot;CYTBD&quot;].upper_bound = 0.0
+ecoli2 = deepcopy(ecoli)
+ecoli2.reactions[&quot;FBA&quot;].lower_bound = ecoli2.reactions[&quot;FBA&quot;].upper_bound = 0.0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.0</code></pre><h2 id="Analysing-the-community"><a class="docs-heading-anchor" href="#Analysing-the-community">Analysing the community</a><a id="Analysing-the-community-1"></a><a class="docs-heading-anchor-permalink" href="#Analysing-the-community" title="Permalink"></a></h2><p>To construct the community, we have to provide identifiers for the models (these will be used in the constraint tree), and corresponding models with the abundances.</p><pre><code class="language-julia hljs">my_community = Dict(&quot;bug1&quot; =&gt; (ecoli1, 0.2), &quot;bug2&quot; =&gt; (ecoli2, 0.8))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Tuple{AbstractFBCModels.CanonicalModel.Model, Float64}} with 2 entries:
+  &quot;bug2&quot; =&gt; (Model(Dict{String, Reaction}(&quot;ACALD&quot;=&gt;Reaction(&quot;Acetaldehyde dehyd…
+  &quot;bug1&quot; =&gt; (Model(Dict{String, Reaction}(&quot;ACALD&quot;=&gt;Reaction(&quot;Acetaldehyde dehyd…</code></pre><p>The community is constructed and analysed using <a href="../../reference/frontend/#COBREXA.community_flux_balance_analysis-Tuple"><code>community_flux_balance_analysis</code></a>:</p><pre><code class="language-julia hljs">solution = community_flux_balance_analysis(
+    my_community,
+    [&quot;EX_glc__D_e&quot; =&gt; (-10.0, 0.0)],
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 6 elements:
+  :bug1                =&gt; ConstraintTrees.Tree{Float64}(#= 5 elements =#)
+  :bug2                =&gt; ConstraintTrees.Tree{Float64}(#= 5 elements =#)
+  :community_balance   =&gt; ConstraintTrees.Tree{Float64}(#= 20 elements =#)
+  :community_biomass   =&gt; 0.523716
+  :community_exchanges =&gt; ConstraintTrees.Tree{Float64}(#= 20 elements =#)
+  :equal_growth        =&gt; ConstraintTrees.Tree{Float64}(#= 1 element =#)</code></pre><h2 id="Investigating-the-solution"><a class="docs-heading-anchor" href="#Investigating-the-solution">Investigating the solution</a><a id="Investigating-the-solution-1"></a><a class="docs-heading-anchor-permalink" href="#Investigating-the-solution" title="Permalink"></a></h2><p>We can now e.g. observe the differences in individual pairs of exchanges:</p><pre><code class="language-julia hljs">C.zip(
+    tuple,
+    solution.bug1.interface.exchanges,
+    solution.bug2.interface.exchanges,
+    Tuple{Float64,Float64},
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Float64, Float64}} with 20 elements:
+  :EX_ac_e     =&gt; (16.5424, 0.0)
+  :EX_acald_e  =&gt; (0.0, 0.0)
+  :EX_akg_e    =&gt; (0.0, 0.0)
+  :EX_co2_e    =&gt; (-0.935723, 19.8177)
+  :EX_etoh_e   =&gt; (15.9879, 0.0)
+  :EX_for_e    =&gt; (35.0581, 2.52782)
+  :EX_fru_e    =&gt; (0.0, 0.0)
+  :EX_fum_e    =&gt; (0.0, 0.0)
+  :EX_glc__D_e =&gt; (-20.245, -7.43875)
+  :EX_gln__L_e =&gt; (0.0, 0.0)
+  :EX_glu__L_e =&gt; (0.0, 0.0)
+  :EX_h2o_e    =&gt; (-13.1086, 23.6327)
+  :EX_h_e      =&gt; (62.1062, 13.0336)
+  :EX_lac__D_e =&gt; (0.0, 0.0)
+  :EX_mal__L_e =&gt; (0.0, 0.0)
+  :EX_nh4_e    =&gt; (-2.85572, -2.85572)
+  :EX_o2_e     =&gt; (0.0, -20.4762)
+  :EX_pi_e     =&gt; (-1.92659, -1.92659)
+  :EX_pyr_e    =&gt; (0.0, 0.0)
+  :EX_succ_e   =&gt; (0.0, 0.0)</code></pre><p>...or use <a href="../../reference/analysis/#COBREXA.screen-Tuple{Any, Vararg{Any}}"><code>screen</code></a> to efficiently find out which composition is best:</p><pre><code class="language-julia hljs">screen(0.0:0.1:1.0) do ratio2
+    ratio1 = 1 - ratio2
+    res = community_flux_balance_analysis(
+        [(&quot;bug1&quot; =&gt; (ecoli1, ratio1)), (&quot;bug2&quot; =&gt; (ecoli2, ratio2))],
+        [&quot;EX_glc__D_e&quot; =&gt; (-10.0, 0.0)],
+        interface = :sbo, # usually more reproducible
+        optimizer = HiGHS.Optimizer,
+    )
+    (ratio1, ratio2) =&gt; (isnothing(res) ? nothing : res.community_biomass)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11-element Vector{Pair{Tuple{Float64, Float64}, Float64}}:
+                 (1.0, 0.0) =&gt; 0.2116629497353106
+                 (0.9, 0.1) =&gt; 0.2342460462980283
+                 (0.8, 0.2) =&gt; 0.2597197180964099
+                 (0.7, 0.3) =&gt; 0.28867689024498494
+                 (0.6, 0.4) =&gt; 0.3218845533955697
+                 (0.5, 0.5) =&gt; 0.3603526987796251
+                 (0.4, 0.6) =&gt; 0.40543883161610117
+ (0.30000000000000004, 0.7) =&gt; 0.459011502020198
+ (0.19999999999999996, 0.8) =&gt; 0.5237157737585175
+ (0.09999999999999998, 0.9) =&gt; 0.6034233598466012
+                 (0.0, 1.0) =&gt; 0.7040369478590236</code></pre><p>(The result seem like the <code>bug1</code> is eventually going to be completely out-grown by the other one.)</p><h2 id="Note:-interfaces-of-constraint-systems"><a class="docs-heading-anchor" href="#Note:-interfaces-of-constraint-systems">Note: interfaces of constraint systems</a><a id="Note:-interfaces-of-constraint-systems-1"></a><a class="docs-heading-anchor-permalink" href="#Note:-interfaces-of-constraint-systems" title="Permalink"></a></h2><p>Internally, the community is connected via <em>interfaces</em>, which are small constraint trees (typically with no bounds attached) that describe parts of the constraint system that can be easily attached to other parts.</p><p>The best kind of interface to choose generally differs from model to model. COBREXA gives a few &quot;default&quot; choices that cover a good part of sensible metabolic modeling. For example, if the model contains SBO annotations, we can ask for the interface created using the annotated reactions:</p><pre><code class="language-julia hljs">flux_balance_constraints(ecoli, interface = :sbo).interface</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 2 elements:
+  :biomass   =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 1 element =…
+  :exchanges =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 20 elements…</code></pre><p>If there are no annotations, we can still at least detect the boundary reactions and make an interface out of them:</p><pre><code class="language-julia hljs">flux_balance_constraints(ecoli, interface = :boundary).interface</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 1 element:
+  :boundary =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 20 elements …</code></pre><p>The default kind of interface in <a href="../../reference/frontend/#COBREXA.community_flux_balance_analysis-Tuple"><code>community_flux_balance_analysis</code></a> is <code>:identifier_prefixes</code>, which relies on usual prefixes of reaction names (such as <code>EX_</code> for exchanges).</p><p>Even if all of these methods fail, a suitable interface yourself can be produced manually. (Additionally, we can do useful stuff, such as removing the unnecessary bounds from the exchange descriptions.)</p><pre><code class="language-julia hljs">custom_model = flux_balance_constraints(ecoli)
+custom_model *= remove_bounds(
+    :interface^C.ConstraintTree(
+        :biomass =&gt; custom_model.fluxes.BIOMASS_Ecoli_core_w_GAM,
+        :exchanges =&gt; C.ConstraintTree(
+            k =&gt; v for (k, v) in custom_model.fluxes if startswith(string(k), &quot;EX_&quot;)
+        ),
+    ),
+)
+custom_model.interface.exchanges</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 20 elements:
+  :EX_ac_e     =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_acald_e  =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_akg_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_co2_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_etoh_e   =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_for_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_fru_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_fum_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_glc__D_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_gln__L_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_glu__L_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_h2o_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_h_e      =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_lac__D_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_mal__L_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_nh4_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_o2_e     =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_pi_e     =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_pyr_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_succ_e   =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…</code></pre><h2 id="Connecting-the-community-constraints-manually"><a class="docs-heading-anchor" href="#Connecting-the-community-constraints-manually">Connecting the community constraints manually</a><a id="Connecting-the-community-constraints-manually-1"></a><a class="docs-heading-anchor-permalink" href="#Connecting-the-community-constraints-manually" title="Permalink"></a></h2><p>To connect such interfaces into a community model, simply use function <a href="../../reference/builders/#COBREXA.interface_constraints-Tuple{Any}"><code>interface_constraints</code></a> (which is how <a href="../../reference/frontend/#COBREXA.community_flux_balance_analysis-Tuple"><code>community_flux_balance_analysis</code></a> constructs the community model internally via <a href="../../reference/frontend/#COBREXA.community_flux_balance_constraints-Tuple{Any, Any}"><code>community_flux_balance_constraints</code></a>). The assembly might look roughly as follows:</p><pre><code class="language-julia hljs">custom_community = interface_constraints(
+    &quot;bug1&quot; =&gt; (
+        custom_model * :handicap^C.Constraint(custom_model.fluxes.CYTBD.value, 0),
+        0.2,
+    ),
+    &quot;bug2&quot; =&gt;
+        (custom_model * :handicap^C.Constraint(custom_model.fluxes.FBA.value, 0), 0.8),
+    bound = r -&gt; r == (:exchanges, :EX_glc__D_e) ? C.Between(-10, 0) : nothing,
+)
+
+custom_community.interface.exchanges</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 20 elements:
+  :EX_ac_e     =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_acald_e  =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_akg_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_co2_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_etoh_e   =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_for_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_fru_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_fum_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_glc__D_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_gln__L_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_glu__L_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_h2o_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_h_e      =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_lac__D_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_mal__L_e =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_nh4_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_o2_e     =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_pi_e     =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_pyr_e    =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…
+  :EX_succ_e   =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue(#= ...…</code></pre><p>For the model to work properly, we would need to add several other things, mainly the equal growth constraints (possibly via <a href="../../reference/builders/#COBREXA.all_equal_constraints-Tuple{Any, ConstraintTrees.Tree{ConstraintTrees.Constraint}}"><code>all_equal_constraints</code></a>). <a href="../../reference/frontend/#COBREXA.community_flux_balance_constraints-Tuple{Any, Any}"><code>community_flux_balance_constraints</code></a> add these automatically, so we can equivalently just supply the constraint trees, and re-use the rest of the implementation:</p><pre><code class="language-julia hljs">custom_community = community_flux_balance_constraints(
+    [
+        &quot;bug1&quot; =&gt; (
+            custom_model * :handicap^C.Constraint(custom_model.fluxes.CYTBD.value, 0),
+            0.2,
+        ),
+        &quot;bug2&quot; =&gt; (
+            custom_model * :handicap^C.Constraint(custom_model.fluxes.FBA.value, 0),
+            0.8,
+        ),
+    ],
+    [&quot;EX_glc__D_e&quot; =&gt; (-10.0, 0.0)],
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 6 elements:
+  :bug1                =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 6…
+  :bug2                =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 6…
+  :community_balance   =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 2…
+  :community_biomass   =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValu…
+  :community_exchanges =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 2…
+  :equal_growth        =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 1…</code></pre><p>This can be solved with the usual means, reaching the same result as above:</p><pre><code class="language-julia hljs">custom_solution = optimized_values(
+    custom_community,
+    objective = custom_community.community_biomass.value,
+    output = custom_community.community_biomass,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.5237157737585176</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03c-envelopes/">« Production envelopes</a><a class="docs-footer-nextpage" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Tuesday 20 August 2024 15:11">Tuesday 20 August 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
