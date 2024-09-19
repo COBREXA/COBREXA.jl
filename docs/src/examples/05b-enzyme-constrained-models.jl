@@ -452,7 +452,7 @@ ec_variabilities.gene_product_amounts
 
 # ...and for the individual directional isozymes:
 
-ec_variabilities.isozymes_forward_amounts.PGM
+ec_variabilities.isozyme_forward_amounts.PGM
 
 # If we do not need to compute all these values, it is often more efficient to
 # only ask for the part of the output that is required:
