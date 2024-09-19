@@ -426,11 +426,8 @@ ec_optimum = optimized_values(
 
 # ...then creating a system constrained to near-optimal growth:
 import ConstraintTrees as C
-ec_system *=
-    :optimum_bound^C.Constraint(
-        ec_system.objective.value,
-        C.Between(0.99 * ec_optimum, Inf),
-    )
+
+ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)
 
 # ...and finally, finding the extremes of the near-optimal part of the feasible
 # space:
