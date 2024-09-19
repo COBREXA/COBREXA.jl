@@ -401,11 +401,12 @@ simplified_ec_solution.gene_product_amounts
     atol = TEST_TOLERANCE, #src
 ) #src
 
-# ## Extracting variability
+# ## Variability analysis with enzyme constraints
 #
 # Enzyme-constrained variability analysis can be executed on a model by
-# combining [`enzyme_constrained_flux_balance_constraints`](@ref) with
-# [`constraints_variability`](@ref) (or other analysis functions):
+# combining [`enzyme_constrained_flux_balance_constraints`](@ref) (or
+# [`simplified_enzyme_constrained_flux_balance_constraints`](@ref)) with
+# [`constraints_variability`](@ref) (or any other analysis function):
 
 ec_system = enzyme_constrained_flux_balance_constraints(
     model;
@@ -414,7 +415,7 @@ ec_system = enzyme_constrained_flux_balance_constraints(
     capacity = total_enzyme_capacity,
 )
 
-# Here, we do the FVA "manually", first solving the system:
+# Here, we can do the FVA "manually", first solving the system:
 
 ec_optimum = optimized_values(
     ec_system,
