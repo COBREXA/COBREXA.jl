@@ -20,9 +20,11 @@ $(TYPEDSIGNATURES)
 A constraint system like from [`flux_balance_constraints`](@ref), but with the
 parsimonious objective present under key `parsimonious_objective`. Best used
 via [`parsimonious_flux_balance_analysis`](@ref).
+
+Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
 """
-function parsimonious_flux_balance_constraints(model::A.AbstractFBCModel)
-    constraints = flux_balance_constraints(model)
+function parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
+    constraints = flux_balance_constraints(model; kwargs...)
 
     constraints *
     :parsimonious_objective^C.Constraint(squared_sum_value(constraints.fluxes))
@@ -66,9 +68,11 @@ $(TYPEDSIGNATURES)
 Like [`parsimonious_flux_balance_constraints`](@ref), but uses a L1 metric for
 solving the parsimonious problem. The `parsimonious_objective` constraint is
 thus linear.
+
+Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
 """
 function linear_parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
-    constraints = flux_balance_constraints(model)
+    constraints = flux_balance_constraints(model; kwargs...)
     constraints =
         constraints +
         :fluxes_forward^unsigned_positive_contribution_variables(constraints.fluxes) +

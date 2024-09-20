@@ -158,6 +158,16 @@ is_solved(opt_model::J.Model) =
 export is_solved
 
 """
+$(TYPEDSIGNATURES)
+
+Retrieve the variable vector from a JuMP model created by
+[`optimization_model`](@ref).
+"""
+variable_vector(opt_model::J.Model) = J.value.(opt_model[:x])
+
+export variable_vector
+
+"""
     Minimal
 
 Objective sense for finding the minimal value of the objective.
