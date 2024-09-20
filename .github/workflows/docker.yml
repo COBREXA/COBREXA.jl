@@ -1,22 +1,40 @@
-# reference: https://github.com/marketplace/actions/push-to-ghcr
 
-name: docker
+name: build docker image
 
 on:
-  release:
-    types: [ published ]
   push:
     branches:
       - master
+    tags: '*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: cobrexa/cobrexa.jl # lowercase of ${{ github.repository }}
 
 jobs:
-  docker_publish:
-    runs-on: "ubuntu-20.04"
-
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - uses: actions/checkout@v4
-      - name: Build and publish a Docker image for ${{ github.repository }}
-        uses: macbre/push-to-ghcr@master
-        with:
-          image_name: ${{ github.repository }}  # the name is lowercased internally
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: log into docker registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+    - name: build and push the docker container
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
