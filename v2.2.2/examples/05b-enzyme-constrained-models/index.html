@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Enzyme constrained models · COBREXA.jl</title><meta name="title" content="Enzyme constrained models · COBREXA.jl"/><meta property="og:title" content="Enzyme constrained models · COBREXA.jl"/><meta property="twitter:title" content="Enzyme constrained models · COBREXA.jl"/><meta name="description" content="Documentation for COBREXA.jl."/><meta property="og:description" content="Documentation for COBREXA.jl."/><meta property="twitter:description" content="Documentation for COBREXA.jl."/><meta property="og:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/05b-enzyme-constrained-models/"/><meta property="twitter:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/05b-enzyme-constrained-models/"/><link rel="canonical" href="https://cobrexa.github.io/COBREXA.jl/stable/examples/05b-enzyme-constrained-models/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="COBREXA.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="COBREXA.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">COBREXA.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../">Contents</a></li><li><a class="tocitem" href="../01-loading-and-saving/">Loading and saving models</a></li><li><a class="tocitem" href="../02a-flux-balance-analysis/">Flux balance analysis (FBA)</a></li><li><a class="tocitem" href="../02b-optimizer-parameters/">Changing optimizer parameters</a></li><li><a class="tocitem" href="../02c-model-modifications/">Making adjustments to the model</a></li><li><a class="tocitem" href="../02d-constraint-modifications/">Making adjustments to the constraint system</a></li><li><a class="tocitem" href="../03a-flux-variability-analysis/">Flux variability analysis (FVA)</a></li><li><a class="tocitem" href="../03b-parsimonious-flux-balance/">Parsimonious flux balance analysis</a></li><li><a class="tocitem" href="../03c-envelopes/">Production envelopes</a></li><li><a class="tocitem" href="../04-community-models/">Community FBA models</a></li><li><a class="tocitem" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis</a></li><li class="is-active"><a class="tocitem" href>Enzyme constrained models</a><ul class="internal"><li><a class="tocitem" href="#Reaction-turnover-numbers"><span>Reaction turnover numbers</span></a></li><li><a class="tocitem" href="#Enzyme-molar-masses"><span>Enzyme molar masses</span></a></li><li><a class="tocitem" href="#Capacity-limitation"><span>Capacity limitation</span></a></li><li><a class="tocitem" href="#Running-a-basic-enzyme-constrained-model"><span>Running a basic enzyme constrained model</span></a></li><li><a class="tocitem" href="#Simplified-models"><span>Simplified models</span></a></li><li><a class="tocitem" href="#Variability-analysis-with-enzyme-constraints"><span>Variability analysis with enzyme constraints</span></a></li></ul></li><li><a class="tocitem" href="../05c-mmdf/">Thermodynamic models</a></li><li><a class="tocitem" href="../05d-loopless-models/">Loopless flux balance analysis (ll-FBA)</a></li><li><a class="tocitem" href="../05e-knockouts/">Gene knockouts</a></li><li><a class="tocitem" href="../05f-cyclefree/">CycleFreeFlux</a></li><li><a class="tocitem" href="../06a-sampling/">Flux sampling</a></li><li><a class="tocitem" href="../06b-screening/">Screening through many model variants</a></li></ul></li><li><a class="tocitem" href="../../structure/">Core concepts and structure</a></li><li><span class="tocitem">Parallel, distributed and HPC processing</span><ul><li><a class="tocitem" href="../../distributed/">Contents</a></li><li><a class="tocitem" href="../../distributed/1_functions/">Parallel processing overview</a></li><li><a class="tocitem" href="../../distributed/2_parallel/">Local parallel processing</a></li><li><a class="tocitem" href="../../distributed/3_slurm/">Working in a HPC environment</a></li></ul></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="../../reference/">Contents</a></li><li><a class="tocitem" href="../../reference/analysis/">Specialized analysis functions</a></li><li><a class="tocitem" href="../../reference/builders/">Constraint system builders</a></li><li><a class="tocitem" href="../../reference/core/">Core functionality</a></li><li><a class="tocitem" href="../../reference/frontend/">Front-end user interface</a></li><li><a class="tocitem" href="../../reference/misc/">Miscellaneous functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Enzyme constrained models</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Enzyme constrained models</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl/blob/master/docs/src/examples/05b-enzyme-constrained-models.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Enzyme-constrained-models"><a class="docs-heading-anchor" href="#Enzyme-constrained-models">Enzyme constrained models</a><a id="Enzyme-constrained-models-1"></a><a class="docs-heading-anchor-permalink" href="#Enzyme-constrained-models" title="Permalink"></a></h1><p>Enzyme constrained metabolic models include the effect of enzyme kinetics (v = k * e) and a protein capacity limitation (∑e = Etotal) on conventional mass balance (FBA) models.</p><pre><code class="language-julia hljs">using COBREXA</code></pre><p>Here we will construct an enzyme constrained variant of the <em>E. coli</em> &quot;core&quot; model. We will need the model, which we can download if it is not already present.</p><pre><code class="language-julia hljs">download_model(
+    &quot;http://bigg.ucsd.edu/static/models/e_coli_core.json&quot;,
+    &quot;e_coli_core.json&quot;,
+    &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;e_coli_core.json&quot;</code></pre><p>Additionally to COBREXA and the model format package, we will need a solver – let&#39;s use HiGHS here:</p><pre><code class="language-julia hljs">import AbstractFBCModels as A
+import JSONFBCModels
+import HiGHS
+
+model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><p>Enzyme constrained models require parameters that are usually not used by conventional constraint based models. These include reaction specific turnover numbers, molar masses of enzymes, and protein capacity bounds.</p><h2 id="Reaction-turnover-numbers"><a class="docs-heading-anchor" href="#Reaction-turnover-numbers">Reaction turnover numbers</a><a id="Reaction-turnover-numbers-1"></a><a class="docs-heading-anchor-permalink" href="#Reaction-turnover-numbers" title="Permalink"></a></h2><p>Enzyme constrained models require reaction turnover numbers, which are often isozyme specfic. Many machine learning tools, or experimental data sets, can be used to estimate these parameters.</p><details><summary><strong>Data for reaction turnover numbers</strong></summary><p>This data is taken from: <em>Heckmann, David, et al. &quot;Machine learning applied to enzyme turnover numbers reveals protein structural correlates and improves metabolic models.&quot; Nature communications 9.1 (2018): 1-10.</em></p><pre><code class="language-julia hljs">const ecoli_core_reaction_kcats = Dict(
+    &quot;ACALD&quot; =&gt; 568.11,
+    &quot;PTAr&quot; =&gt; 1171.97,
+    &quot;ALCD2x&quot; =&gt; 75.95,
+    &quot;PDH&quot; =&gt; 529.76,
+    &quot;MALt2_2&quot; =&gt; 234.03,
+    &quot;CS&quot; =&gt; 113.29,
+    &quot;PGM&quot; =&gt; 681.4,
+    &quot;TKT1&quot; =&gt; 311.16,
+    &quot;ACONTa&quot; =&gt; 191.02,
+    &quot;GLNS&quot; =&gt; 89.83,
+    &quot;ICL&quot; =&gt; 17.45,
+    &quot;FBA&quot; =&gt; 373.42,
+    &quot;FORt2&quot; =&gt; 233.93,
+    &quot;G6PDH2r&quot; =&gt; 589.37,
+    &quot;AKGDH&quot; =&gt; 264.48,
+    &quot;TKT2&quot; =&gt; 467.42,
+    &quot;FRD7&quot; =&gt; 90.20,
+    &quot;SUCOAS&quot; =&gt; 18.49,
+    &quot;ICDHyr&quot; =&gt; 39.62,
+    &quot;AKGt2r&quot; =&gt; 234.99,
+    &quot;GLUSy&quot; =&gt; 33.26,
+    &quot;TPI&quot; =&gt; 698.30,
+    &quot;FORt&quot; =&gt; 234.38,
+    &quot;ACONTb&quot; =&gt; 159.74,
+    &quot;GLNabc&quot; =&gt; 233.80,
+    &quot;RPE&quot; =&gt; 1772.485,
+    &quot;ACKr&quot; =&gt; 554.61,
+    &quot;THD2&quot; =&gt; 24.73,
+    &quot;PFL&quot; =&gt; 96.56,
+    &quot;RPI&quot; =&gt; 51.77,
+    &quot;D_LACt2&quot; =&gt; 233.51,
+    &quot;TALA&quot; =&gt; 109.05,
+    &quot;PPCK&quot; =&gt; 218.42,
+    &quot;PGL&quot; =&gt; 2120.42,
+    &quot;NADTRHD&quot; =&gt; 186.99,
+    &quot;PGK&quot; =&gt; 57.64,
+    &quot;LDH_D&quot; =&gt; 31.11,
+    &quot;ME1&quot; =&gt; 487.01,
+    &quot;PIt2r&quot; =&gt; 233.86,
+    &quot;ATPS4r&quot; =&gt; 71.42,
+    &quot;GLCpts&quot; =&gt; 233.90,
+    &quot;GLUDy&quot; =&gt; 105.32,
+    &quot;CYTBD&quot; =&gt; 153.18,
+    &quot;FUMt2_2&quot; =&gt; 234.37,
+    &quot;FRUpts2&quot; =&gt; 234.19,
+    &quot;GAPD&quot; =&gt; 128.76,
+    &quot;PPC&quot; =&gt; 165.52,
+    &quot;NADH16&quot; =&gt; 971.74,
+    &quot;PFK&quot; =&gt; 1000.46,
+    &quot;MDH&quot; =&gt; 25.93,
+    &quot;PGI&quot; =&gt; 468.11,
+    &quot;ME2&quot; =&gt; 443.09,
+    &quot;GND&quot; =&gt; 240.12,
+    &quot;SUCCt2_2&quot; =&gt; 234.18,
+    &quot;GLUN&quot; =&gt; 44.76,
+    &quot;ADK1&quot; =&gt; 111.64,
+    &quot;SUCDi&quot; =&gt; 680.31,
+    &quot;ENO&quot; =&gt; 209.35,
+    &quot;MALS&quot; =&gt; 252.75,
+    &quot;GLUt2r&quot; =&gt; 234.22,
+    &quot;PPS&quot; =&gt; 706.14,
+    &quot;FUM&quot; =&gt; 1576.83,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 62 entries:
+  &quot;ACALD&quot;   =&gt; 568.11
+  &quot;PTAr&quot;    =&gt; 1171.97
+  &quot;PGL&quot;     =&gt; 2120.42
+  &quot;NADTRHD&quot; =&gt; 186.99
+  &quot;ALCD2x&quot;  =&gt; 75.95
+  &quot;PGK&quot;     =&gt; 57.64
+  &quot;PDH&quot;     =&gt; 529.76
+  &quot;LDH_D&quot;   =&gt; 31.11
+  &quot;ME1&quot;     =&gt; 487.01
+  &quot;PIt2r&quot;   =&gt; 233.86
+  &quot;MALt2_2&quot; =&gt; 234.03
+  &quot;CS&quot;      =&gt; 113.29
+  &quot;PGM&quot;     =&gt; 681.4
+  &quot;TKT1&quot;    =&gt; 311.16
+  &quot;ATPS4r&quot;  =&gt; 71.42
+  &quot;ACONTa&quot;  =&gt; 191.02
+  &quot;GLNS&quot;    =&gt; 89.83
+  &quot;GLCpts&quot;  =&gt; 233.9
+  &quot;GLUDy&quot;   =&gt; 105.32
+  ⋮         =&gt; ⋮</code></pre></details><p>We have these here:</p><pre><code class="language-julia hljs">ecoli_core_reaction_kcats # units = 1/s</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 62 entries:
+  &quot;ACALD&quot;   =&gt; 568.11
+  &quot;PTAr&quot;    =&gt; 1171.97
+  &quot;PGL&quot;     =&gt; 2120.42
+  &quot;NADTRHD&quot; =&gt; 186.99
+  &quot;ALCD2x&quot;  =&gt; 75.95
+  &quot;PGK&quot;     =&gt; 57.64
+  &quot;PDH&quot;     =&gt; 529.76
+  &quot;LDH_D&quot;   =&gt; 31.11
+  &quot;ME1&quot;     =&gt; 487.01
+  &quot;PIt2r&quot;   =&gt; 233.86
+  &quot;MALt2_2&quot; =&gt; 234.03
+  &quot;CS&quot;      =&gt; 113.29
+  &quot;PGM&quot;     =&gt; 681.4
+  &quot;TKT1&quot;    =&gt; 311.16
+  &quot;ATPS4r&quot;  =&gt; 71.42
+  &quot;ACONTa&quot;  =&gt; 191.02
+  &quot;GLNS&quot;    =&gt; 89.83
+  &quot;GLCpts&quot;  =&gt; 233.9
+  &quot;GLUDy&quot;   =&gt; 105.32
+  ⋮         =&gt; ⋮</code></pre><p>Each reaction in a constraint-based model usually has gene reaction rules associated with it. These typically take the form of, possibly multiple, isozymes that can catalyze a reaction. A turnover number needs to be assigned to each isozyme, as shown below. Additionally, some enzymes are composed of multiple subunits, which differ in subunit stoichiometry. This also needs to be accounted for. Assuming a stoichiometry of 1 for everything tends to work just right OK if there is no better information available.</p><pre><code class="language-julia hljs">reaction_isozymes = Dict{String,Dict{String,Isozyme}}() # a mapping from reaction IDs to isozyme IDs to isozyme structs.
+for rid in A.reactions(model)
+    grrs = A.reaction_gene_association_dnf(model, rid)
+    isnothing(grrs) &amp;&amp; continue # skip if no grr available
+    haskey(ecoli_core_reaction_kcats, rid) || continue # skip if no kcat data available
+    for (i, grr) in enumerate(grrs)
+        d = get!(reaction_isozymes, rid, Dict{String,Isozyme}())
+        d[&quot;isozyme_&quot;*string(i)] = Isozyme( # each isozyme gets a unique name
+            gene_product_stoichiometry = Dict(grr .=&gt; fill(1.0, size(grr))), # assume subunit stoichiometry of 1 for all isozymes
+            kcat_forward = ecoli_core_reaction_kcats[rid] * 3.6, # forward reaction turnover number units = 1/h
+            kcat_reverse = ecoli_core_reaction_kcats[rid] * 3.6, # reverse reaction turnover number units = 1/h
+        )
+    end
+end</code></pre><div class="admonition is-success"><header class="admonition-header">Turnover number units</header><div class="admonition-body"><p>Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting to rescale the turnover numbers to 1/h in order to use the conventional flux units.</p></div></div><h2 id="Enzyme-molar-masses"><a class="docs-heading-anchor" href="#Enzyme-molar-masses">Enzyme molar masses</a><a id="Enzyme-molar-masses-1"></a><a class="docs-heading-anchor-permalink" href="#Enzyme-molar-masses" title="Permalink"></a></h2><p>We also require the mass of each enzyme, to properly weight the contribution of each flux/isozyme in the capacity bound(s). These data can typically be found in uniprot.</p><details><summary><strong>Gene product masses</strong></summary><p>This data is downloaded from Uniprot for E. coli K12, gene mass in kDa. To obtain these data manually, go to <a href="https://www.uniprot.org/">Uniprot</a> and search using these terms: <code>reviewed:yes AND organism:&quot;Escherichia coli (strain K12) [83333]&quot;</code>.</p><pre><code class="language-julia hljs">const ecoli_core_gene_product_masses = Dict(
+    &quot;b4301&quot; =&gt; 23.214,
+    &quot;b1602&quot; =&gt; 48.723,
+    &quot;b4154&quot; =&gt; 65.972,
+    &quot;b3236&quot; =&gt; 32.337,
+    &quot;b1621&quot; =&gt; 56.627,
+    &quot;b1779&quot; =&gt; 35.532,
+    &quot;b3951&quot; =&gt; 85.96,
+    &quot;b1676&quot; =&gt; 50.729,
+    &quot;b3114&quot; =&gt; 85.936,
+    &quot;b1241&quot; =&gt; 96.127,
+    &quot;b2276&quot; =&gt; 52.044,
+    &quot;b1761&quot; =&gt; 48.581,
+    &quot;b3925&quot; =&gt; 35.852,
+    &quot;b3493&quot; =&gt; 53.389,
+    &quot;b3733&quot; =&gt; 31.577,
+    &quot;b2926&quot; =&gt; 41.118,
+    &quot;b0979&quot; =&gt; 42.424,
+    &quot;b4015&quot; =&gt; 47.522,
+    &quot;b2296&quot; =&gt; 43.29,
+    &quot;b4232&quot; =&gt; 36.834,
+    &quot;b3732&quot; =&gt; 50.325,
+    &quot;b2282&quot; =&gt; 36.219,
+    &quot;b2283&quot; =&gt; 100.299,
+    &quot;b0451&quot; =&gt; 44.515,
+    &quot;b2463&quot; =&gt; 82.417,
+    &quot;b0734&quot; =&gt; 42.453,
+    &quot;b3738&quot; =&gt; 30.303,
+    &quot;b3386&quot; =&gt; 24.554,
+    &quot;b3603&quot; =&gt; 59.168,
+    &quot;b2416&quot; =&gt; 63.562,
+    &quot;b0729&quot; =&gt; 29.777,
+    &quot;b0767&quot; =&gt; 36.308,
+    &quot;b3734&quot; =&gt; 55.222,
+    &quot;b4122&quot; =&gt; 60.105,
+    &quot;b2987&quot; =&gt; 53.809,
+    &quot;b2579&quot; =&gt; 14.284,
+    &quot;b0809&quot; =&gt; 26.731,
+    &quot;b1524&quot; =&gt; 33.516,
+    &quot;b3612&quot; =&gt; 56.194,
+    &quot;b3735&quot; =&gt; 19.332,
+    &quot;b3731&quot; =&gt; 15.068,
+    &quot;b1817&quot; =&gt; 35.048,
+    &quot;b1603&quot; =&gt; 54.623,
+    &quot;b1773&quot; =&gt; 30.81,
+    &quot;b4090&quot; =&gt; 16.073,
+    &quot;b0114&quot; =&gt; 99.668,
+    &quot;b3962&quot; =&gt; 51.56,
+    &quot;b2464&quot; =&gt; 35.659,
+    &quot;b2976&quot; =&gt; 80.489,
+    &quot;b1818&quot; =&gt; 27.636,
+    &quot;b2285&quot; =&gt; 18.59,
+    &quot;b1702&quot; =&gt; 87.435,
+    &quot;b1849&quot; =&gt; 42.434,
+    &quot;b1812&quot; =&gt; 50.97,
+    &quot;b0902&quot; =&gt; 28.204,
+    &quot;b3403&quot; =&gt; 59.643,
+    &quot;b1612&quot; =&gt; 60.299,
+    &quot;b1854&quot; =&gt; 51.357,
+    &quot;b0811&quot; =&gt; 27.19,
+    &quot;b0721&quot; =&gt; 14.299,
+    &quot;b2914&quot; =&gt; 22.86,
+    &quot;b1297&quot; =&gt; 53.177,
+    &quot;b0723&quot; =&gt; 64.422,
+    &quot;b3919&quot; =&gt; 26.972,
+    &quot;b3115&quot; =&gt; 43.384,
+    &quot;b4077&quot; =&gt; 47.159,
+    &quot;b3528&quot; =&gt; 45.436,
+    &quot;b0351&quot; =&gt; 33.442,
+    &quot;b2029&quot; =&gt; 51.481,
+    &quot;b1819&quot; =&gt; 30.955,
+    &quot;b0728&quot; =&gt; 41.393,
+    &quot;b2935&quot; =&gt; 72.212,
+    &quot;b2415&quot; =&gt; 9.119,
+    &quot;b0727&quot; =&gt; 44.011,
+    &quot;b0116&quot; =&gt; 50.688,
+    &quot;b0485&quot; =&gt; 32.903,
+    &quot;b3736&quot; =&gt; 17.264,
+    &quot;b0008&quot; =&gt; 35.219,
+    &quot;b3212&quot; =&gt; 163.297,
+    &quot;b3870&quot; =&gt; 51.904,
+    &quot;b4014&quot; =&gt; 60.274,
+    &quot;b2280&quot; =&gt; 19.875,
+    &quot;b2133&quot; =&gt; 64.612,
+    &quot;b2278&quot; =&gt; 66.438,
+    &quot;b0118&quot; =&gt; 93.498,
+    &quot;b2288&quot; =&gt; 16.457,
+    &quot;b3739&quot; =&gt; 13.632,
+    &quot;b3916&quot; =&gt; 34.842,
+    &quot;b3952&quot; =&gt; 32.43,
+    &quot;b2925&quot; =&gt; 39.147,
+    &quot;b2465&quot; =&gt; 73.043,
+    &quot;b2297&quot; =&gt; 77.172,
+    &quot;b2417&quot; =&gt; 18.251,
+    &quot;b4395&quot; =&gt; 24.065,
+    &quot;b3956&quot; =&gt; 99.063,
+    &quot;b0722&quot; =&gt; 12.868,
+    &quot;b2779&quot; =&gt; 45.655,
+    &quot;b0115&quot; =&gt; 66.096,
+    &quot;b0733&quot; =&gt; 58.205,
+    &quot;b1478&quot; =&gt; 35.38,
+    &quot;b2492&quot; =&gt; 30.565,
+    &quot;b0724&quot; =&gt; 26.77,
+    &quot;b0755&quot; =&gt; 28.556,
+    &quot;b1136&quot; =&gt; 45.757,
+    &quot;b2286&quot; =&gt; 68.236,
+    &quot;b0978&quot; =&gt; 57.92,
+    &quot;b1852&quot; =&gt; 55.704,
+    &quot;b2281&quot; =&gt; 20.538,
+    &quot;b2587&quot; =&gt; 47.052,
+    &quot;b2458&quot; =&gt; 36.067,
+    &quot;b0904&quot; =&gt; 30.991,
+    &quot;b1101&quot; =&gt; 50.677,
+    &quot;b0875&quot; =&gt; 23.703,
+    &quot;b3213&quot; =&gt; 52.015,
+    &quot;b2975&quot; =&gt; 58.92,
+    &quot;b0720&quot; =&gt; 48.015,
+    &quot;b0903&quot; =&gt; 85.357,
+    &quot;b1723&quot; =&gt; 32.456,
+    &quot;b2097&quot; =&gt; 38.109,
+    &quot;b3737&quot; =&gt; 8.256,
+    &quot;b0810&quot; =&gt; 24.364,
+    &quot;b4025&quot; =&gt; 61.53,
+    &quot;b1380&quot; =&gt; 36.535,
+    &quot;b0356&quot; =&gt; 39.359,
+    &quot;b2277&quot; =&gt; 56.525,
+    &quot;b1276&quot; =&gt; 97.677,
+    &quot;b4152&quot; =&gt; 15.015,
+    &quot;b1479&quot; =&gt; 63.197,
+    &quot;b4153&quot; =&gt; 27.123,
+    &quot;b4151&quot; =&gt; 13.107,
+    &quot;b2287&quot; =&gt; 25.056,
+    &quot;b0474&quot; =&gt; 23.586,
+    &quot;b2284&quot; =&gt; 49.292,
+    &quot;b1611&quot; =&gt; 50.489,
+    &quot;b0726&quot; =&gt; 105.062,
+    &quot;b2279&quot; =&gt; 10.845,
+    &quot;s0001&quot; =&gt; 0.0,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 137 entries:
+  &quot;b4301&quot; =&gt; 23.214
+  &quot;b1602&quot; =&gt; 48.723
+  &quot;b4154&quot; =&gt; 65.972
+  &quot;b3236&quot; =&gt; 32.337
+  &quot;b1621&quot; =&gt; 56.627
+  &quot;b1779&quot; =&gt; 35.532
+  &quot;b3951&quot; =&gt; 85.96
+  &quot;b1676&quot; =&gt; 50.729
+  &quot;b3114&quot; =&gt; 85.936
+  &quot;b1241&quot; =&gt; 96.127
+  &quot;b2276&quot; =&gt; 52.044
+  &quot;b1761&quot; =&gt; 48.581
+  &quot;b3925&quot; =&gt; 35.852
+  &quot;b3493&quot; =&gt; 53.389
+  &quot;b3733&quot; =&gt; 31.577
+  &quot;b2926&quot; =&gt; 41.118
+  &quot;b0979&quot; =&gt; 42.424
+  &quot;b4015&quot; =&gt; 47.522
+  &quot;b2296&quot; =&gt; 43.29
+  ⋮       =&gt; ⋮</code></pre></details><p>We have the molar masses here:</p><pre><code class="language-julia hljs">ecoli_core_gene_product_masses # unit kDa = kg/mol</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 137 entries:
+  &quot;b4301&quot; =&gt; 23.214
+  &quot;b1602&quot; =&gt; 48.723
+  &quot;b4154&quot; =&gt; 65.972
+  &quot;b3236&quot; =&gt; 32.337
+  &quot;b1621&quot; =&gt; 56.627
+  &quot;b1779&quot; =&gt; 35.532
+  &quot;b3951&quot; =&gt; 85.96
+  &quot;b1676&quot; =&gt; 50.729
+  &quot;b3114&quot; =&gt; 85.936
+  &quot;b1241&quot; =&gt; 96.127
+  &quot;b2276&quot; =&gt; 52.044
+  &quot;b1761&quot; =&gt; 48.581
+  &quot;b3925&quot; =&gt; 35.852
+  &quot;b3493&quot; =&gt; 53.389
+  &quot;b3733&quot; =&gt; 31.577
+  &quot;b2926&quot; =&gt; 41.118
+  &quot;b0979&quot; =&gt; 42.424
+  &quot;b4015&quot; =&gt; 47.522
+  &quot;b2296&quot; =&gt; 43.29
+  ⋮       =&gt; ⋮</code></pre><div class="admonition is-success"><header class="admonition-header">Molar mass units</header><div class="admonition-body"><p>Just as with the turnover numbers, take extreme care about the units of the molar masses. In literature they are usually reported in Da or kDa (g/mol). However, as noted above, flux units are typically mmol/gDW/h. Since the enzyme kinetic equation is <code>v = k * e</code> (where <code>k</code> is the turnover number) it suggests that the enzyme variable will have units of mmol/gDW. The molar masses come into play when setting the capacity limitations, e.g. usually a sum over all enzymes weighted by their molar masses as <code>e * M</code>. Thus, if the capacity limitation has units of g/gDW, then the molar masses must have units of g/mmol (i.e., kDa).</p></div></div><h2 id="Capacity-limitation"><a class="docs-heading-anchor" href="#Capacity-limitation">Capacity limitation</a><a id="Capacity-limitation-1"></a><a class="docs-heading-anchor-permalink" href="#Capacity-limitation" title="Permalink"></a></h2><p>The capacity limitation usually denotes an upper bound of protein available to the cell. Multiple capacity bounds can be used (cytosol, membrane, etc).</p><pre><code class="language-julia hljs">total_enzyme_capacity = 50.0 # mg of enzyme/gDW</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">50.0</code></pre><h2 id="Running-a-basic-enzyme-constrained-model"><a class="docs-heading-anchor" href="#Running-a-basic-enzyme-constrained-model">Running a basic enzyme constrained model</a><a id="Running-a-basic-enzyme-constrained-model-1"></a><a class="docs-heading-anchor-permalink" href="#Running-a-basic-enzyme-constrained-model" title="Permalink"></a></h2><p>With all the parameters specified, we can directly use the enzyme constrained convenience function to run enzyme constrained FBA in one shot:</p><pre><code class="language-julia hljs">ec_solution = enzyme_constrained_flux_balance_analysis(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses = ecoli_core_gene_product_masses,
+    capacity = total_enzyme_capacity,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 13 elements:
+  :coupling                     =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements …
+  :directional_flux_balance     =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements…
+  :flux_stoichiometry           =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements…
+  :fluxes                       =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements…
+  :fluxes_forward               =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements…
+  :fluxes_reverse               =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements…
+  :gene_product_amounts         =&gt; ConstraintTrees.Tree{Float64}(#= 130 element…
+  :gene_product_capacity        =&gt; ConstraintTrees.Tree{Float64}(#= 1 element =…
+  :isozyme_flux_forward_balance =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
+  :isozyme_flux_reverse_balance =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
+  :isozyme_forward_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
+  :isozyme_reverse_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
+  :objective                    =&gt; 0.706993</code></pre><p>We can notice that the objective function is a little lower than with unconstrained E. coli core:</p><pre><code class="language-julia hljs">ec_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572326</code></pre><p>One can also observe many interesting thing, e.g. the amount of gene product material required for the system to run. Importantly, the units of these values depend on the units used to set the turnover numbers and protein molar masses.</p><pre><code class="language-julia hljs">ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 130 elements:
+  :b0008 =&gt; 0.00482419
+  :b0114 =&gt; 0.00550415
+  :b0115 =&gt; 0.00550415
+  :b0116 =&gt; 0.00550415
+  :b0118 =&gt; 0.00243563
+  :b0351 =&gt; 0.0
+  :b0356 =&gt; 0.0
+  :b0474 =&gt; 0.0
+  :b0485 =&gt; 0.0
+  :b0720 =&gt; 0.00187026
+  :b0721 =&gt; 0.0
+  :b0722 =&gt; 0.0
+  :b0723 =&gt; 0.0
+  :b0724 =&gt; 0.0
+  :b0726 =&gt; 0.0
+  :b0727 =&gt; 0.0
+  :b0728 =&gt; 0.0
+  :b0729 =&gt; 0.0
+  :b0733 =&gt; 0.0
+  ⋮      =&gt; ⋮</code></pre><p>The total amount of required gene product mass is, by default, present as <code>total_capacity</code>:</p><pre><code class="language-julia hljs">ec_solution.gene_product_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 1 element:
+  :total_capacity =&gt; 50.0</code></pre><h2 id="Simplified-models"><a class="docs-heading-anchor" href="#Simplified-models">Simplified models</a><a id="Simplified-models-1"></a><a class="docs-heading-anchor-permalink" href="#Simplified-models" title="Permalink"></a></h2><p>Because most active reactions typically only use a single isozyme, we may also use a simplified representation of the problem where this fact is reflected, saving the variable allocation for the isozymes.</p><p><a href="../../reference/frontend/#COBREXA.simplified_enzyme_constrained_flux_balance_analysis-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>simplified_enzyme_constrained_flux_balance_analysis</code></a> takes similar arguments as the <a href="../../reference/frontend/#COBREXA.enzyme_constrained_flux_balance_analysis-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>enzyme_constrained_flux_balance_analysis</code></a>, but automatically chooses the &quot;fastest&quot; reaction isozyme for each reaction direction and builds the model with that.</p><pre><code class="language-julia hljs">simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses = ecoli_core_gene_product_masses,
+    capacity = total_enzyme_capacity,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 9 elements:
+  :capacity_limits          =&gt; ConstraintTrees.Tree{Float64}(#= 1 element =#)
+  :coupling                 =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
+  :directional_flux_balance =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
+  :flux_stoichiometry       =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
+  :fluxes                   =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
+  :fluxes_forward           =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
+  :fluxes_reverse           =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
+  :gene_product_amounts     =&gt; ConstraintTrees.Tree{Float64}(#= 97 elements =#)
+  :objective                =&gt; 0.706993</code></pre><p>In this case, the result is the same as with the full analysis:</p><pre><code class="language-julia hljs">simplified_ec_solution.capacity_limits.total_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">50.00000000000001</code></pre><p>Gene product amounts are not present in the model but are reconstructed nevertheless (they are uniquely determined by the flux):</p><pre><code class="language-julia hljs">simplified_ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 97 elements:
+  :b0008 =&gt; 0.00482419
+  :b0114 =&gt; 0.00550415
+  :b0115 =&gt; 0.00550415
+  :b0116 =&gt; 0.00550415
+  :b0118 =&gt; 0.00243563
+  :b0351 =&gt; 0.0
+  :b0474 =&gt; 0.0
+  :b0485 =&gt; 0.0
+  :b0720 =&gt; 0.00187026
+  :b0721 =&gt; 0.0
+  :b0722 =&gt; 0.0
+  :b0723 =&gt; 0.0
+  :b0724 =&gt; 0.0
+  :b0726 =&gt; 0.0
+  :b0727 =&gt; 0.0
+  :b0728 =&gt; 0.0
+  :b0729 =&gt; 0.0
+  :b0767 =&gt; 0.000794011
+  :b0809 =&gt; 0.0
+  ⋮      =&gt; ⋮</code></pre><h2 id="Variability-analysis-with-enzyme-constraints"><a class="docs-heading-anchor" href="#Variability-analysis-with-enzyme-constraints">Variability analysis with enzyme constraints</a><a id="Variability-analysis-with-enzyme-constraints-1"></a><a class="docs-heading-anchor-permalink" href="#Variability-analysis-with-enzyme-constraints" title="Permalink"></a></h2><p>Enzyme-constrained variability analysis can be executed on a model by combining <a href="../../reference/frontend/#COBREXA.enzyme_constrained_flux_balance_constraints-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>enzyme_constrained_flux_balance_constraints</code></a> (or <a href="../../reference/frontend/#COBREXA.simplified_enzyme_constrained_flux_balance_constraints-Tuple{Any}"><code>simplified_enzyme_constrained_flux_balance_constraints</code></a>) with <a href="../../reference/analysis/#COBREXA.constraints_variability-Tuple{ConstraintTrees.Tree{ConstraintTrees.Constraint}, ConstraintTrees.Tree{ConstraintTrees.Constraint}}"><code>constraints_variability</code></a> (or any other analysis function):</p><pre><code class="language-julia hljs">ec_system = enzyme_constrained_flux_balance_constraints(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses = ecoli_core_gene_product_masses,
+    capacity = total_enzyme_capacity,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 13 elements:
+  :coupling                     =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :directional_flux_balance     =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :flux_stoichiometry           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :fluxes                       =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :fluxes_forward               =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :fluxes_reverse               =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :gene_product_amounts         =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :gene_product_capacity        =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :isozyme_flux_forward_balance =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :isozyme_flux_reverse_balance =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :isozyme_forward_amounts      =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :isozyme_reverse_amounts      =&gt; ConstraintTrees.Tree{ConstraintTrees.Constra…
+  :objective                    =&gt; ConstraintTrees.Constraint(ConstraintTrees.L…</code></pre><p>Here, we can do the FVA &quot;manually&quot;, first solving the system:</p><pre><code class="language-julia hljs">ec_optimum = optimized_values(
+    ec_system,
+    output = ec_system.objective,
+    objective = ec_system.objective.value,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572326</code></pre><p>...then creating a system constrained to near-optimal growth:</p><pre><code class="language-julia hljs">import ConstraintTrees as C
+
+ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Between(0.6999234490286602, Inf)</code></pre><p>...and finally, finding the extremes of the near-optimal part of the feasible space:</p><pre><code class="language-julia hljs">ec_variabilities =
+    constraints_variability(ec_system, ec_system, optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 13 elements:
+  :coupling                     =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :directional_flux_balance     =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :flux_stoichiometry           =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :fluxes                       =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :fluxes_forward               =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :fluxes_reverse               =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :gene_product_amounts         =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :gene_product_capacity        =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :isozyme_flux_forward_balance =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :isozyme_flux_reverse_balance =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :isozyme_forward_amounts      =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :isozyme_reverse_amounts      =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
+  :objective                    =&gt; (0.699923, 0.706993)</code></pre><p>By default, the result computes variabilities of all possible values in the model. (I.e., it also computes variabilities for the variable combinations that are present in the tree!) As usual, the results can be observed in the original constraint tree structure, giving us the variabilities for reaction fluxes:</p><pre><code class="language-julia hljs">ec_variabilities.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 95 elements:
+  :ACALD                    =&gt; (-0.582453, 0.0)
+  :ACALDt                   =&gt; (-0.582453, 0.0)
+  :ACKr                     =&gt; (-7.49528, -6.65899)
+  :ACONTa                   =&gt; (0.755147, 0.955009)
+  :ACONTb                   =&gt; (0.755147, 0.955009)
+  :ACt2r                    =&gt; (-7.49528, -6.65899)
+  :ADK1                     =&gt; (-0.0, 0.550397)
+  :AKGDH                    =&gt; (-0.0, 0.19941)
+  :AKGt2r                   =&gt; (-0.180894, 0.0)
+  :ALCD2x                   =&gt; (-0.46972, -2.20528e-14)
+  :ATPM                     =&gt; (8.39, 8.99477)
+  :ATPS4r                   =&gt; (31.2442, 32.3197)
+  :BIOMASS_Ecoli_core_w_GAM =&gt; (0.699923, 0.706993)
+  :CO2t                     =&gt; (-15.7459, -14.6315)
+  :CS                       =&gt; (0.755147, 0.955009)
+  :CYTBD                    =&gt; (28.67, 29.8735)
+  :D_LACt2                  =&gt; (-0.419985, 0.0)
+  :ENO                      =&gt; (14.6876, 15.2254)
+  :ETOHt2r                  =&gt; (-0.46972, 0.0)
+  ⋮                         =&gt; ⋮</code></pre><p>...as well as for gene product requirements:</p><pre><code class="language-julia hljs">ec_variabilities.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 130 elements:
+  :b0008 =&gt; (1.70247e-16, 0.020956)
+  :b0114 =&gt; (0.00499882, 0.00571416)
+  :b0115 =&gt; (0.00499882, 0.00571416)
+  :b0116 =&gt; (0.00499882, 0.00578451)
+  :b0118 =&gt; (-0.0, 0.00850601)
+  :b0351 =&gt; (-0.0, 0.0170398)
+  :b0356 =&gt; (-0.0, 0.0144781)
+  :b0474 =&gt; (-0.0, 0.0241603)
+  :b0485 =&gt; (-0.0, 0.00270586)
+  :b0720 =&gt; (0.00185156, 0.0023416)
+  :b0721 =&gt; (-0.0, 0.000551851)
+  :b0722 =&gt; (-0.0, 0.000551851)
+  :b0723 =&gt; (-0.0, 0.000551851)
+  :b0724 =&gt; (-0.0, 0.000551851)
+  :b0726 =&gt; (-0.0, 0.000209436)
+  :b0727 =&gt; (-0.0, 0.000209436)
+  :b0728 =&gt; (-0.0, 0.00800682)
+  :b0729 =&gt; (-0.0, 0.00800682)
+  :b0733 =&gt; (-7.73102e-17, 0.0541366)
+  ⋮      =&gt; ⋮</code></pre><p>...and for the individual directional isozymes:</p><pre><code class="language-julia hljs">ec_variabilities.isozyme_forward_amounts.PGM</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 3 elements:
+  :isozyme_1 =&gt; (-0.0, 0.0108292)
+  :isozyme_2 =&gt; (-0.0, 0.00710008)
+  :isozyme_3 =&gt; (-0.0, 0.0118397)</code></pre><p>If we do not need to compute all these values, it is often more efficient to only ask for the part of the output that is required:</p><pre><code class="language-julia hljs">ec_gp_amount_variabilities = constraints_variability(
+    ec_system,
+    ec_system.gene_product_amounts,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 130 elements:
+  :b0008 =&gt; (-0.0, 0.020956)
+  :b0114 =&gt; (0.00499882, 0.00571416)
+  :b0115 =&gt; (0.00499882, 0.00571416)
+  :b0116 =&gt; (0.00499882, 0.00578451)
+  :b0118 =&gt; (-0.0, 0.00850601)
+  :b0351 =&gt; (-0.0, 0.0170398)
+  :b0356 =&gt; (-0.0, 0.0144781)
+  :b0474 =&gt; (-0.0, 0.0241603)
+  :b0485 =&gt; (-0.0, 0.00270586)
+  :b0720 =&gt; (0.00185156, 0.0023416)
+  :b0721 =&gt; (-0.0, 0.000551851)
+  :b0722 =&gt; (-0.0, 0.000551851)
+  :b0723 =&gt; (-0.0, 0.000551851)
+  :b0724 =&gt; (-0.0, 0.000551851)
+  :b0726 =&gt; (-0.0, 0.000209436)
+  :b0727 =&gt; (-0.0, 0.000209436)
+  :b0728 =&gt; (-0.0, 0.00800682)
+  :b0729 =&gt; (-0.0, 0.00800682)
+  :b0733 =&gt; (-0.0, 0.0541366)
+  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05a-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../05c-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Friday 20 September 2024 13:46">Friday 20 September 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
