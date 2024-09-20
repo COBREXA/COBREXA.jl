@@ -400,3 +400,69 @@ simplified_ec_solution.gene_product_amounts
     simplified_ec_solution.objective, #src
     atol = TEST_TOLERANCE, #src
 ) #src
+
+# ## Variability analysis with enzyme constraints
+#
+# Enzyme-constrained variability analysis can be executed on a model by
+# combining [`enzyme_constrained_flux_balance_constraints`](@ref) (or
+# [`simplified_enzyme_constrained_flux_balance_constraints`](@ref)) with
+# [`constraints_variability`](@ref) (or any other analysis function):
+
+ec_system = enzyme_constrained_flux_balance_constraints(
+    model;
+    reaction_isozymes,
+    gene_product_molar_masses = ecoli_core_gene_product_masses,
+    capacity = total_enzyme_capacity,
+)
+
+# Here, we can do the FVA "manually", first solving the system:
+
+ec_optimum = optimized_values(
+    ec_system,
+    output = ec_system.objective,
+    objective = ec_system.objective.value,
+    optimizer = HiGHS.Optimizer,
+)
+
+# ...then creating a system constrained to near-optimal growth:
+import ConstraintTrees as C
+
+ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)
+
+# ...and finally, finding the extremes of the near-optimal part of the feasible
+# space:
+
+ec_variabilities =
+    constraints_variability(ec_system, ec_system, optimizer = HiGHS.Optimizer)
+
+# By default, the result computes variabilities of all possible values in the
+# model. (I.e., it also computes variabilities for the variable combinations
+# that are present in the tree!) As usual, the results can be observed in the
+# original constraint tree structure, giving us the variabilities for reaction
+# fluxes:
+
+ec_variabilities.fluxes
+
+# ...as well as for gene product requirements:
+
+ec_variabilities.gene_product_amounts
+
+# ...and for the individual directional isozymes:
+
+ec_variabilities.isozyme_forward_amounts.PGM
+
+# If we do not need to compute all these values, it is often more efficient to
+# only ask for the part of the output that is required:
+
+ec_gp_amount_variabilities = constraints_variability(
+    ec_system,
+    ec_system.gene_product_amounts,
+    optimizer = HiGHS.Optimizer,
+)
+
+@test isapprox(ec_gp_amount_variabilities.b0008[1], 0, atol = TEST_TOLERANCE) #src
+@test isapprox( #src
+    ec_gp_amount_variabilities.b0008[2], #src
+    0.020956009969910837, #src
+    atol = TEST_TOLERANCE, #src
+) #src
