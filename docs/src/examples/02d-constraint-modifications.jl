@@ -90,6 +90,9 @@ fermentation_constraint = C.Constraint(total_fermentation, (10.0, 1000.0))
 
 fermenting_ct = ct * :fermentation^fermentation_constraint
 
+#md # !!! tip "What if I need more complicated changes?"
+#md #     Almost all analysis functions have an associated constraint-building function that internally builds the constraint system, for example the [`parsimonious_flux_balance_analysis`](@ref) is implemented with [`parsimonious_flux_balance_constraints`](@ref), which can be used just as [`flux_balance_constraints`](@ref) here. Additionally, to reach various custom goals, it is recommended to re-use and modify the source of the functions -- use the macro [`@edit`](https://docs.julialang.org/en/v1/stdlib/InteractiveUtils/#InteractiveUtils.@edit), such as `@edit parsimonious_flux_balance_constraints`, to get a working source code that serves well as a base for implementing new constraint systems.
+
 # Constraint trees can be "solved", simply by choosing the objective and sending
 # them to the appropriate function. Here, [`optimized_values`](@ref) rewrites
 # the constraints into a JuMP model, which is subsequently solved and the
