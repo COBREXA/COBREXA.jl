@@ -92,14 +92,13 @@ var = constraints_variability(cs, cs.fluxes, optimizer = HiGHS.Optimizer)
 # this, we follow the implementation of [`flux_sample`](@ref) --- first we
 # generate the warmup:
 
-import JuMP
 warmup = vcat(
     (
         transpose(v) for (_, vs) in constraints_variability(
             cs,
             cs.fluxes,
             optimizer = HiGHS.Optimizer,
-            output = (_, om) -> JuMP.value.(om[:x]),
+            output = (_, om) -> variable_vector(om),
             output_type = Vector{Float64},
         ) for v in vs
     )...,
@@ -114,7 +113,7 @@ sample = sample_constraints(
     seed = UInt(1234),
     output = cs.fluxes,
     n_chains = 10,
-    collect_iterations = collect(100:105),
+    collect_iterations = collect(10:15),
 )
 
 # The results can be observed (and usually plotted) from the sample vectors,
