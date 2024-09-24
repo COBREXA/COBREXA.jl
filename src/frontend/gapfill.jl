@@ -135,7 +135,10 @@ function gap_filling_constraints(;
             (i, kf) in enumerate(known_fills)
         )...,
         :n_filled => C.Constraint(
-            C.sum(flux_cost(k) * v.value for (k, v) in joined.fill_flags),
+            C.sum(
+                (flux_cost(k) * v.value for (k, v) in joined.fill_flags),
+                init = zero(C.LinearValue),
+            ),
             C.Between(0, max_cost),
         ),
     )
@@ -165,7 +168,7 @@ gap_filling_known_fill_constraint(
         end),
         init = zero(C.LinearValue),
     ),
-    (1-eps(), Inf),
+    (1 - eps(), Inf),
 )
 
 export gap_filling_known_fill_constraint
