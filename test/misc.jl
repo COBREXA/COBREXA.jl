@@ -104,3 +104,23 @@ end
     @test c.interface_balance.x.value.weights == [1.0, 2.0, 1.0, 3.0, -1.0]
 
 end
+
+@testset "Uncommon bounds in gapfilling" begin
+    vs = C.variables(keys = [:a, :b], bounds = [C.EqualTo(123), nothing])
+    stoi = C.variables(keys = [:c, :d], bounds = C.EqualTo(0))
+    x = gap_filling_constraints(
+        system = vs,
+        stoichiometry = stoi,
+        universal_fluxes = vs,
+        universal_stoichiometry = stoi,
+    )
+    @test x.universal_flux_bounds.a.bound isa C.EqualTo
+    @test isempty(x.universal_flux_bounds.b)
+    vs = C.variables(keys = [:a, :b], bounds = [C.EqualTo(123), Switch(1, 2)])
+    @test_throws DomainError gap_filling_constraints(
+        system = vs,
+        stoichiometry = stoi,
+        universal_fluxes = vs,
+        universal_stoichiometry = stoi,
+    )
+end

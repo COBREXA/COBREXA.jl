@@ -28,9 +28,9 @@ arbitrary small value such as `0.05`.
 the reactions in the `universal_model`; by default all are assigned equal
 weight of `1`. `max_cost` puts an optional maximum limit on the cost, which may
 help the solver to avoid exploring unnecessarily complex solutions.
-`known_fills` may contain previous solutions of the same system (with the same
-costs!); these will be made infeasible in the output constraint system in order
-to allow discovery of other ones.
+`known_fills` may contain previous solutions of the same system; these will be
+made infeasible in the output constraint system in order to allow discovery of
+other ones.
 
 Additional arguments are forwarded to `flux_balance_constraints` that converts
 `model` to constraints.
@@ -92,7 +92,7 @@ function gap_filling_constraints(;
             :stoichiometry => universal_stoichiometry,
         ) +
         :fill_flags^C.variables_ifor(universal_fluxes) do i, _
-            Switch(0, flux_cost(i))
+            Switch(0, 1)
         end
 
     return C.ConstraintTree(
@@ -135,7 +135,7 @@ function gap_filling_constraints(;
             (i, kf) in enumerate(known_fills)
         )...,
         :n_filled => C.Constraint(
-            C.sum(C.value.(values(joined.fill_flags))),
+            C.sum(flux_cost(k) * v.value for (k, v) in joined.fill_flags),
             C.Between(0, max_cost),
         ),
     )
@@ -154,8 +154,6 @@ solved `fill_flags`.
 Parameter `fill_flags` are the gapfilling flags of the given constraint system,
 parameter `known_flags` is expected to contain the solved `fill_flags` for the
 solution that is to be avoided.
-
-Costs of flags must be identical in both constraint systems.
 """
 gap_filling_known_fill_constraint(
     fill_flags::C.ConstraintTree,
@@ -163,11 +161,11 @@ gap_filling_known_fill_constraint(
 ) = C.Constraint(
     C.sum(
         values(C.zip(fill_flags, known_flags, C.Value) do f, k
-            k^2 - f.value * k
+            k - f.value * k
         end),
         init = zero(C.LinearValue),
     ),
-    (minimum(x.bound.b for (_, x) in fill_flags)^2 / 2, Inf),
+    (1-eps(), Inf),
 )
 
 export gap_filling_known_fill_constraint
