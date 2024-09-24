@@ -81,6 +81,7 @@ x2 = gap_filling_analysis(
     infeasible_model,
     model,
     0.05,
+    max_cost = 2.0,
     known_fills = [x.fill_flags],
     optimizer = HiGHS.Optimizer,
 )

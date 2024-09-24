@@ -28,6 +28,9 @@ arbitrary small value such as `0.05`.
 the reactions in the `universal_model`; by default all are assigned equal
 weight of `1`. `max_cost` puts an optional maximum limit on the cost, which may
 help the solver to avoid exploring unnecessarily complex solutions.
+`known_fills` may contain previous solutions of the same system (with the same
+costs!); these will be made infeasible in the output constraint system in order
+to allow discovery of other ones.
 
 Additional arguments are forwarded to `flux_balance_constraints` that converts
 `model` to constraints.
@@ -66,6 +69,9 @@ balanced with `universal_stoichiometry`
 
 `flux_cost` can be used to assign a weight to each given universal flux; the
 total cost is bounded by `max_cost`.
+
+`known_fills` may contain previous solutions to be avoided; these are processed
+by [`gap_filling_known_fill_constraint`](@ref) and attached to the system.
 
 `stoichiometry` needs to be extended to construct the final constraints, thus
 it should not be present in the original `system`.
