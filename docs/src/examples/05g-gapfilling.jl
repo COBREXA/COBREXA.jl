@@ -62,13 +62,23 @@ end
 
 flux_balance_analysis(infeasible_model, optimizer = HiGHS.Optimizer) |> println
 
+# To avoid very subtle semantic issues, we are going to remove the ATP
+# maintenance pseudoreaction from the universal model:
+universal_model = convert(CM.Model, model)
+delete!(universal_model.reactions, "ATPM")
+
 # ## Making the model feasible with a minimal set of reactions
 
 # Which of the reactions we have to fill back to get the model working again?
 # First, let's run [`gap_filling_analysis`](@ref) to get a solution for a
 # system that implements the reaction patching:
 
-x = gap_filling_analysis(infeasible_model, model, 0.05, optimizer = HiGHS.Optimizer)
+x = gap_filling_analysis(
+    infeasible_model,
+    universal_model,
+    0.05,
+    optimizer = HiGHS.Optimizer,
+)
 
 # The reactions that had to be re-added can be found from the `fill_flags`:
 
@@ -83,7 +93,7 @@ filled_reactions = [k for (k, v) in x.fill_flags if v != 0]
 
 x2 = gap_filling_analysis(
     infeasible_model,
-    model,
+    universal_model,
     0.05,
     max_cost = 2.0,
     known_fills = [x.fill_flags],
@@ -122,7 +132,7 @@ blocking_metabolites = [k for (k, v) in xm.fill_flags if v != 0]
 
 @test length(blocking_metabolites) == 1 #src
 
-# We can also have a look at how much of the metabolite was used to make the
-# model feasible again:
+# We can also have a look at how much of a given metabolite was used to make
+# the model feasible again:
 
 xm.universal_fluxes[first(blocking_metabolites)]

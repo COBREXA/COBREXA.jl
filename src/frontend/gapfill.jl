@@ -54,7 +54,7 @@ function gap_filling_constraints(
         stoichiometry = s,
         universal_fluxes = u.fluxes,
         universal_stoichiometry = u.flux_stoichiometry,
-        flux_cost = i -> universal_reaction_cost(String(first(i))),
+        flux_cost = i -> universal_reaction_cost(String(i)),
         max_cost,
         known_fills,
     )
@@ -91,7 +91,7 @@ function gap_filling_constraints(;
             :fluxes => universal_fluxes,
             :stoichiometry => universal_stoichiometry,
         ) +
-        :fill_flags^C.variables_ifor(universal_fluxes) do i, _
+        :fill_flags^C.variables_for(universal_fluxes) do _
             Switch(0, 1)
         end
 
