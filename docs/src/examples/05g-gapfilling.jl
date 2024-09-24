@@ -1,0 +1,123 @@
+
+# Copyright (c) 2024, University of Luxembourg                              #src
+# Copyright (c) 2024, Heinrich-Heine University Duesseldorf                 #src
+#                                                                           #src
+# Licensed under the Apache License, Version 2.0 (the "License");           #src
+# you may not use this file except in compliance with the License.          #src
+# You may obtain a copy of the License at                                   #src
+#                                                                           #src
+#     http://www.apache.org/licenses/LICENSE-2.0                            #src
+#                                                                           #src
+# Unless required by applicable law or agreed to in writing, software       #src
+# distributed under the License is distributed on an "AS IS" BASIS,         #src
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #src
+# See the License for the specific language governing permissions and       #src
+# limitations under the License.                                            #src
+
+# # Gap filling
+#
+# Gapfilling is used to find easiest additions to the models that would make
+# them feasible and capable of growth.
+#
+# Typically, an infeasible model ("with gaps") is used together with an
+# universal model (which contains "everything"), and the algorithm attempts to
+# find the minimal amount of reactions from the universal model that make the
+# gappy model happy. In turn, the gapfilling optimization problem becomes a
+# MILP.
+#
+# Gapfilling is sometimes used to produce "viable" genome-scale
+# reconstructions from partial ones, but without additional manual intervention
+# the gapfilling results are almost never biologically valid. A good use of
+# gapfilling is to find problems in a model that cause infeasibility as
+# follows: First the modeller makes a set of (unrealistic) universal reactions
+# that supply or remove metabolites, and after gapfilling, metabolites that had
+# to be supplied or removed to make the model feasible mark possible problems,
+# thus guiding the modeller towards correct solution.
+
+# We will use a partially crippled *E. coli* toy model and see the minimal
+# amount of reactions that may save it.
+
+using COBREXA
+
+download_model(
+    "http://bigg.ucsd.edu/static/models/e_coli_core.json",
+    "e_coli_core.json",
+    "7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8",
+)
+
+import JSONFBCModels, HiGHS
+model = load_model("e_coli_core.json")
+
+# First, let's produce an infeasible model:
+
+import AbstractFBCModels.CanonicalModel as CM
+infeasible_model = convert(CM.Model, model)
+
+for rxn in ["TALA", "PDH", "PGI", "PYK"]
+    infeasible_model.reactions[rxn].lower_bound = 0.0
+    infeasible_model.reactions[rxn].upper_bound = 0.0
+end
+
+# After removing the above reaction, the model will fail to solve:
+
+flux_balance_analysis(infeasible_model, optimizer = HiGHS.Optimizer) |> println
+
+# Which of the reactions we have to fill back to get the model working again?
+
+x = gap_filling_analysis(infeasible_model, model, 0.05, optimizer = HiGHS.Optimizer)
+
+# The solution can be found from the `fill_flags`:
+
+filled_reactions = [k for (k, v) in x.fill_flags if v != 0]
+
+#@test length(filled_reactions) == 1 #src
+
+# If we want to try to generate another solution, we have to explicitly ask for
+# avoiding the previous solution. That is done via setting the argument
+# `known_fill`. We can also set the `max_cost` to avoid finding too benevolent
+# solutions:
+
+x2 = gap_filling_analysis(
+    infeasible_model,
+    model,
+    0.05,
+    known_fills = [x.fill_flags],
+    optimizer = HiGHS.Optimizer,
+)
+
+other_filled_reactions = [k for (k, v) in x2.fill_flags if v != 0]
+
+# ## Model debugging: which metabolite is missing?
+#
+# Gap-filling is great for detecting various broken links and imbalances in
+# metabolic models. We show how to find the metabolites are causing the
+# imbalance for our "broken" E. coli model.
+#
+# First, we construct a few completely unnatural reactions that create/remove
+# the metabolites from/to nowhere:
+
+magic_model = convert(CM.Model, model)
+empty!(magic_model.genes)
+empty!(magic_model.reactions)
+
+for mid in keys(magic_model.metabolites)
+    magic_model.reactions[mid] = CM.Reaction(
+        lower_bound = -100.0,
+        upper_bound = 100.0,
+        stoichiometry = Dict(mid => 1.0),
+    )
+end
+
+# Gapfilling now points to the metabolite that needs to be taken care of in
+# order for the model to be feasible:
+
+xm = gap_filling_analysis(infeasible_model, magic_model, 0.05, optimizer = HiGHS.Optimizer)
+
+blocking_metabolites = [k for (k, v) in xm.fill_flags if v != 0]
+
+@test length(blocking_metabolites) == 1 #src
+
+# We can also have a look at how much of the metabolite was used to make the
+# model feasible again:
+
+xm.universal_fluxes[first(blocking_metabolites)]
