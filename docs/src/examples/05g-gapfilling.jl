@@ -58,22 +58,26 @@ for rxn in ["TALA", "PDH", "PGI", "PYK"]
     infeasible_model.reactions[rxn].upper_bound = 0.0
 end
 
-# After removing the above reaction, the model will fail to solve:
+# After removing the above reactions, the model will fail to solve:
 
 flux_balance_analysis(infeasible_model, optimizer = HiGHS.Optimizer) |> println
 
+# ## Making the model feasible with a minimal set of reactions
+
 # Which of the reactions we have to fill back to get the model working again?
+# First, let's run [`gap_filling_analysis`](@ref) to get a solution for a
+# system that implements the reaction patching:
 
 x = gap_filling_analysis(infeasible_model, model, 0.05, optimizer = HiGHS.Optimizer)
 
-# The solution can be found from the `fill_flags`:
+# The reactions that had to be re-added can be found from the `fill_flags`:
 
 filled_reactions = [k for (k, v) in x.fill_flags if v != 0]
 
-#@test length(filled_reactions) == 1 #src
+@test length(filled_reactions) == 1 #src
 
-# If we want to try to generate another solution, we have to explicitly ask for
-# avoiding the previous solution. That is done via setting the argument
+# If we want to try to generate another solution, we have to explicitly ask the
+# system to avoid the previous solution. That is done via setting the argument
 # `known_fill`. We can also set the `max_cost` to avoid finding too benevolent
 # solutions:
 
@@ -109,8 +113,8 @@ for mid in keys(magic_model.metabolites)
     )
 end
 
-# Gapfilling now points to the metabolite that needs to be taken care of in
-# order for the model to be feasible:
+# Gapfilling now points to the metabolites that need to be somehow taken care
+# of by the modeller in order for the model to become feasible:
 
 xm = gap_filling_analysis(infeasible_model, magic_model, 0.05, optimizer = HiGHS.Optimizer)
 
