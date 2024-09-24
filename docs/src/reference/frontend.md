@@ -57,6 +57,13 @@ Modules = [COBREXA]
 Pages = ["src/frontend/envelope.jl"]
 ```
 
+## Gap-filling
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/frontend/gapfill.jl"]
+```
+
 ## Knockout models
 
 ```@autodocs
