@@ -320,7 +320,7 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
   :isozyme_flux_reverse_balance =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
   :isozyme_forward_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
   :isozyme_reverse_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 62 elements…
-  :objective                    =&gt; 0.706993</code></pre><p>We can notice that the objective function is a little lower than with unconstrained E. coli core:</p><pre><code class="language-julia hljs">ec_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572326</code></pre><p>One can also observe many interesting thing, e.g. the amount of gene product material required for the system to run. Importantly, the units of these values depend on the units used to set the turnover numbers and protein molar masses.</p><pre><code class="language-julia hljs">ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 130 elements:
+  :objective                    =&gt; 0.706993</code></pre><p>We can notice that the objective function is a little lower than with unconstrained E. coli core:</p><pre><code class="language-julia hljs">ec_solution.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572327</code></pre><p>One can also observe many interesting thing, e.g. the amount of gene product material required for the system to run. Importantly, the units of these values depend on the units used to set the turnover numbers and protein molar masses.</p><pre><code class="language-julia hljs">ec_solution.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 130 elements:
   :b0008 =&gt; 0.00482419
   :b0114 =&gt; 0.00550415
   :b0115 =&gt; 0.00550415
@@ -399,9 +399,9 @@ end</code></pre><div class="admonition is-success"><header class="admonition-hea
     output = ec_system.objective,
     objective = ec_system.objective.value,
     optimizer = HiGHS.Optimizer,
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572326</code></pre><p>...then creating a system constrained to near-optimal growth:</p><pre><code class="language-julia hljs">import ConstraintTrees as C
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.7069933828572327</code></pre><p>...then creating a system constrained to near-optimal growth:</p><pre><code class="language-julia hljs">import ConstraintTrees as C
 
-ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Between(0.6999234490286602, Inf)</code></pre><p>...and finally, finding the extremes of the near-optimal part of the feasible space:</p><pre><code class="language-julia hljs">ec_variabilities =
+ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Between(0.6999234490286603, Inf)</code></pre><p>...and finally, finding the extremes of the near-optimal part of the feasible space:</p><pre><code class="language-julia hljs">ec_variabilities =
     constraints_variability(ec_system, ec_system, optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 13 elements:
   :coupling                     =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
   :directional_flux_balance     =&gt; ConstraintTrees.Tree{Tuple{Union{Nothing, Fl…
@@ -425,7 +425,7 @@ ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)</code></pre><pre c
   :ADK1                     =&gt; (-0.0, 0.550397)
   :AKGDH                    =&gt; (-0.0, 0.19941)
   :AKGt2r                   =&gt; (-0.180894, 0.0)
-  :ALCD2x                   =&gt; (-0.46972, -2.20528e-14)
+  :ALCD2x                   =&gt; (-0.46972, 0.0)
   :ATPM                     =&gt; (8.39, 8.99477)
   :ATPS4r                   =&gt; (31.2442, 32.3197)
   :BIOMASS_Ecoli_core_w_GAM =&gt; (0.699923, 0.706993)
@@ -436,33 +436,6 @@ ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)</code></pre><pre c
   :ENO                      =&gt; (14.6876, 15.2254)
   :ETOHt2r                  =&gt; (-0.46972, 0.0)
   ⋮                         =&gt; ⋮</code></pre><p>...as well as for gene product requirements:</p><pre><code class="language-julia hljs">ec_variabilities.gene_product_amounts</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 130 elements:
-  :b0008 =&gt; (1.70247e-16, 0.020956)
-  :b0114 =&gt; (0.00499882, 0.00571416)
-  :b0115 =&gt; (0.00499882, 0.00571416)
-  :b0116 =&gt; (0.00499882, 0.00578451)
-  :b0118 =&gt; (-0.0, 0.00850601)
-  :b0351 =&gt; (-0.0, 0.0170398)
-  :b0356 =&gt; (-0.0, 0.0144781)
-  :b0474 =&gt; (-0.0, 0.0241603)
-  :b0485 =&gt; (-0.0, 0.00270586)
-  :b0720 =&gt; (0.00185156, 0.0023416)
-  :b0721 =&gt; (-0.0, 0.000551851)
-  :b0722 =&gt; (-0.0, 0.000551851)
-  :b0723 =&gt; (-0.0, 0.000551851)
-  :b0724 =&gt; (-0.0, 0.000551851)
-  :b0726 =&gt; (-0.0, 0.000209436)
-  :b0727 =&gt; (-0.0, 0.000209436)
-  :b0728 =&gt; (-0.0, 0.00800682)
-  :b0729 =&gt; (-0.0, 0.00800682)
-  :b0733 =&gt; (-7.73102e-17, 0.0541366)
-  ⋮      =&gt; ⋮</code></pre><p>...and for the individual directional isozymes:</p><pre><code class="language-julia hljs">ec_variabilities.isozyme_forward_amounts.PGM</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 3 elements:
-  :isozyme_1 =&gt; (-0.0, 0.0108292)
-  :isozyme_2 =&gt; (-0.0, 0.00710008)
-  :isozyme_3 =&gt; (-0.0, 0.0118397)</code></pre><p>If we do not need to compute all these values, it is often more efficient to only ask for the part of the output that is required:</p><pre><code class="language-julia hljs">ec_gp_amount_variabilities = constraints_variability(
-    ec_system,
-    ec_system.gene_product_amounts,
-    optimizer = HiGHS.Optimizer,
-)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 130 elements:
   :b0008 =&gt; (-0.0, 0.020956)
   :b0114 =&gt; (0.00499882, 0.00571416)
   :b0115 =&gt; (0.00499882, 0.00571416)
@@ -482,4 +455,31 @@ ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)</code></pre><pre c
   :b0728 =&gt; (-0.0, 0.00800682)
   :b0729 =&gt; (-0.0, 0.00800682)
   :b0733 =&gt; (-0.0, 0.0541366)
-  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05a-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../05c-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Tuesday 24 September 2024 20:25">Tuesday 24 September 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ⋮      =&gt; ⋮</code></pre><p>...and for the individual directional isozymes:</p><pre><code class="language-julia hljs">ec_variabilities.isozyme_forward_amounts.PGM</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 3 elements:
+  :isozyme_1 =&gt; (-0.0, 0.0108292)
+  :isozyme_2 =&gt; (-0.0, 0.00710008)
+  :isozyme_3 =&gt; (-0.0, 0.0118397)</code></pre><p>If we do not need to compute all these values, it is often more efficient to only ask for the part of the output that is required:</p><pre><code class="language-julia hljs">ec_gp_amount_variabilities = constraints_variability(
+    ec_system,
+    ec_system.gene_product_amounts,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 130 elements:
+  :b0008 =&gt; (-0.0, 0.020956)
+  :b0114 =&gt; (0.00499882, 0.00571416)
+  :b0115 =&gt; (0.00499882, 0.00571416)
+  :b0116 =&gt; (0.00499882, 0.00578451)
+  :b0118 =&gt; (-1.85486e-15, 0.00850601)
+  :b0351 =&gt; (-0.0, 0.0170398)
+  :b0356 =&gt; (-0.0, 0.0144781)
+  :b0474 =&gt; (-0.0, 0.0241603)
+  :b0485 =&gt; (-0.0, 0.00270586)
+  :b0720 =&gt; (0.00185156, 0.0023416)
+  :b0721 =&gt; (-0.0, 0.000551851)
+  :b0722 =&gt; (-0.0, 0.000551851)
+  :b0723 =&gt; (-0.0, 0.000551851)
+  :b0724 =&gt; (-0.0, 0.000551851)
+  :b0726 =&gt; (-0.0, 0.000209436)
+  :b0727 =&gt; (-0.0, 0.000209436)
+  :b0728 =&gt; (-0.0, 0.00800682)
+  :b0729 =&gt; (-0.0, 0.00800682)
+  :b0733 =&gt; (-8.37527e-17, 0.0541366)
+  ⋮      =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05a-minimization-of-metabolic-adjustment/">« Minimization of metabolic adjustment analysis</a><a class="docs-footer-nextpage" href="../05c-mmdf/">Thermodynamic models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 16 October 2024 18:05">Wednesday 16 October 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
