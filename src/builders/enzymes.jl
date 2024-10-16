@@ -27,7 +27,7 @@ have isozymes, the second contains the isozyme IDs for each reaction flux.
 anything iterable that contains the isozyme IDs for the given reaction flux.
 Returning an empty iterable prevents allocating the subtree for the given flux.
 """
-isozyme_amount_variables(fluxes, flux_isozymes) = sum(
+isozyme_amount_variables(fluxes, flux_isozymes) = C.sum(
     (
         f^C.variables(keys = fis, bounds = C.Between(0, Inf)) for
         (f, fis) in ((f, flux_isozymes(f)) for f in fluxes) if
