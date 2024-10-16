@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>CycleFreeFlux · COBREXA.jl</title><meta name="title" content="CycleFreeFlux · COBREXA.jl"/><meta property="og:title" content="CycleFreeFlux · COBREXA.jl"/><meta property="twitter:title" content="CycleFreeFlux · COBREXA.jl"/><meta name="description" content="Documentation for COBREXA.jl."/><meta property="og:description" content="Documentation for COBREXA.jl."/><meta property="twitter:description" content="Documentation for COBREXA.jl."/><meta property="og:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/05f-cyclefree/"/><meta property="twitter:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/05f-cyclefree/"/><link rel="canonical" href="https://cobrexa.github.io/COBREXA.jl/stable/examples/05f-cyclefree/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="COBREXA.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="COBREXA.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">COBREXA.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../">Contents</a></li><li><a class="tocitem" href="../01-loading-and-saving/">Loading and saving models</a></li><li><a class="tocitem" href="../02a-flux-balance-analysis/">Flux balance analysis (FBA)</a></li><li><a class="tocitem" href="../02b-optimizer-parameters/">Changing optimizer parameters</a></li><li><a class="tocitem" href="../02c-model-modifications/">Making adjustments to the model</a></li><li><a class="tocitem" href="../02d-constraint-modifications/">Making adjustments to the constraint system</a></li><li><a class="tocitem" href="../03a-flux-variability-analysis/">Flux variability analysis (FVA)</a></li><li><a class="tocitem" href="../03b-parsimonious-flux-balance/">Parsimonious flux balance analysis</a></li><li><a class="tocitem" href="../03c-envelopes/">Production envelopes</a></li><li><a class="tocitem" href="../04-community-models/">Community FBA models</a></li><li><a class="tocitem" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis</a></li><li><a class="tocitem" href="../05b-enzyme-constrained-models/">Enzyme constrained models</a></li><li><a class="tocitem" href="../05c-mmdf/">Thermodynamic models</a></li><li><a class="tocitem" href="../05d-loopless-models/">Loopless flux balance analysis (ll-FBA)</a></li><li><a class="tocitem" href="../05e-knockouts/">Gene knockouts</a></li><li class="is-active"><a class="tocitem" href>CycleFreeFlux</a><ul class="internal"><li><a class="tocitem" href="#CycleFreeFVA"><span>CycleFreeFVA</span></a></li><li><a class="tocitem" href="#CycleFree-sampling"><span>CycleFree sampling</span></a></li></ul></li><li><a class="tocitem" href="../05g-gapfilling/">Gap filling</a></li><li><a class="tocitem" href="../06a-sampling/">Flux sampling</a></li><li><a class="tocitem" href="../06b-screening/">Screening through many model variants</a></li></ul></li><li><a class="tocitem" href="../../structure/">Core concepts and structure</a></li><li><span class="tocitem">Parallel, distributed and HPC processing</span><ul><li><a class="tocitem" href="../../distributed/">Contents</a></li><li><a class="tocitem" href="../../distributed/1_functions/">Parallel processing overview</a></li><li><a class="tocitem" href="../../distributed/2_parallel/">Local parallel processing</a></li><li><a class="tocitem" href="../../distributed/3_slurm/">Working in a HPC environment</a></li></ul></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="../../reference/">Contents</a></li><li><a class="tocitem" href="../../reference/analysis/">Specialized analysis functions</a></li><li><a class="tocitem" href="../../reference/builders/">Constraint system builders</a></li><li><a class="tocitem" href="../../reference/core/">Core functionality</a></li><li><a class="tocitem" href="../../reference/frontend/">Front-end user interface</a></li><li><a class="tocitem" href="../../reference/misc/">Miscellaneous functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>CycleFreeFlux</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>CycleFreeFlux</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl/blob/master/docs/src/examples/05f-cyclefree.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="CycleFreeFlux"><a class="docs-heading-anchor" href="#CycleFreeFlux">CycleFreeFlux</a><a id="CycleFreeFlux-1"></a><a class="docs-heading-anchor-permalink" href="#CycleFreeFlux" title="Permalink"></a></h1><p>CycleFreeFlux essentially defines a L1-parsimonious model which can be used to run a cycle-free FBA and FVA. In COBREXA, this is best done by reusing <a href="../../reference/frontend/#COBREXA.linear_parsimonious_flux_balance_analysis-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>linear_parsimonious_flux_balance_analysis</code></a>.</p><p>First, let&#39;s get a model, create a constraint tree with the model, and ask for explicitly materializing constraints for the exchanges:</p><pre><code class="language-julia hljs">using COBREXA
+
+download_model(
+    &quot;http://bigg.ucsd.edu/static/models/e_coli_core.json&quot;,
+    &quot;e_coli_core.json&quot;,
+    &quot;7bedec10576cfe935b19218dc881f3fb14f890a1871448fc19a9b4ee15b448d8&quot;,
+)
+
+import JSONFBCModels, HiGHS
+model = load_model(&quot;e_coli_core.json&quot;)
+
+cs = flux_balance_constraints(model, interface = :identifier_prefixes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 5 elements:
+  :coupling           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 0 …
+  :flux_stoichiometry =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 72…
+  :fluxes             =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 95…
+  :interface          =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 3 …
+  :objective          =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue…</code></pre><p>We will also need some existing solution of the model – CycleFreeFlux algorithm uses this one as a reference for fixing the exchange reaction flux.</p><pre><code class="language-julia hljs">some_flux =
+    optimized_values(cs, objective = cs.objective.value, optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
+  :coupling           =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
+  :flux_stoichiometry =&gt; ConstraintTrees.Tree{Float64}(#= 72 elements =#)
+  :fluxes             =&gt; ConstraintTrees.Tree{Float64}(#= 95 elements =#)
+  :interface          =&gt; ConstraintTrees.Tree{Float64}(#= 3 elements =#)
+  :objective          =&gt; 0.873922</code></pre><p>(Ideally, we should use a solving method that gives a more unique flux, but for this example a simple FBA optimum will do.)</p><p>With this in hand, we can start the CycleFreeFlux workflow by placing constraints on exchange reactions in a linear-parsimonious model:</p><pre><code class="language-julia hljs">import ConstraintTrees as C
+
+cs = linear_parsimonious_flux_balance_constraints(model)
+
+cs *=
+    :fixed_exchanges^C.ConstraintTree(
+        k =&gt; C.Constraint(cs.fluxes[k].value, relative_tolerance_bound(0.999)(v)) for
+        (k, v) in some_flux.interface.exchanges
+    )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 9 elements:
+  :coupling                 =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :directional_flux_balance =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :fixed_exchanges          =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :flux_stoichiometry       =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :fluxes                   =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :fluxes_forward           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :fluxes_reverse           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+  :objective                =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
+  :parsimonious_objective   =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…</code></pre><p>(We purposefully made the constraints a little less strict by using <a href="../../reference/misc/#COBREXA.relative_tolerance_bound-Tuple{Any}"><code>relative_tolerance_bound</code></a> – the toy E. coli model would otherwise display no variability at all.)</p><p>Now we can get a L1-parsimonious (thus cycle-free) solution of the model with the predefined exchanges:</p><pre><code class="language-julia hljs">cycle_free_flux = parsimonious_optimized_values(
+    cs,
+    objective = cs.objective.value,
+    objective_value = some_flux.objective,
+    parsimonious_objective = cs.parsimonious_objective.value,
+    optimizer = HiGHS.Optimizer,
+)
+
+cycle_free_flux.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 95 elements:
+  :ACALD                    =&gt; 0.0
+  :ACALDt                   =&gt; 0.0
+  :ACKr                     =&gt; 0.0
+  :ACONTa                   =&gt; 6.00725
+  :ACONTb                   =&gt; 6.00725
+  :ACt2r                    =&gt; 0.0
+  :ADK1                     =&gt; 0.0
+  :AKGDH                    =&gt; 5.06438
+  :AKGt2r                   =&gt; 0.0
+  :ALCD2x                   =&gt; 0.0
+  :ATPM                     =&gt; 8.39
+  :ATPS4r                   =&gt; 45.514
+  :BIOMASS_Ecoli_core_w_GAM =&gt; 0.873922
+  :CO2t                     =&gt; -22.8098
+  :CS                       =&gt; 6.00725
+  :CYTBD                    =&gt; 43.599
+  :D_LACt2                  =&gt; 0.0
+  :ENO                      =&gt; 14.7161
+  :ETOHt2r                  =&gt; 0.0
+  ⋮                         =&gt; ⋮</code></pre><h2 id="CycleFreeFVA"><a class="docs-heading-anchor" href="#CycleFreeFVA">CycleFreeFVA</a><a id="CycleFreeFVA-1"></a><a class="docs-heading-anchor-permalink" href="#CycleFreeFVA" title="Permalink"></a></h2><p>With this in hand, we can also run the cycle-free flux variability analysis (again with an added bit of tolerances in both the objective and parsimonious bounds):</p><pre><code class="language-julia hljs">cs.objective.bound = C.Between(cycle_free_flux.objective * 0.999, Inf)
+cs.parsimonious_objective.bound =
+    C.Between(0, cycle_free_flux.parsimonious_objective * 1.001)
+
+var = constraints_variability(cs, cs.fluxes, optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple{Union{Nothing, Float64}, Union{Nothing, Float64}}} with 95 elements:
+  :ACALD                    =&gt; (-0.0, 0.0)
+  :ACALDt                   =&gt; (-0.0, 0.0)
+  :ACKr                     =&gt; (-0.0, 0.0)
+  :ACONTa                   =&gt; (5.92071, 6.08235)
+  :ACONTb                   =&gt; (5.92071, 6.08235)
+  :ACt2r                    =&gt; (-0.0, 0.0)
+  :ADK1                     =&gt; (-0.0, 0.108535)
+  :AKGDH                    =&gt; (4.48889, 5.14042)
+  :AKGt2r                   =&gt; (-0.0, 9.63674e-13)
+  :ALCD2x                   =&gt; (-0.0, 0.0)
+  :ATPM                     =&gt; (8.39, 8.51247)
+  :ATPS4r                   =&gt; (45.3147, 45.6379)
+  :BIOMASS_Ecoli_core_w_GAM =&gt; (0.873048, 0.873922)
+  :CO2t                     =&gt; (-22.8311, -22.7898)
+  :CS                       =&gt; (5.92071, 6.08235)
+  :CYTBD                    =&gt; (43.561, 43.6426)
+  :D_LACt2                  =&gt; (1.39223e-13, 0.0)
+  :ENO                      =&gt; (14.6209, 14.7825)
+  :ETOHt2r                  =&gt; (-0.0, -5.77316e-14)
+  ⋮                         =&gt; ⋮</code></pre><h2 id="CycleFree-sampling"><a class="docs-heading-anchor" href="#CycleFree-sampling">CycleFree sampling</a><a id="CycleFree-sampling-1"></a><a class="docs-heading-anchor-permalink" href="#CycleFree-sampling" title="Permalink"></a></h2><p>Naturally, we can also run flux sampling from the above model. To implement this, we follow the implementation of <a href="../../reference/frontend/#COBREXA.flux_sample-Tuple{AbstractFBCModels.AbstractFBCModel}"><code>flux_sample</code></a> –- first we generate the warmup:</p><pre><code class="language-julia hljs">warmup = vcat(
+    (
+        transpose(v) for (_, vs) in constraints_variability(
+            cs,
+            cs.fluxes,
+            optimizer = HiGHS.Optimizer,
+            output = (_, om) -&gt; variable_vector(om),
+            output_type = Vector{Float64},
+        ) for v in vs
+    )...,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">190×285 Matrix{Float64}:
+ 7.40268  -0.0          4.63538  -15.9497  5.18557  …  -0.0  -0.0  -0.0  -0.0
+ 7.3821   -0.0          4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.40268  -0.0          4.63538  -15.9497  5.18557     -0.0  -0.0  -0.0  -0.0
+ 7.3821   -0.0          4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.40268  -0.0          4.63538  -15.9497  5.18557     -0.0  -0.0  -0.0  -0.0
+ 7.3821   -0.0          4.57806  -15.927   5.24023  …  -0.0  -0.0  -0.0  -0.0
+ 7.3821   -0.0          4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.54579  -0.0          5.0732   -16.0886  4.74305     -0.0  -0.0  -0.0  -0.0
+ 7.3821   -0.0          4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.54579  -0.0          5.0732   -16.0886  4.74305     -0.0  -0.0  -0.0  -0.0
+ ⋮                                                  ⋱                    
+ 7.3821   -0.0          4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.40268  -0.0          4.63538  -15.9497  5.18557     -0.0  -0.0  -0.0  -0.0
+ 7.54579  -0.0          5.0732   -16.0886  4.74305     -0.0  -0.0  -0.0  -0.0
+ 7.54579  -0.0          5.0732   -16.0886  4.74305     -0.0  -0.0  -0.0  -0.0
+ 7.3821   -2.27792e-13  4.57806  -15.927   5.24023  …  -0.0  -0.0  -0.0  -0.0
+ 7.54579  -0.0          5.0732   -16.0886  4.74305     -0.0  -0.0  -0.0  -0.0
+ 7.3821   -2.27792e-13  4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.3821   -0.0          4.57806  -15.927   5.24023     -0.0  -0.0  -0.0  -0.0
+ 7.54579  -0.0          5.0732   -16.0886  4.74305     -0.0  -0.0  -0.0  -0.0</code></pre><p>Next, we can run the sampling:</p><pre><code class="language-julia hljs">sample = sample_constraints(
+    sample_chain_achr,
+    cs,
+    start_variables = warmup,
+    seed = UInt(1234),
+    output = cs.fluxes,
+    n_chains = 10,
+    collect_iterations = collect(10:15),
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Vector{Float64}} with 95 elements:
+  :ACALD                    =&gt; [-7.85929e-15, 3.12233e-15, -6.32648e-15, -9.255…
+  :ACALDt                   =&gt; [-3.35535e-15, 7.30498e-15, -6.93217e-16, -4.301…
+  :ACKr                     =&gt; [-2.25938e-14, -1.25307e-14, -1.87866e-14, -2.04…
+  :ACONTa                   =&gt; [5.99813, 6.00102, 5.99386, 5.9927, 5.99009, 5.9…
+  :ACONTb                   =&gt; [5.99813, 6.00102, 5.99386, 5.9927, 5.99009, 5.9…
+  :ACt2r                    =&gt; [-2.26604e-14, -1.26102e-14, -1.88598e-14, -2.05…
+  :ADK1                     =&gt; [0.00366918, 0.00229605, 0.00255894, 0.00289447,…
+  :AKGDH                    =&gt; [4.97009, 4.92654, 4.93649, 4.92894, 4.95038, 4.…
+  :AKGt2r                   =&gt; [3.21028e-14, 4.66312e-14, 2.72193e-14, 1.34945e…
+  :ALCD2x                   =&gt; [-3.86995e-15, -3.7229e-15, -5.06453e-15, -4.348…
+  :ATPM                     =&gt; [8.391, 8.39171, 8.39097, 8.3908, 8.39019, 8.390…
+  :ATPS4r                   =&gt; [45.5143, 45.509, 45.5227, 45.5218, 45.5294, 45.…
+  :BIOMASS_Ecoli_core_w_GAM =&gt; [0.873127, 0.87315, 0.87316, 0.87315, 0.873184, …
+  :CO2t                     =&gt; [-22.8174, -22.8185, -22.8188, -22.8189, -22.819…
+  :CS                       =&gt; [5.99813, 6.00102, 5.99386, 5.9927, 5.99009, 5.9…
+  :CYTBD                    =&gt; [43.616, 43.6182, 43.6186, 43.619, 43.619, 43.62…
+  :D_LACt2                  =&gt; [-2.08644e-14, -2.16803e-14, -2.07692e-14, -2.34…
+  :ENO                      =&gt; [14.6991, 14.7022, 14.6952, 14.6939, 14.6916, 14…
+  :ETOHt2r                  =&gt; [-4.90694e-15, -3.98458e-15, -5.63877e-15, -5.09…
+  ⋮                         =&gt; ⋮</code></pre><p>The results can be observed (and usually plotted) from the sample vectors, such as the one for oxygen exchange:</p><pre><code class="language-julia hljs">sample.EX_o2_e</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">11400-element Vector{Float64}:
+ -21.80801279761615
+ -21.80909965602572
+ -21.80930963740098
+ -21.80947899277754
+ -21.809475488922107
+ -21.810421483414107
+ -21.80854524250612
+ -21.80880422807698
+ -21.809512140853517
+ -21.80952709530663
+   ⋮
+ -21.810011276079326
+ -21.810020653415503
+ -21.808622072753835
+ -21.808747348916107
+ -21.809865327092407
+ -21.809303155329953
+ -21.81135072741717
+ -21.810153001483112
+ -21.81051289673462</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05e-knockouts/">« Gene knockouts</a><a class="docs-footer-nextpage" href="../05g-gapfilling/">Gap filling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.7.0 on <span class="colophon-date" title="Wednesday 16 October 2024 18:27">Wednesday 16 October 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
