@@ -92,7 +92,7 @@ unsigned_negative_contribution_constraints(
     C.zip(cs, positive) do c, p
         C.Constraint(
             p.value - c.value,
-            -positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf))),
+            positive_bound_contribution(-something(c.bound, C.Between(-Inf, Inf))),
         )
     end
 
