@@ -63,6 +63,44 @@ export unsigned_negative_contribution_variables
 """
 $(TYPEDSIGNATURES)
 
+A constraint tree that connects negative unsigned variable contributions to
+signed ones, while acting as positive contributions.
+"""
+unsigned_positive_contribution_constraints(
+    cs::C.ConstraintTree,
+    negative::C.ConstraintTree,
+) =
+    C.zip(cs, negative) do c, n
+        C.Constraint(
+            c.value + n.value,
+            positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf))),
+        )
+    end
+
+export unsigned_positive_contribution_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+A constraint tree that connects positive unsigned variable contributions to
+signed ones, while acting as negative contributions.
+"""
+unsigned_negative_contribution_constraints(
+    cs::C.ConstraintTree,
+    positive::C.ConstraintTree,
+) =
+    C.zip(cs, positive) do c, p
+        C.Constraint(
+            p.value - c.value,
+            -positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf))),
+        )
+    end
+
+export unsigned_negative_contribution_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
 Shortcut for making a pair of named variable groups created by
 [`unsigned_positive_contribution_variables`](@ref) and
 [`unsigned_negative_contribution_variables`](@ref), in subtrees named by

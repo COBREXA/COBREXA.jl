@@ -227,21 +227,17 @@ function simplified_enzyme_constrained_flux_balance_constraints(
 
     constraints = flux_balance_constraints(model; interface, interface_name)
 
-    # TODO consider only splitting the reactions that we have to split
-    constraints += sign_split_variables(
-        constraints.fluxes,
-        positive = :fluxes_forward,
-        negative = :fluxes_reverse,
-    )
+    constraints +=
+        :fluxes_forward^unsigned_positive_contribution_variables(constraints.fluxes)
+    constraints *=
+        :fluxes_reverse^unsigned_negative_contribution_constraints(
+            constraints.fluxes,
+            constraints.fluxes_forward,
+        )
 
     # connect everything with constraints
 
     return constraints *
-           :directional_flux_balance^sign_split_constraints(;
-               positive = constraints.fluxes_forward,
-               negative = constraints.fluxes_reverse,
-               signed = constraints.fluxes,
-           ) *
            :capacity_limits^simplified_enzyme_constraints(;
                fluxes_forward = constraints.fluxes_forward,
                fluxes_reverse = constraints.fluxes_reverse,
