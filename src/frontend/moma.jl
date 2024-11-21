@@ -130,24 +130,24 @@ function linear_metabolic_adjustment_minimization_constraints(
 )
     constraints = flux_balance_constraints(model)
 
-    difference = C.zip(constraints.fluxes, reference_fluxes) do orig, ref
+    # `difference` actually doesn't need to go to the CT, but we include it
+    # anyway to calm the curiosity of good neighbors.
+    constraints *= :reference_diff^C.zip(constraints.fluxes, reference_fluxes) do orig, ref
         C.Constraint(orig.value - ref)
     end
 
-    difference_split_variables =
-        C.variables(keys = collect(keys(difference)), bounds = C.Between(0, Inf))
-    constraints += :reference_positive_diff^difference_split_variables
-    constraints += :reference_negative_diff^difference_split_variables
+    # split the reference_diff into positive and negative contributions
+    constraints +=
+        :reference_positive_diff^unsigned_positive_contribution_variables(
+            constraints.reference_diff,
+        )
+    constraints *=
+        :reference_negative_diff^unsigned_negative_contribution_constraints(
+            constraints.reference_diff,
+            constraints.reference_positive_diff,
+        )
 
-    # `difference` actually doesn't need to go to the CT, but we include it
-    # anyway to calm the curiosity of good neighbors.
     constraints *
-    :reference_diff^difference *
-    :reference_directional_diff_balance^sign_split_constraints(
-        positive = constraints.reference_positive_diff,
-        negative = constraints.reference_negative_diff,
-        signed = difference,
-    ) *
     :linear_minimal_adjustment_objective^C.Constraint(
         sum_value(constraints.reference_positive_diff, constraints.reference_negative_diff),
     )

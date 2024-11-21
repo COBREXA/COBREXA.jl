@@ -73,19 +73,17 @@ Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
 """
 function linear_parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
     constraints = flux_balance_constraints(model; kwargs...)
-    constraints =
-        constraints +
-        :fluxes_forward^unsigned_positive_contribution_variables(constraints.fluxes) +
+    constraints +=
         :fluxes_reverse^unsigned_negative_contribution_variables(constraints.fluxes)
+    constraints *=
+        :fluxes_forward^unsigned_positive_contribution_constraints(
+            constraints.fluxes,
+            constraints.fluxes_reverse,
+        )
     return constraints *
-           :directional_flux_balance^sign_split_constraints(
-               positive = constraints.fluxes_forward,
-               negative = constraints.fluxes_reverse,
-               signed = constraints.fluxes,
-           ) *
            :parsimonious_objective^C.Constraint(
-               sum_value(constraints.fluxes_forward, constraints.fluxes_reverse),
-           )
+        sum_value(constraints.fluxes_forward, constraints.fluxes_reverse),
+    )
 end
 
 export linear_parsimonious_flux_balance_constraints
