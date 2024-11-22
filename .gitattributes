@@ -1,5 +1,0 @@
-*.html  linguist-documentation=true
-*.html  linguist-vendored=true
-
-*.ipynb linguist-vendored=true
-*.ipynb -crlf -diff -merge
