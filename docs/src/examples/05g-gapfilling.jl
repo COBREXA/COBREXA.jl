@@ -102,6 +102,11 @@ x2 = gap_filling_analysis(
 
 other_filled_reactions = [k for (k, v) in x2.fill_flags if v != 0]
 
+#md # !!! warning "Why is the gapfilling algorithm adding seemingly unneeded reactions?"
+#md #     By default, COBREXA does not do any "cleaning" on the universal model; all reactions that are present in that model will be potentially utilized in the new model, and all of them will need to respect their original bounds in the universal model. That becomes an issue with **reactions that are bounded to non-zero flux** (such as the `ATPM` reaction in the E. coli "core" model) -- since their flux is marked as necessarily non-zero to make any model feasible; they will need to be in the fill set, because otherwise their flux would be equal zero.
+#md #
+#md #     As the simplest solution, all realistic uses of gapfilling should carefully check the set of universal reactions, and ideally exclude all exchanges and pseudoreactions.
+
 # ## Model debugging: which metabolite is missing?
 #
 # Gap-filling is great for detecting various broken links and imbalances in
