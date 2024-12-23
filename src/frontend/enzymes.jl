@@ -24,7 +24,7 @@ subunit stoichiometry and turnover numbers. Use with
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef mutable struct IsozymeT{T} where {T<:Real}
+Base.@kwdef mutable struct IsozymeT{T}
     """
     Mapping of gene product identifiers ("genes" in FBC model nomenclature)
     to their relative amount required to construct one unit of the isozyme.
