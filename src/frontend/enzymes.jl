@@ -71,12 +71,12 @@ that limits the total sum of the listed genes to the given limit.
 """
 function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
-    reaction_isozymes::Dict{String,Dict{String,IsozymeT}},
+    reaction_isozymes::Dict{String,Dict{String,IsozymeT{T1}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},T}},T},
+    capacity::Union{Vector{Tuple{String,Vector{String},T2}},T2},
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
-) where {T<:Real}
+) where {T1<:Real,T2<:Real}
     # prepare some accessor functions for the later stuff
     # TODO: might be nicer to somehow parametrize the fwd/rev directions out.
     # Also there is a lot of conversion between symbols and strings, might be
