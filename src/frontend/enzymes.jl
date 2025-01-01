@@ -180,12 +180,12 @@ products, but identifiers of reactions.
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
-    reaction_isozymes::Dict{String,Dict{String,IsozymeT}},
+    reaction_isozymes::Dict{String,Dict{String,IsozymeT{T1}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},T}},T},
+    capacity::Union{Vector{Tuple{String,Vector{String},T2}},T2},
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
-) where {T<:Real}
+) where {T1<:Real,T2<:Real}
     # TODO this deserves a rewrite once more -- Isozyme struct is hiding a bit
     # too much of uncertainty for the code of this thing to be short and
     # concise...maybe we should have an isozyme with only one kcat which is
@@ -248,10 +248,10 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                                  [(
                    :total_capacity,
                    keys(constraints.fluxes),
-                   C.BetweenT(zero(T), capacity),
+                   C.BetweenT(zero(T2), capacity),
                )] :
                                  [
-                   (Symbol(k), Symbol.(fs), C.BetweenT(zero(T), cap)) for (k, fs, cap) in capacity
+                   (Symbol(k), Symbol.(fs), C.BetweenT(zero(T2), cap)) for (k, fs, cap) in capacity
                ],
            ) *
            :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
