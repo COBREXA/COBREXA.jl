@@ -139,9 +139,14 @@ function enzyme_constrained_flux_balance_constraints(
         isozyme_gene_product_stoichiometry,
         gene_product_molar_mass,
         capacity_limits = capacity isa Real ?
-                          [(:total_capacity, gene_ids, C.BetweenT(zero(capacity), capacity))] :
+                          [(
+            :total_capacity,
+            gene_ids,
+            C.BetweenT(zero(capacity), capacity),
+        )] :
                           [
-            (Symbol(k), Symbol.(gs), C.BetweenT(zero(cap), cap)) for (k, gs, cap) in capacity
+            (Symbol(k), Symbol.(gs), C.BetweenT(zero(cap), cap)) for
+            (k, gs, cap) in capacity
         ],
     )
 end
@@ -258,7 +263,8 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                    C.BetweenT(zero(capacity), capacity),
                )] :
                                  [
-                   (Symbol(k), Symbol.(fs), C.BetweenT(zero(cap), cap)) for (k, fs, cap) in capacity
+                   (Symbol(k), Symbol.(fs), C.BetweenT(zero(cap), cap)) for
+                   (k, fs, cap) in capacity
                ],
            ) *
            :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
