@@ -42,11 +42,10 @@ end
 
 export IsozymeT
 
-
 """
-    const Isozyme
+$(TYPEDEF)
 
-Alias for `IsozymeT{Float64}`, see [`IsozymeT`](@ref) for field descriptions.
+Shortcut for `[IsozymeT](@ref){Float64}`.
 """
 const Isozyme = IsozymeT{Float64}
 
