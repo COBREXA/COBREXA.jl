@@ -77,12 +77,12 @@ that limits the total sum of the listed genes to the given limit.
 """
 function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
-    reaction_isozymes::Dict{String,Dict{String,IsozymeT{<:Real}}},
+    reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},<:Real}},<:Real},
+    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
-)
+) where {R<:Real}
     # prepare some accessor functions for the later stuff
     # TODO: might be nicer to somehow parametrize the fwd/rev directions out.
     # Also there is a lot of conversion between symbols and strings, might be
@@ -191,12 +191,12 @@ products, but identifiers of reactions.
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
-    reaction_isozymes::Dict{String,Dict{String,IsozymeT{<:Real}}},
+    reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},<:Real}},<:Real},
+    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
-)
+) where {R<:Real}
     # TODO this deserves a rewrite once more -- Isozyme struct is hiding a bit
     # too much of uncertainty for the code of this thing to be short and
     # concise...maybe we should have an isozyme with only one kcat which is
