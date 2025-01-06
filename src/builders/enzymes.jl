@@ -54,13 +54,13 @@ Function `kcat` should return the kcat value for a given reaction and isozyme
 function isozyme_flux_constraints(
     isozyme_amounts::C.ConstraintTree,
     fluxes::C.ConstraintTree,
-    kcat,
-)
+    kcat::T,
+) where {T<:Real}
     C.ConstraintTree(
         rid => C.Constraint(
             C.sum(
                 kcat(rid, iid) * i.value for (iid, i) in ri if !isnothing(kcat(rid, iid));
-                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{notFloat64}
+                init = zero(C.LinearValueT{T}),
             ) - fluxes[rid].value,
             0.0,
         ) for (rid, ri) in isozyme_amounts if haskey(fluxes, rid)
@@ -217,7 +217,7 @@ function enzyme_constraints(;
                        gene_product_amounts[gp].value * gpmm for
                        (gp, gpmm) in ((gp, gene_product_molar_mass(gp)) for gp in gps) if
                        !isnothing(gpmm) && haskey(gene_product_amounts, gp);
-                       init = zero(C.LinearValue), # TODO not type stable if LinearValueT{notFloat64}
+                       init = zero(C.LinearValue), # assume only the bound is likely to get a parameter
                    ),
                    bound,
                ) for (id, gps, bound) in capacity_limits
@@ -284,7 +284,7 @@ function simplified_enzyme_constraints(;
 )
     function contribution(fl, cost, id)
         c = cost(id)
-        (isnothing(c) || !haskey(fl, id)) && return zero(C.LinearValue) # TODO not type stable if LinearValueT{notFloat64}
+        (isnothing(c) || !haskey(fl, id)) && return zero(C.LinearValue)
         return c * fl[id].value
     end
 
@@ -292,10 +292,10 @@ function simplified_enzyme_constraints(;
         id => C.Constraint(;
             value = C.sum(
                 contribution(fluxes_forward, mass_cost_forward, f) for f in fs;
-                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{notFloat64}
+                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
             ) + C.sum(
                 contribution(fluxes_reverse, mass_cost_reverse, f) for f in fs;
-                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{notFloat64}
+                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
             ),
             bound,
         ) for (id, fs, bound) in capacity_limits
