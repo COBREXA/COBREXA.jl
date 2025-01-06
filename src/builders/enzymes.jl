@@ -54,13 +54,13 @@ Function `kcat` should return the kcat value for a given reaction and isozyme
 function isozyme_flux_constraints(
     isozyme_amounts::C.ConstraintTree,
     fluxes::C.ConstraintTree,
-    kcat::T,
-) where {T<:Real}
+    kcat,
+)
     C.ConstraintTree(
         rid => C.Constraint(
             C.sum(
                 kcat(rid, iid) * i.value for (iid, i) in ri if !isnothing(kcat(rid, iid));
-                init = zero(C.LinearValueT{T}),
+                init = zero(C.LinearValue),
             ) - fluxes[rid].value,
             0.0,
         ) for (rid, ri) in isozyme_amounts if haskey(fluxes, rid)
