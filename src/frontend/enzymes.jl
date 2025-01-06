@@ -29,7 +29,7 @@ Base.@kwdef mutable struct IsozymeT{T<:Real}
     Mapping of gene product identifiers ("genes" in FBC model nomenclature)
     to their relative amount required to construct one unit of the isozyme.
     """
-    gene_product_stoichiometry::Dict{String,Float64}
+    gene_product_stoichiometry::Dict{String,T}
 
     "Turnover number for this isozyme catalyzing the forward direction of the
     reaction."
