@@ -98,7 +98,7 @@ function enzyme_constrained_flux_balance_constraints(
         Symbol(k) => v for (k, v) in
         reaction_isozymes[String(rid)][String(iso_id)].gene_product_stoichiometry
     )
-    gene_ids = Symbol.(keys(gene_product_molar_masses))
+    gene_ids = A.genes(model)
     gene_product_molar_mass(gid) = get(gene_product_molar_masses, String(gid), 0.0)
 
     # allocate all variables and build the system
