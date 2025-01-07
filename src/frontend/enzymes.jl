@@ -24,21 +24,30 @@ subunit stoichiometry and turnover numbers. Use with
 # Fields
 $(TYPEDFIELDS)
 """
-Base.@kwdef mutable struct Isozyme
+Base.@kwdef mutable struct IsozymeT{T<:Real}
     """
     Mapping of gene product identifiers ("genes" in FBC model nomenclature)
     to their relative amount required to construct one unit of the isozyme.
     """
-    gene_product_stoichiometry::Dict{String,Float64}
+    gene_product_stoichiometry::Dict{String,T}
 
     "Turnover number for this isozyme catalyzing the forward direction of the
     reaction."
-    kcat_forward::Maybe{Float64} = nothing
+    kcat_forward::Maybe{T} = nothing
 
     "Turnover number for this isozyme catalyzing the reverse direction of the
     reaction."
-    kcat_reverse::Maybe{Float64} = nothing
+    kcat_reverse::Maybe{T} = nothing
 end
+
+export IsozymeT
+
+"""
+$(TYPEDEF)
+
+Shortcut for `[IsozymeT](@ref){Float64}`.
+"""
+const Isozyme = IsozymeT{Float64}
 
 export Isozyme
 
@@ -68,12 +77,12 @@ that limits the total sum of the listed genes to the given limit.
 """
 function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
-    reaction_isozymes::Dict{String,Dict{String,Isozyme}},
+    reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
-)
+) where {R<:Real}
     # prepare some accessor functions for the later stuff
     # TODO: might be nicer to somehow parametrize the fwd/rev directions out.
     # Also there is a lot of conversion between symbols and strings, might be
@@ -129,9 +138,9 @@ function enzyme_constrained_flux_balance_constraints(
         isozyme_gene_product_stoichiometry,
         gene_product_molar_mass,
         capacity_limits = capacity isa Real ?
-                          [(:total_capacity, gene_ids, C.Between(0, capacity))] :
+                          [(:total_capacity, gene_ids, (zero(capacity), capacity))] :
                           [
-            (Symbol(k), Symbol.(gs), C.Between(0, cap)) for (k, gs, cap) in capacity
+            (Symbol(k), Symbol.(gs), (zero(cap), cap)) for (k, gs, cap) in capacity
         ],
     )
 end
@@ -177,12 +186,12 @@ products, but identifiers of reactions.
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
-    reaction_isozymes::Dict{String,Dict{String,Isozyme}},
+    reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},Float64}},Float64},
+    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
-)
+) where {R<:Real}
     # TODO this deserves a rewrite once more -- Isozyme struct is hiding a bit
     # too much of uncertainty for the code of this thing to be short and
     # concise...maybe we should have an isozyme with only one kcat which is
@@ -245,10 +254,10 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                                  [(
                    :total_capacity,
                    keys(constraints.fluxes),
-                   C.Between(0, capacity),
+                   (zero(capacity), capacity),
                )] :
                                  [
-                   (Symbol(k), Symbol.(fs), C.Between(0, cap)) for (k, fs, cap) in capacity
+                   (Symbol(k), Symbol.(fs), (zero(cap), cap)) for (k, fs, cap) in capacity
                ],
            ) *
            :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(

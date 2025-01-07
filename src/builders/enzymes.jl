@@ -212,8 +212,8 @@ function enzyme_constraints(;
            ) *
            gene_product_amounts_name^gene_product_amounts *
            gene_product_capacity_name^C.ConstraintTree(
-               id => C.Constraint(;
-                   value = C.sum(
+               id => C.Constraint(
+                   C.sum(
                        gene_product_amounts[gp].value * gpmm for
                        (gp, gpmm) in ((gp, gene_product_molar_mass(gp)) for gp in gps) if
                        !isnothing(gpmm) && haskey(gene_product_amounts, gp);
@@ -292,10 +292,10 @@ function simplified_enzyme_constraints(;
         id => C.Constraint(;
             value = C.sum(
                 contribution(fluxes_forward, mass_cost_forward, f) for f in fs;
-                init = zero(C.LinearValue),
+                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
             ) + C.sum(
                 contribution(fluxes_reverse, mass_cost_reverse, f) for f in fs;
-                init = zero(C.LinearValue),
+                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
             ),
             bound,
         ) for (id, fs, bound) in capacity_limits

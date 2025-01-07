@@ -15,7 +15,7 @@ jobs:
       matrix:
         version:
           - '1' # This is always the latest stable release in the 1.X series
-          - '1.6' # LTS
+          - '1.10' # LTS
           #- 'nightly'
         os:
           - ubuntu-latest
