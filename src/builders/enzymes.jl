@@ -212,12 +212,12 @@ function enzyme_constraints(;
            ) *
            gene_product_amounts_name^gene_product_amounts *
            gene_product_capacity_name^C.ConstraintTree(
-               id => C.Constraint(;
-                   value = C.sum(
+               id => C.Constraint(
+                   C.sum(
                        gene_product_amounts[gp].value * gpmm for
                        (gp, gpmm) in ((gp, gene_product_molar_mass(gp)) for gp in gps) if
                        !isnothing(gpmm) && haskey(gene_product_amounts, gp);
-                       init = zero(C.LinearValue), # assume only the bound is likely to get a parameter
+                       init = zero(C.LinearValue),
                    ),
                    bound,
                ) for (id, gps, bound) in capacity_limits
