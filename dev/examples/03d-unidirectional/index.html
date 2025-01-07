@@ -12,7 +12,7 @@ import HiGHS
 import ConstraintTrees as C
 
 model = load_model(&quot;e_coli_core.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 95 reactions, 72 metabolites =#)</code></pre><p>We will only work with the constraint representation of the model. The fluxes there are bidirectional:</p><pre><code class="language-julia hljs">c = flux_balance_constraints(model);
-c.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 95 elements:
+c.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 95 elements:
   :ACALD                    =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
   :ACALDt                   =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
   :ACKr                     =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
@@ -32,19 +32,19 @@ c.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighl
   :D_LACt2                  =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
   :ENO                      =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
   :ETOHt2r                  =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
-  ⋮                         =&gt; ⋮</code></pre><p>As the simplest approach, we can allocate 2 sets of variables for the forward and reverse fluxes via <a href="../../reference/builders/#COBREXA.sign_split_variables-Tuple{ConstraintTrees.Tree{ConstraintTrees.Constraint}}"><code>sign_split_variables</code></a> and connect them to the fluxes with <a href="../../reference/builders/#COBREXA.sign_split_constraints-Tuple{}"><code>sign_split_constraints</code></a>. These functions ensure that the bounds of the unidirectional fluxes are within the expectable limit, and, respectively, that the original fluxes are constrained to match the sum of the split directions:</p><pre><code class="language-julia hljs">c += sign_split_variables(c.fluxes, positive = :fluxes_forward, negative = :fluxes_reverse);
+  ⋮                         =&gt; ⋮</code></pre><p>As the simplest approach, we can allocate 2 sets of variables for the forward and reverse fluxes via <a href="../../reference/builders/#COBREXA.sign_split_variables-Tuple{ConstraintTrees.ConstraintTree}"><code>sign_split_variables</code></a> and connect them to the fluxes with <a href="../../reference/builders/#COBREXA.sign_split_constraints-Tuple{}"><code>sign_split_constraints</code></a>. These functions ensure that the bounds of the unidirectional fluxes are within the expectable limit, and, respectively, that the original fluxes are constrained to match the sum of the split directions:</p><pre><code class="language-julia hljs">c += sign_split_variables(c.fluxes, positive = :fluxes_forward, negative = :fluxes_reverse);
 c *=
     :directional_flux_balance^sign_split_constraints(
         positive = c.fluxes_forward,
         negative = c.fluxes_reverse,
         signed = c.fluxes,
-    )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 7 elements:
-  :coupling                 =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :directional_flux_balance =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :flux_stoichiometry       =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :fluxes                   =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :fluxes_forward           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :fluxes_reverse           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+    )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 7 elements:
+  :coupling                 =&gt; ConstraintTrees.ConstraintTree(#= 0 elements =#)
+  :directional_flux_balance =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :flux_stoichiometry       =&gt; ConstraintTrees.ConstraintTree(#= 72 elements =#)
+  :fluxes                   =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :fluxes_forward           =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :fluxes_reverse           =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
   :objective                =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…</code></pre><p>We can solve this system as usual and obvserve the results as usual</p><pre><code class="language-julia hljs">x = optimized_values(c, objective = c.objective.value, optimizer = HiGHS.Optimizer)
 
 C.zip(tuple, x.fluxes, x.fluxes_forward, x.fluxes_reverse, Tuple)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Tuple} with 95 elements:
@@ -70,7 +70,7 @@ C.zip(tuple, x.fluxes, x.fluxes_forward, x.fluxes_reverse, Tuple)</code></pre><p
   ⋮                         =&gt; ⋮</code></pre><h2 id="Simplifying-the-system-using-asymmetric-construction"><a class="docs-heading-anchor" href="#Simplifying-the-system-using-asymmetric-construction">Simplifying the system using asymmetric construction</a><a id="Simplifying-the-system-using-asymmetric-construction-1"></a><a class="docs-heading-anchor-permalink" href="#Simplifying-the-system-using-asymmetric-construction" title="Permalink"></a></h2><p>If used naively, the above construction uses 3 variables and many constraints for each flux, which is not quite efficient. To ameliorate the usage of solver resources, one may construct a slightly simpler (but asymmetric) system that only uses 2 variables:</p><pre><code class="language-julia hljs">c2 = flux_balance_constraints(model);
 c2 += :fluxes_forward^unsigned_positive_contribution_variables(c2.fluxes);
 c2 *=
-    :fluxes_reverse^unsigned_negative_contribution_constraints(c2.fluxes, c2.fluxes_forward);</code></pre><p>This way, only forward fluxes are allocated as variables, and reverse fluxes are &quot;computed&quot; as linearly dependent values. Additionally, since the bounds on the forward and reverse fluxes completely subsume the original bounds on fluxes, one can further simplify the system by removing the original bounds:</p><pre><code class="language-julia hljs">c2.fluxes = remove_bounds(c2.fluxes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 95 elements:
+    :fluxes_reverse^unsigned_negative_contribution_constraints(c2.fluxes, c2.fluxes_forward);</code></pre><p>This way, only forward fluxes are allocated as variables, and reverse fluxes are &quot;computed&quot; as linearly dependent values. Additionally, since the bounds on the forward and reverse fluxes completely subsume the original bounds on fluxes, one can further simplify the system by removing the original bounds:</p><pre><code class="language-julia hljs">c2.fluxes = remove_bounds(c2.fluxes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 95 elements:
   :ACALD                    =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
   :ACALDt                   =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
   :ACKr                     =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…
@@ -105,13 +105,13 @@ c.fluxes = C.zip(c.fluxes, c.fluxes_forward, c.fluxes_reverse) do f, p, n
     C.Constraint(subst_value) # the bidirectional bound is dropped here
 end
 
-c = C.prune_variables(C.substitute(c, subst_vals))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 7 elements:
-  :coupling                 =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :directional_flux_balance =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :flux_stoichiometry       =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :fluxes                   =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :fluxes_forward           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
-  :fluxes_reverse           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}…
+c = C.prune_variables(C.substitute(c, subst_vals))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 7 elements:
+  :coupling                 =&gt; ConstraintTrees.ConstraintTree(#= 0 elements =#)
+  :directional_flux_balance =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :flux_stoichiometry       =&gt; ConstraintTrees.ConstraintTree(#= 72 elements =#)
+  :fluxes                   =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :fluxes_forward           =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :fluxes_reverse           =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
   :objective                =&gt; ConstraintTrees.Constraint(ConstraintTrees.Linea…</code></pre><p>The variable count is now reduced, and the system again solves just as the original:</p><pre><code class="language-julia hljs">C.var_count(c)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">190</code></pre><pre><code class="language-julia hljs">x = optimized_values(c, objective = c.objective.value, optimizer = HiGHS.Optimizer);
 x.objective</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.8739215069684304</code></pre><p>The bidirectional flux values are computed transparently in the result:</p><pre><code class="language-julia hljs">x.fluxes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 95 elements:
   :ACALD                    =&gt; 0.0
@@ -133,4 +133,4 @@ x.objective</code></pre><pre class="documenter-example-output"><code class="nohi
   :D_LACt2                  =&gt; 0.0
   :ENO                      =&gt; 14.7161
   :ETOHt2r                  =&gt; 0.0
-  ⋮                         =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03c-envelopes/">« Production envelopes</a><a class="docs-footer-nextpage" href="../04-community-models/">Community FBA models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 27 November 2024 14:53">Wednesday 27 November 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  ⋮                         =&gt; ⋮</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../03c-envelopes/">« Production envelopes</a><a class="docs-footer-nextpage" href="../04-community-models/">Community FBA models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Tuesday 7 January 2025 09:25">Tuesday 7 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

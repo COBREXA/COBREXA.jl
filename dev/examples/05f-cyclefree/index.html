@@ -10,11 +10,11 @@ download_model(
 import JSONFBCModels, HiGHS
 model = load_model(&quot;e_coli_core.json&quot;)
 
-cs = flux_balance_constraints(model, interface = :identifier_prefixes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 5 elements:
-  :coupling           =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 0 …
-  :flux_stoichiometry =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 72…
-  :fluxes             =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 95…
-  :interface          =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#= 3 …
+cs = flux_balance_constraints(model, interface = :identifier_prefixes)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 5 elements:
+  :coupling           =&gt; ConstraintTrees.ConstraintTree(#= 0 elements =#)
+  :flux_stoichiometry =&gt; ConstraintTrees.ConstraintTree(#= 72 elements =#)
+  :fluxes             =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :interface          =&gt; ConstraintTrees.ConstraintTree(#= 3 elements =#)
   :objective          =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValue…</code></pre><p>We will also need some existing solution of the model – CycleFreeFlux algorithm uses this one as a reference for fixing the exchange reaction flux.</p><pre><code class="language-julia hljs">some_flux =
     optimized_values(cs, objective = cs.objective.value, optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 5 elements:
   :coupling           =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements =#)
@@ -29,13 +29,13 @@ cs *=
     :fixed_exchanges^C.ConstraintTree(
         k =&gt; C.Constraint(cs.fluxes[k].value, relative_tolerance_bound(0.999)(v)) for
         (k, v) in some_flux.interface.exchanges
-    )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{ConstraintTrees.Constraint} with 8 elements:
-  :coupling               =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#…
-  :fixed_exchanges        =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#…
-  :flux_stoichiometry     =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#…
-  :fluxes                 =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#…
-  :fluxes_forward         =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#…
-  :fluxes_reverse         =&gt; ConstraintTrees.Tree{ConstraintTrees.Constraint}(#…
+    )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 8 elements:
+  :coupling               =&gt; ConstraintTrees.ConstraintTree(#= 0 elements =#)
+  :fixed_exchanges        =&gt; ConstraintTrees.ConstraintTree(#= 20 elements =#)
+  :flux_stoichiometry     =&gt; ConstraintTrees.ConstraintTree(#= 72 elements =#)
+  :fluxes                 =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :fluxes_forward         =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
+  :fluxes_reverse         =&gt; ConstraintTrees.ConstraintTree(#= 95 elements =#)
   :objective              =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearV…
   :parsimonious_objective =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearV…</code></pre><p>(We purposefully made the constraints a little less strict by using <a href="../../reference/misc/#COBREXA.relative_tolerance_bound-Tuple{Any}"><code>relative_tolerance_bound</code></a> – the toy E. coli model would otherwise display no variability at all.)</p><p>Now we can get a L1-parsimonious (thus cycle-free) solution of the model with the predefined exchanges:</p><pre><code class="language-julia hljs">cycle_free_flux = parsimonious_optimized_values(
     cs,
@@ -167,4 +167,4 @@ var = constraints_variability(cs, cs.fluxes, optimizer = HiGHS.Optimizer)</code>
  -21.811205956007473
  -21.813364572555663
  -21.80963333194993
- -21.81300524702459</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05e-knockouts/">« Gene knockouts</a><a class="docs-footer-nextpage" href="../05g-gapfilling/">Gap filling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Wednesday 27 November 2024 14:53">Wednesday 27 November 2024</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ -21.81300524702459</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05e-knockouts/">« Gene knockouts</a><a class="docs-footer-nextpage" href="../05g-gapfilling/">Gap filling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Tuesday 7 January 2025 09:25">Tuesday 7 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
