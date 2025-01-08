@@ -42,7 +42,7 @@ download_model(
 import AbstractFBCModels as A
 import JSONFBCModels
 import ConstraintTrees as C
-import SCIP
+import HiGHS
 
 # ## Collect data for RBA model
 # RBA models require a lot of data. Below we have processed the data into a
@@ -493,6 +493,11 @@ end
 
 mus = range(0.1, 0.95, 10) # simulate at these growth rates
 
+settings = [
+    set_optimizer_attribute("solver", "simplex"),
+    set_optimizer_attribute("simplex_strategy", 4),
+]
+
 res = screen(mus) do mu
     @info "sRBA step" mu
     rbat = with_srba_constraints(ct, mu)
@@ -512,8 +517,9 @@ res = screen(mus) do mu
         rbat;
         settings = [silence],
         objective = rbat.lp_objective.value,
-        optimizer = SCIP.Optimizer,
+        optimizer = HiGHS.Optimizer,
         sense = Minimal,
+        settings,
     )
     isnothing(sol) && return nothing
 
@@ -528,6 +534,8 @@ res = screen(mus) do mu
 end
 
 # finally, we can plot the data, to see if we can recapitulate known phenomena
+
+#= TODO
 
 using CairoMakie
 
@@ -554,3 +562,5 @@ lines!(ax2, mus, [abs(r.glc_flux) for r in res], label = "Glucose")
 lines!(ax2, mus, [abs(r.o2_flux) for r in res], label = "Oxygen")
 axislegend(ax2, position = :lt)
 fig
+
+=#

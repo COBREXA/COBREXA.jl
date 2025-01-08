@@ -45,7 +45,7 @@ download_model(
 import AbstractFBCModels as A
 import JSONFBCModels
 import ConstraintTrees as C
-import SCIP
+import HiGHS
 
 # ## Collect data for enzyme constrained models
 # Like in the previous example, we will spend some time gathering the necessary
@@ -356,10 +356,9 @@ function auxotrophe_fba(wt, aa_ko; fbc_only = false)
 
     sol = optimized_values(
         x;
-        optimizer = SCIP.Optimizer,
+        optimizer = HiGHS.Optimizer,
         objective = x.objective.value,
         sense = Maximal,
-        settings = [silence],
     )
     isnothing(sol) && return nothing
 
@@ -444,6 +443,8 @@ eccfba_res = screen(specs) do spec
     auxotrophe_fba(wt, spec)
 end
 
+#=
+
 # ## Plot cFBA vs. ec-cFBA vs. experimental data
 # Now that we have simulated the models, we need to compare them to data. The
 # data from the paper is processed below, and then plotted.
@@ -513,3 +514,5 @@ stem!(
 xlims!(ax2, 0, 1)
 ylims!(ax2, 0, 1)
 fig
+
+=#
