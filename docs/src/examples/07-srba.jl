@@ -226,7 +226,10 @@ end
 # this data is taken from: *Heckmann, David, et al. "Machine learning applied
 # to enzyme turnover numbers reveals protein structural correlates and improves
 # metabolic models." Nature communications 9.1 (2018): 1-10.*
-kcat_data = Dict(String(r.KcatID) => r.KcatHeckmann for r in CSV.File(joinpath(data_root, "ecoli_kcats.tsv")))
+kcat_data = Dict(
+    String(r.KcatID) => r.KcatHeckmann for
+    r in CSV.File(joinpath(data_root, "ecoli_kcats.tsv"))
+)
 
 complex_data = begin
     x = CSV.File(joinpath(data_root, "e_coli_complex.tsv"), delim = '\t')
@@ -256,7 +259,8 @@ add_kcats!(model, kcat_data; transporter_kcat = 180.0, average_kcat = 25.0)
 gene_product_molar_masses = get_protein_masses(model, proteome_data)
 
 # collect kcats and stoichiometry
-reaction_isozymes = get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
+reaction_isozymes =
+    get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
 
 # apply analysis-specific quirks
 gene_product_molar_masses["b1692"] = 54.58
@@ -319,7 +323,8 @@ end
 for (k, v) in avg_prot
     avg_prot[k] = v / sum(values(avg_prot))
 end
-aacount[:ribosome] = Dict(k => round(Int, aas_in_ribosome * v, RoundNearest) for (k, v) in avg_prot)
+aacount[:ribosome] =
+    Dict(k => round(Int, aas_in_ribosome * v, RoundNearest) for (k, v) in avg_prot)
 
 #md # ```@raw html
 #md # </details>
@@ -350,7 +355,7 @@ membrane_gids = unique(
     rid in membrane_rids if !isnothing(A.reaction_gene_association_dnf(model, rid)) for
     gs in A.reaction_gene_association_dnf(model, rid) for g in gs
 )
- 
+
 # Now we build an enzyme constrained metabolic model using COBREXA. Note, we
 # assume two capacity limitations here: 1) a total capacity bound, and a
 # membrane capacity bound. 
@@ -514,8 +519,7 @@ res = screen(mus) do mu
 
     return (;
         mu,
-        ribosome_mass = gene_product_molar_masses["ribosome"] *
-                        sum(values(sol.ribosomes)),
+        ribosome_mass = gene_product_molar_masses["ribosome"] * sum(values(sol.ribosomes)),
         total_mass = sol.gene_product_capacity.total,
         ac_flux = sol.fluxes.EX_ac_e,
         glc_flux = sol.fluxes.EX_glc__D_e,
@@ -534,14 +538,19 @@ ribosome_measurements = CSV.File(joinpath(data_root, "ecoli_ribosomes.tsv"))
 # observations, and also show that overflow metabolism occurs (latter is due to
 # the membrane bound). 
 fig = Figure();
-ax = Axis(fig[1,1], xlabel="Growth rate, 1/h", ylabel="Ribosome mass fraction")
-scatter!(ax, ribosome_measurements.GR, ribosome_measurements.ActiveR ./ 100 ,label = "Measurements")
-lines!(ax, mus, [r.ribosome_mass/r.total_mass for r in res], label="Model predictions")
-axislegend(ax, position=:lt)
+ax = Axis(fig[1, 1], xlabel = "Growth rate, 1/h", ylabel = "Ribosome mass fraction")
+scatter!(
+    ax,
+    ribosome_measurements.GR,
+    ribosome_measurements.ActiveR ./ 100,
+    label = "Measurements",
+)
+lines!(ax, mus, [r.ribosome_mass / r.total_mass for r in res], label = "Model predictions")
+axislegend(ax, position = :lt)
 
-ax2 = Axis(fig[2,1], xlabel="Growth rate, 1/h", ylabel="Metabolite flux")
-lines!(ax2, mus,[r.ac_flux for r in res], label ="Acetate")
-lines!(ax2, mus,[abs(r.glc_flux) for r in res], label ="Glucose")
-lines!(ax2, mus,[abs(r.o2_flux) for r in res], label ="Oxygen")
-axislegend(ax2, position=:lt)
+ax2 = Axis(fig[2, 1], xlabel = "Growth rate, 1/h", ylabel = "Metabolite flux")
+lines!(ax2, mus, [r.ac_flux for r in res], label = "Acetate")
+lines!(ax2, mus, [abs(r.glc_flux) for r in res], label = "Glucose")
+lines!(ax2, mus, [abs(r.o2_flux) for r in res], label = "Oxygen")
+axislegend(ax2, position = :lt)
 fig

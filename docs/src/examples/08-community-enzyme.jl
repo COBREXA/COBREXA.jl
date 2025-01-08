@@ -226,7 +226,10 @@ end
 # this data is taken from: *Heckmann, David, et al. "Machine learning applied
 # to enzyme turnover numbers reveals protein structural correlates and improves
 # metabolic models." Nature communications 9.1 (2018): 1-10.*
-kcat_data = Dict(String(r.KcatID) => r.KcatHeckmann for r in CSV.File(joinpath(data_root, "ecoli_kcats.tsv")))
+kcat_data = Dict(
+    String(r.KcatID) => r.KcatHeckmann for
+    r in CSV.File(joinpath(data_root, "ecoli_kcats.tsv"))
+)
 
 complex_data = begin
     x = CSV.File(joinpath(data_root, "e_coli_complex.tsv"), delim = '\t')
@@ -256,7 +259,8 @@ add_kcats!(model, kcat_data; transporter_kcat = 180.0, average_kcat = 25.0)
 gene_product_molar_masses = get_protein_masses(model, proteome_data)
 
 # collect kcats and stoichiometry
-reaction_isozymes = get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
+reaction_isozymes =
+    get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
 
 # apply analysis-specific quirks
 gene_product_molar_masses["b1692"] = 54.58
@@ -359,10 +363,7 @@ function auxotrophe_fba(wt, aa_ko; fbc_only = false)
     )
     isnothing(sol) && return nothing
 
-    (;
-        mu = sol.objective,
-        (Symbol(aa) => ab for (aa, ab) in aa_ko)...,
-    )
+    (; mu = sol.objective, (Symbol(aa) => ab for (aa, ab) in aa_ko)...)
 end
 
 # open specific bounds
@@ -452,7 +453,7 @@ using CairoMakie
 # data from Mee et al., 2014
 observed_abundances = [ # these pairings were simulated
     (:metA, :thrC, 17.0 / (17.0 + 80.8)),
-    (:ilvA, :pheA, 15.2/ (15.2 + 51.0)),
+    (:ilvA, :pheA, 15.2 / (15.2 + 51.0)),
     (:argA, :lysA, 11.7 / (11.7 + 37.1)),
     (:metA, :proA, 13.7 / (13.7 + 36.5)),
     (:argA, :metA, 22.8 / (22.8 + 19.8)),
@@ -477,32 +478,37 @@ end
 # The figure below shows that using enzyme constraints dramatically improves the
 # predictive validity of community simulations
 fig = Figure();
-ax = Axis(fig[1,1], xlabel="Observed composition", ylabel="Predicted composition", title="cFBA")
+ax = Axis(
+    fig[1, 1],
+    xlabel = "Observed composition",
+    ylabel = "Predicted composition",
+    title = "cFBA",
+)
 stem!(
-    ax, 
-    observed_abundances, 
-    cfba_abs, 
-    offset = observed_abundances, 
+    ax,
+    observed_abundances,
+    cfba_abs,
+    offset = observed_abundances,
     marker = :rect,
-    color = :blue, 
-    stemcolor=:blue,
-    trunkcolor=:grey,
-    label="cFBA"
+    color = :blue,
+    stemcolor = :blue,
+    trunkcolor = :grey,
+    label = "cFBA",
 )
 xlims!(ax, 0, 1)
 ylims!(ax, 0, 1)
 
-ax2 = Axis(fig[1,2], xlabel="Observed composition", title="ec-cFBA")
+ax2 = Axis(fig[1, 2], xlabel = "Observed composition", title = "ec-cFBA")
 stem!(
-    ax2, 
-    observed_abundances, 
-    eccfba_abs, 
-    offset = observed_abundances, 
-    marker = :circle, 
-    color = :red, 
-    stemcolor=:red,
-    trunkcolor=:grey,
-    label="ec-cFBA"
+    ax2,
+    observed_abundances,
+    eccfba_abs,
+    offset = observed_abundances,
+    marker = :circle,
+    color = :red,
+    stemcolor = :red,
+    trunkcolor = :grey,
+    label = "ec-cFBA",
 )
 xlims!(ax2, 0, 1)
 ylims!(ax2, 0, 1)
