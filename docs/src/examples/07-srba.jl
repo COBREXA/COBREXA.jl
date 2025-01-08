@@ -26,7 +26,8 @@
 using COBREXA
 
 # In contrast to the previous examples, we will use the iML1515 model of _E.
-# coli_, which is the latest, full-scale model of the organism.
+# coli_, which is the latest, full-scale genome-scale metabolic model of the
+# organism.
 
 download_model(
     "http://bigg.ucsd.edu/static/models/iML1515.json",
@@ -34,38 +35,15 @@ download_model(
     "b0f9199f048779bb08a14dfa6c09ec56d35b8750d2f99681980d0f098355fbf5",
 )
 
-# Additional to COBREXA, a solver, and the model format package, we will need a
-# ConstraintTrees to simplify the model construction process:
+# In additional to COBREXA, the optimization solver, and the model format
+# package, we will use ConstraintTrees to simplify the RBA model construction
+# process:
 
 import AbstractFBCModels as A
 import JSONFBCModels
 import ConstraintTrees as C
-import Gurobi # TODO maybe SCIP is better... can't test on windows
-import HiGHS
-
-# load the model
-model = load_model("iML1515.json", A.CanonicalModel.Model)
-
-# save biomass composition for later
-biomass = model.reactions["BIOMASS_Ec_iML1515_core_75p37M"]
-# remove the biomass functions for RBA
-delete!(model.reactions, "BIOMASS_Ec_iML1515_WT_75p37M")
-delete!(model.reactions, "BIOMASS_Ec_iML1515_core_75p37M")
-
-# Below we will make the assumption that the membrane space is limited, in
-# addition to the usual total proteome capacity limitation. First, we identify
-# membrane reactions (transporting metabolites between compartments)
-membrane_rids = [
-    rid for (rid, r) in model.reactions if
-    length(unique(last.(split.(keys(r.stoichiometry), "_")))) != 1
-]
-
-# Next, we identify membrane proteins as the ones catalyzing the membrane reactions from above
-membrane_gids = unique(
-    g for
-    rid in membrane_rids if !isnothing(A.reaction_gene_association_dnf(model, rid)) for
-    gs in A.reaction_gene_association_dnf(model, rid) for g in gs
-)
+import SCIP
+using Gurobi
 
 # ## Collect data for RBA model
 # RBA models require a lot of data. Below we have processed the data into a
@@ -82,7 +60,6 @@ import Statistics: mean
 
 data_root = joinpath(@__DIR__, "src", "examples", "data")
 
-#
 # ### Helper functions
 #
 
@@ -116,6 +93,7 @@ function add_kcats!(
         end
         if length(unique(suffixes)) > 1
             if !haskey(kcat_data, rid)
+                # println("Transporter ", rid, " assigned kcat.")
                 kcat_data[rid] = transporter_kcat
             end
         end
@@ -125,8 +103,11 @@ function add_kcats!(
         !has_reaction_grr(model, rid) && continue
         if !haskey(kcat_data, rid)
             kcat_data[rid] = average_kcat
+            # println("Assigned average kcat to: ", rid)
         elseif haskey(kcat_data, rid)
             continue
+        else
+            # println("Rid not assigned a kcat: ", rid)
         end
     end
 
@@ -141,9 +122,11 @@ function get_protein_masses(model, proteome_data)
     )
 end
 
-# Assemble reaction isozymes from kcat data, Uniprot proteome data, and ComplexPortal data.
-# In a set of complexes, this also gets rid of low confidence complexes if any
-# complex in the set can be found in the ComplexPortal.
+# Assemble reaction isozymes from kcat data, Uniprot proteome data, and
+# ComplexPortal data. This changes the GRR structure of the model (basically
+# making it match the expectations from the data files). In a set of complexes,
+# this also gets rid of low confidence complexes if any complex in the set can
+# be found in the ComplexPortal.
 function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
     # protein stoich map, infer from uniprot
     mer_map = Dict(
@@ -186,8 +169,8 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
 
                 d[isozyme_id] = Isozyme(
                     gene_product_stoichiometry = Dict(grr .=> ss_counts),
-                    kcat_forward = round(kcat_data[rid] * scale, digits=3),
-                    kcat_reverse = round(kcat_data[rid] * scale, digits=3), # assume forward and reverse are the same 
+                    kcat_forward = kcat_data[rid] * scale,
+                    kcat_reverse = kcat_data[rid] * scale, # assume forward and reverse are the same 
                 )
             end
         end
@@ -231,11 +214,9 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
     return reaction_isozymes
 end
 
-#
 # ### Data loading
-#
+# load data from papers, complex DB, and Uniprot
 
-# load data from papers, complex DB, and uniprot
 proteome_data = begin
     x = CSV.File(joinpath(data_root, "e_coli_uniprot.tsv"), delim = '\t')
     Dict{String,Tuple{Float64,String}}(
@@ -243,7 +224,10 @@ proteome_data = begin
     )
 end
 
-kcat_data = Dict(String(r.KcatID) => r.KcatHeckmann for r in CSV.File(joinpath(data_root,"ecoli_kcats.tsv")))
+# this data is taken from: *Heckmann, David, et al. "Machine learning applied
+# to enzyme turnover numbers reveals protein structural correlates and improves
+# metabolic models." Nature communications 9.1 (2018): 1-10.*
+kcat_data = Dict(String(r.KcatID) => r.KcatHeckmann for r in CSV.File(joinpath(data_root, "ecoli_kcats.tsv")))
 
 complex_data = begin
     x = CSV.File(joinpath(data_root, "e_coli_complex.tsv"), delim = '\t')
@@ -257,27 +241,27 @@ complex_data = begin
     res
 end
 
-#
-# ### Assemble the isozymes and gene product masses
-#
+# load the E. coli model as a basis to assemble the data around
 
-# increase protein concentrations by changing units, convert kcat units from 1/s to k/h 
+model = load_model("iML1515.json", A.CanonicalModel.Model)
+
+# Assemble the isozymes and gene product masses increase protein concentrations
+# by changing units, convert kcat units from 1/s to k/h 
 scale = 3600 / 1e3
 
 # add kcats that are not measured
 # https://bionumbers.hms.harvard.edu/bionumber.aspx?id=114686&ver=3&trm=glucose+transport&org=
 add_kcats!(model, kcat_data; transporter_kcat = 180.0, average_kcat = 25.0)
 
-# collect kcats and stoichiometry
-reaction_isozymes = get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
-
 # get uniprot molar masses (units: kDa = kg/mol)
 gene_product_molar_masses = get_protein_masses(model, proteome_data)
+
+# collect kcats and stoichiometry
+reaction_isozymes = get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
 
 # apply analysis-specific quirks
 gene_product_molar_masses["b1692"] = 54.58
 gene_product_molar_masses["s0001"] = 54.58
-
 
 # ribosome data (see comment URLs for sources)
 # https://bionumbers.hms.harvard.edu/bionumber.aspx?id=100118&ver=10&trm=e+coli+ribosome+molar+mass&org= )
@@ -289,9 +273,7 @@ atp_polymerization_cost = 4.2
 # https://bionumbers.hms.harvard.edu/bionumber.aspx?id=109522&ver=2&trm=ribosome+density&org=
 ribosomes_per_protein = 3.46 # multiple ribosomes can produce a single AA, effectively speeding up the overall rate (assume average for all genes)
 
-#
-# ### Load and prepare the amino acid data
-#
+# Load and prepare the amino acid data
 
 amino_acids = Dict(
     :glu__L_c => "E",
@@ -316,10 +298,9 @@ amino_acids = Dict(
     :met__L_c => "M",
 )
 
-aacount = begin
+aacount = begin # count of each amino acid in a gene product
     # convert the TSV into a dictionary structure
-    
-    x = CSV.File(joinpath(data_root,"ecoli_gene_product_aa_counts.tsv"), delim = '\t')
+    x = CSV.File(joinpath(data_root, "ecoli_gene_product_aa_counts.tsv"), delim = '\t')
     res = Dict{Symbol,Dict{Symbol,Int}}()
     for gp in x.gene_product
         res[Symbol(gp)] = Dict{Symbol,Int}()
@@ -330,7 +311,6 @@ aacount = begin
     res
 end
 
-# assume ribosome to be relatively average in AA counts
 avg_prot = Dict()
 for v in values(aacount)
     for (k, vv) in v
@@ -342,27 +322,54 @@ for (k, v) in avg_prot
 end
 aacount[:ribosome] = Dict(k => round(Int, aas_in_ribosome * v, RoundNearest) for (k, v) in avg_prot)
 
-
 #md # ```@raw html
 #md # </details>
 #md # ```
 
-# ## Build an enzyme constrained model
+# ## Model assembly
+# Now that we have loaded all the data, we can start building the simplified RBA model
 
-total_capacity_bound = 550.0 # mg/gDW
-membrane_frac = 0.20 # membrane protein fraction of total
+# First, load the model
+model = load_model("iML1515.json", A.CanonicalModel.Model)
 
+# Next, we will remove the biomass reactions, as these are handled differently
+# in RBA. However, we will save biomass composition for later use.
+biomass = model.reactions["BIOMASS_Ec_iML1515_core_75p37M"]
+# remove the biomass functions for rba
+delete!(model.reactions, "BIOMASS_Ec_iML1515_WT_75p37M")
+delete!(model.reactions, "BIOMASS_Ec_iML1515_core_75p37M")
+
+# identify membrane reactions (transporting stuff between compartments)
+membrane_rids = [
+    rid for (rid, r) in model.reactions if
+    length(unique(last.(split.(keys(r.stoichiometry), "_")))) != 1
+]
+
+# identify membrane proteins as the ones catalyzing the membrane reactions from above
+membrane_gids = unique(
+    g for
+    rid in membrane_rids if !isnothing(A.reaction_gene_association_dnf(model, rid)) for
+    gs in A.reaction_gene_association_dnf(model, rid) for g in gs
+)
+ 
+# Now we build an enzyme constrained metabolic model using COBREXA. Note, we
+# assume two capacity limitations here: 1) a total capacity bound, and a
+# membrane capacity bound. 
+total_capacity = 550.0
+membrane_frac = 0.20 # fraction of total proteome that is allowed to be membrane associated
+
+# use COBREXA's built in function to lay the foundation of the RBA model
 ct = enzyme_constrained_flux_balance_constraints(
     model;
     reaction_isozymes,
     gene_product_molar_masses,
     capacity = [
-        ("membrane", membrane_gids, total_capacity_bound * membrane_frac),
-        ("total", A.genes(model), total_capacity_bound),
+        ("membrane", membrane_gids, float(total_capacity * membrane_frac)),
+        ("total", A.genes(model), float(total_capacity)),
     ],
 )
 
-# apply a few quirks to make the simulation realistic
+# apply a few quirks
 ct.fluxes[:EX_glc__D_e].bound = C.Between(-1000, 1000)
 ct.fluxes_forward[:EX_glc__D_e].bound = C.Between(0, 1000)
 ct.fluxes_reverse[:EX_glc__D_e].bound = C.Between(0, 1000)
@@ -371,25 +378,20 @@ ct.fluxes[:EX_pyr_e].bound = C.EqualTo(0.0)
 ct.fluxes[:EX_5dglcn_e].bound = C.EqualTo(0.0)
 ct.fluxes[:EX_lac__D_e].bound = C.EqualTo(0.0)
 
-# ending up with a functional, enzyme constrained model
-ct
-
-
-# ## Add the RBA functionality
-
-kr = ribosomes_per_protein * 12 * 3600 # ribosome elongation rate amino acids/second => amino acids/hr
-prot_atp_req = 12.0 # protein polymerization cost for average proteome in 1 gDW
-
+# We now need to extend the enzyme constrained model with further resource
+# allocation constraints. Since RBA models are bilinear, it is simpler to create
+# a function that builds a model at a specific growth rate, transforming the
+# problem into a linear one. Future extensions of cobrexa will allow parameters
+# to be inserted into models directly, obviating the need for this
+# function-based appraoch. The function belows glues the sRBA constraint system
+# to the given ecRBA model at a specific growth rate.
 function with_srba_constraints(ct, mu)
 
-    # we are going to modify a few parts of the tree, copy them
-    ct = C.ConstraintTree(ct..., :gene_product_amounts => deepcopy(ct.gene_product_amounts))
-    
     # atp + h2o -> adp + h + po4
     energy_metabolites =
         Dict(:atp_c => -1, :h2o_c => -1, :adp_c => 1, :h_c => 1, :pi_c => 1)
 
-    # attach new variables for ribosomes
+    # attach new variables for ribosomes (recall ribosomes are required to make proteins, and ribosomes themselves)
     rbatree =
         ct +
         :ribosomes^C.variables(;
@@ -397,14 +399,17 @@ function with_srba_constraints(ct, mu)
             bounds = C.Between(0, Inf),
         )
 
-    # we are going to modify a few parts locally so let's make a copy of them
+    # we are going to modify a few parts locally so let's make a copy of them to not change the base model (ct)
     rbatree = C.ConstraintTree(
         rbatree...,
         :flux_stoichiometry => deepcopy(rbatree.flux_stoichiometry),
         :gene_product_capacity => deepcopy(rbatree.gene_product_capacity),
     )
 
-    # amino acid dilution by growth
+    # amino acid dilution by growth note: in RBA biomass components get diluted
+    # directly, and it is not necessary to have a biomass reaction for this
+    # purpose. Here the amino acids get special attention, since they are
+    # consumed by the ribosomes.
     for aa in keys(amino_acids)
         rbatree.flux_stoichiometry[aa].value -=
             mu *
@@ -422,8 +427,9 @@ function with_srba_constraints(ct, mu)
             )
     end
 
-    # add all biomass components diluted by growth, plus the energy metabolites
-    for (mid, v) in biomass.stoichiometry
+    # In contrast, the other biomass components just get diluted by growth, including the energy metabolites
+    prot_atp_req = 12.0 # protein polymerization cost for average proteome in 1 gDW
+    for (mid, v) in biomass.stoichiometry # from the saved biomass composition of the original model
         k = Symbol(mid)
         haskey(amino_acids, k) && continue
         # if the metabolite is an energy metabolite, we add the energy cost of translation
@@ -449,6 +455,8 @@ function with_srba_constraints(ct, mu)
     end
 
     # add the equations for protein synthesis by ribosomes
+    kr = ribosomes_per_protein * 12 * 3600 # ribosome elongation rate amino acids/second => amino acids/hr
+
     aa_sum(g) = haskey(aacount, g) ? sum(values(aacount[g])) : 300
 
     rbatree *=
@@ -474,11 +482,15 @@ function with_srba_constraints(ct, mu)
     return rbatree
 end
 
-# ## Simulate
 
-# screen through the expectably viable range
-res = screen(range(0.1, 1.1, 10)) do mu
-    @info "mu = $mu"
+# ## Run the simulations
+# Here we use screen to efficiently run all the simulations through the
+# expectably viable growth range
+
+mus = range(0.1, 0.95, 10) # simulate at these growth rates
+
+res = screen(mus) do mu
+    @info "sRBA step" mu
     rbat = with_srba_constraints(ct, mu)
     rbat *=
         :lp_objective^C.Constraint(
@@ -494,28 +506,43 @@ res = screen(range(0.1, 1.1, 10)) do mu
 
     sol = optimized_values(
         rbat;
-        settings = [silence,set_optimizer_attribute("solver", "simplex"),set_optimizer_attribute("simplex_strategy", 4),],
+        settings = [silence],
         objective = rbat.lp_objective.value,
-        optimizer = HiGHS.Optimizer,
+        optimizer = Gurobi.Optimizer,
         sense = Minimal,
     )
     isnothing(sol) && return nothing
 
     return (;
         mu,
-        ribosome_mass = gene_product_molar_masses["ribosome"] * sum(values(sol.ribosomes)),
+        ribosome_mass = gene_product_molar_masses["ribosome"] *
+                        sum(values(sol.ribosomes)),
+        total_mass = sol.gene_product_capacity.total,
         ac_flux = sol.fluxes.EX_ac_e,
         glc_flux = sol.fluxes.EX_glc__D_e,
         o2_flux = sol.fluxes.EX_o2_e,
-        total_mass = sol.gene_product_capacity.total,
-        membrane_mass = sol.gene_product_capacity.membrane,
     )
 end
 
+# finally, we can plot the data, to see if we can recapitulate known phenomena
+
 using CairoMakie
 
+# load measured ribosome protein mass fractions
 ribosome_measurements = CSV.File(joinpath(data_root, "ecoli_ribosomes.tsv"))
 
-fig = Figure()
-ax = Axis(fig[1,1], xlabel="Growth rate, 1/h", label="Ribosome mass fraction")
-scatter!(ax, )
+# First, show that the predicted ribosome density matches experimental
+# observations, and also show that overflow metabolism occurs (latter is due to
+# the membrane bound). 
+fig = Figure();
+ax = Axis(fig[1,1], xlabel="Growth rate, 1/h", ylabel="Ribosome mass fraction")
+scatter!(ax, ribosome_measurements.GR, ribosome_measurements.ActiveR ./ 100 ,label = "Measurements")
+lines!(ax, mus, [r.ribosome_mass/r.total_mass for r in res], label="Model predictions")
+axislegend(ax, position=:lt)
+
+ax2 = Axis(fig[2,1], xlabel="Growth rate, 1/h", ylabel="Metabolite flux")
+lines!(ax2, mus,[r.ac_flux for r in res], label ="Acetate")
+lines!(ax2, mus,[abs(r.glc_flux) for r in res], label ="Glucose")
+lines!(ax2, mus,[abs(r.o2_flux) for r in res], label ="Oxygen")
+axislegend(ax2, position=:lt)
+fig
