@@ -54,7 +54,7 @@ import HiGHS
 #md # <details><summary><strong>Data for reaction turnover numbers</strong></summary>
 #md # ```
 
-import Tables, CSV # for data loading
+import CSV
 import Statistics: mean
 
 data_root = joinpath(@__DIR__, "src", "examples", "data")
