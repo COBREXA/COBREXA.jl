@@ -169,7 +169,7 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
                 d[isozyme_id] = Isozyme(
                     gene_product_stoichiometry = Dict(grr .=> ss_counts),
                     kcat_forward = kcat_data[rid] * scale,
-                    kcat_reverse = kcat_data[rid] * scale, # assume forward and reverse are the same 
+                    kcat_reverse = kcat_data[rid] * scale, # assume forward and reverse are the same
                 )
             end
         end
@@ -248,7 +248,7 @@ end
 model = load_model("iML1515.json", A.CanonicalModel.Model)
 
 # Assemble the isozymes and gene product masses increase protein concentrations
-# by changing units, convert kcat units from 1/s to k/h 
+# by changing units, convert kcat units from 1/s to k/h
 scale = 3600 / 1e3
 
 # add kcats that are not measured
@@ -358,7 +358,7 @@ membrane_gids = unique(
 
 # Now we build an enzyme constrained metabolic model using COBREXA. Note, we
 # assume two capacity limitations here: 1) a total capacity bound, and a
-# membrane capacity bound. 
+# membrane capacity bound.
 total_capacity = 550.0
 membrane_frac = 0.20 # fraction of total proteome that is allowed to be membrane associated
 
@@ -544,7 +544,7 @@ ribosome_measurements = CSV.File(joinpath(data_root, "ecoli_ribosomes.tsv"))
 
 # First, show that the predicted ribosome density matches experimental
 # observations, and also show that overflow metabolism occurs (latter is due to
-# the membrane bound). 
+# the membrane bound).
 fig = Figure();
 ax = Axis(fig[1, 1], xlabel = "Growth rate, 1/h", ylabel = "Ribosome mass fraction")
 scatter!(

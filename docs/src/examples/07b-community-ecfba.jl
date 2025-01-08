@@ -169,7 +169,7 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
                 d[isozyme_id] = Isozyme(
                     gene_product_stoichiometry = Dict(grr .=> ss_counts),
                     kcat_forward = kcat_data[rid] * scale,
-                    kcat_reverse = kcat_data[rid] * scale, # assume forward and reverse are the same 
+                    kcat_reverse = kcat_data[rid] * scale, # assume forward and reverse are the same
                 )
             end
         end
@@ -248,7 +248,7 @@ end
 model = load_model("iML1515.json", A.CanonicalModel.Model)
 
 # Assemble the isozymes and gene product masses increase protein concentrations
-# by changing units, convert kcat units from 1/s to k/h 
+# by changing units, convert kcat units from 1/s to k/h
 scale = 3600 / 1e3
 
 # add kcats that are not measured
@@ -276,7 +276,7 @@ gene_product_molar_masses["s0001"] = 54.58
 # need to write a general purpose community construction function, which will
 # naturally work with either classic FBA or enzyme constrained FBA models.
 
-# below we create a community assembly function, assuming an input of a wildtype model 
+# below we create a community assembly function, assuming an input of a wildtype model
 function auxotrophe_community(wt, aa_ko; fbc_only = false)
 
     # these are the possible KOs we consider
