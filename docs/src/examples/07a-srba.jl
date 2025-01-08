@@ -92,21 +92,16 @@ function add_kcats!(
         end
         if length(unique(suffixes)) > 1
             if !haskey(kcat_data, rid)
-                # println("Transporter ", rid, " assigned kcat.")
                 kcat_data[rid] = transporter_kcat
             end
         end
     end
-
     for rid in A.reactions(model)
         !has_reaction_grr(model, rid) && continue
         if !haskey(kcat_data, rid)
             kcat_data[rid] = average_kcat
-            # println("Assigned average kcat to: ", rid)
         elseif haskey(kcat_data, rid)
             continue
-        else
-            # println("Rid not assigned a kcat: ", rid)
         end
     end
 
@@ -141,7 +136,7 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
         "Homodecamer" => 10,
         "Homododecamer" => 12,
     )
-
+    #+
     # infer protein stoichiometry from uniprot annotations
     reaction_isozymes = Dict{String,Dict{String,Isozyme}}()
     multi_component_enzymes = [] # for use later
@@ -152,7 +147,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
             for (i, grr) in enumerate(grrs)
                 isozyme_id = "isozyme_" * string(i)
                 d = get!(reaction_isozymes, rid, Dict{String,Isozyme}())
-
                 if length(grr) == 1 # only assign homomers
                     gid = first(grr)
                     if haskey(proteome_data, gid) # has uniprot data
@@ -165,7 +159,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
                     ss_counts = fill(1.0, length(grr))
                     push!(multi_component_enzymes, (rid, isozyme_id))
                 end
-
                 d[isozyme_id] = Isozyme(
                     gene_product_stoichiometry = Dict(grr .=> ss_counts),
                     kcat_forward = kcat_data[rid] * scale,
@@ -174,7 +167,7 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
             end
         end
     end
-
+    #+
     # fix complex stoichiometry using ComplexPortal data
     fixed_multi_component_enzymes = []
     not_fixed_multi_component_enzymes = []
@@ -188,7 +181,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
                 push!(stoichs, v)
             end
         end
-
         if length(stoichs) == 1
             push!(fixed_multi_component_enzymes, (rid, isozyme_id))
             d = first(stoichs)
@@ -202,14 +194,13 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
             push!(not_fixed_multi_component_enzymes, (rid, isozyme_id))
         end
     end
-
+    #+
     # use only the entries where the stoichiometry is known, if any are known
     for (rid, isozyme_id) in not_fixed_multi_component_enzymes
         if rid in first.(fixed_multi_component_enzymes)
             delete!(reaction_isozymes[rid], isozyme_id)
         end
     end
-
     return reaction_isozymes
 end
 
@@ -302,7 +293,6 @@ amino_acids = Dict(
 )
 
 aacount = begin # count of each amino acid in a gene product
-    # convert the TSV into a dictionary structure
     x = CSV.File(joinpath(data_root, "ecoli_gene_product_aa_counts.tsv"), delim = '\t')
     res = Dict{Symbol,Dict{Symbol,Int}}()
     for gp in x.gene_product
@@ -390,11 +380,11 @@ ct.fluxes[:EX_lac__D_e].bound = C.EqualTo(0.0)
 # function-based appraoch. The function belows glues the sRBA constraint system
 # to the given ecRBA model at a specific growth rate.
 function with_srba_constraints(ct, mu)
-
+    #+
     # atp + h2o -> adp + h + po4
     energy_metabolites =
         Dict(:atp_c => -1, :h2o_c => -1, :adp_c => 1, :h_c => 1, :pi_c => 1)
-
+    #+
     # attach new variables for ribosomes (recall ribosomes are required to make proteins, and ribosomes themselves)
     rbatree =
         ct +
@@ -402,14 +392,14 @@ function with_srba_constraints(ct, mu)
             keys = [collect(keys(ct.gene_product_amounts)); :ribosome],
             bounds = C.Between(0, Inf),
         )
-
+    #+
     # we are going to modify a few parts locally so let's make a copy of them to not change the base model (ct)
     rbatree = C.ConstraintTree(
         rbatree...,
         :flux_stoichiometry => deepcopy(rbatree.flux_stoichiometry),
         :gene_product_capacity => deepcopy(rbatree.gene_product_capacity),
     )
-
+    #+
     # amino acid dilution by growth note: in RBA biomass components get diluted
     # directly, and it is not necessary to have a biomass reaction for this
     # purpose. Here the amino acids get special attention, since they are
@@ -430,46 +420,45 @@ function with_srba_constraints(ct, mu)
                 )
             )
     end
-
+    #+
     # In contrast, the other biomass components just get diluted by growth, including the energy metabolites
     prot_atp_req = 12.0 # protein polymerization cost for average proteome in 1 gDW
     for (mid, v) in biomass.stoichiometry # from the saved biomass composition of the original model
         k = Symbol(mid)
         haskey(amino_acids, k) && continue
+        #+
         # if the metabolite is an energy metabolite, we add the energy cost of translation
         offset = haskey(energy_metabolites, k) ? -energy_metabolites[k] * prot_atp_req : 0.0
         rbatree.flux_stoichiometry[k].value += mu * (v + offset)
     end
-
+    #+
     # energy costs of protein synthesis
     for (k, kk) in energy_metabolites
-        # / 1000 to get units to mmol/gDW
-        # proteins
         rbatree.flux_stoichiometry[k].value +=
-            (kk * mu * 0.001 * atp_polymerization_cost) * sum(
+            (kk * mu * 0.001 #= mmol conversion =# * atp_polymerization_cost) * sum(
                 sum(values(aacount[g])) * C.value(c) for
                 (g, c) in rbatree.gene_product_amounts if haskey(aacount, g);
                 init = C.zero(C.LinearValue),
             )
-
+        #+
         # ribosome synthesis also costs energy
         rbatree.flux_stoichiometry[k].value +=
             (kk * mu * 0.001 * atp_polymerization_cost * aas_in_ribosome) *
             sum(C.value(x) for x in values(rbatree.ribosomes); init = C.zero(C.LinearValue))
     end
-
+    #+
     # add the equations for protein synthesis by ribosomes
     kr = ribosomes_per_protein * 12 * 3600 # ribosome elongation rate amino acids/second => amino acids/hr
-
+    #+
     aa_sum(g) = haskey(aacount, g) ? sum(values(aacount[g])) : 300
-
+    #+
     rbatree *=
         :protein_synthesis^C.ConstraintTree(
             g =>
                 C.Constraint(kr * rbatree.ribosomes[g].value - mu * c.value * aa_sum(g), 0)
             for (g, c) in rbatree.gene_product_amounts
         )
-
+    #+
     # add the equation for ribosome synthesis by themselves
     rbatree *=
         :ribosome_balance^C.Constraint(
@@ -478,7 +467,7 @@ function with_srba_constraints(ct, mu)
             sum(C.value.(values(rbatree.ribosomes)); init = zero(C.LinearValue)),
             0,
         )
-
+    #+
     # patch the total gene product capacity bound with the new ribosomes
     rbatree.gene_product_capacity.total.value +=
         sum(C.value.(values(rbatree.ribosomes))) * gene_product_molar_masses["ribosome"]
@@ -512,7 +501,6 @@ res = screen(mus) do mu
             ),
             nothing,
         )
-
     sol = optimized_values(
         rbat;
         settings = [silence],
@@ -522,7 +510,6 @@ res = screen(mus) do mu
         settings,
     )
     isnothing(sol) && return nothing
-
     return (;
         mu,
         ribosome_mass = gene_product_molar_masses["ribosome"] * sum(values(sol.ribosomes)),
