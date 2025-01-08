@@ -104,7 +104,6 @@ function add_kcats!(
             continue
         end
     end
-
     return nothing
 end
 
@@ -173,7 +172,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
     not_fixed_multi_component_enzymes = []
     for (rid, isozyme_id) in multi_component_enzymes
         grr = collect(keys(reaction_isozymes[rid][isozyme_id].gene_product_stoichiometry))
-
         stoichs = []
         for v in values(complex_data)
             if length(intersect(collect(keys(v)), grr)) == length(grr) &&
@@ -448,10 +446,9 @@ function with_srba_constraints(ct, mu)
     end
     #+
     # add the equations for protein synthesis by ribosomes
-    kr = ribosomes_per_protein * 12 * 3600 # ribosome elongation rate amino acids/second => amino acids/hr
-    #+
+    # (the conversion is: ribosome elongation rate amino acids/second => amino acids/hr)
+    kr = ribosomes_per_protein * 12 * 3600
     aa_sum(g) = haskey(aacount, g) ? sum(values(aacount[g])) : 300
-    #+
     rbatree *=
         :protein_synthesis^C.ConstraintTree(
             g =>
