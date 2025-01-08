@@ -43,7 +43,6 @@ import AbstractFBCModels as A
 import JSONFBCModels
 import ConstraintTrees as C
 import SCIP
-using Gurobi
 
 # ## Collect data for RBA model
 # RBA models require a lot of data. Below we have processed the data into a
@@ -508,7 +507,7 @@ res = screen(mus) do mu
         rbat;
         settings = [silence],
         objective = rbat.lp_objective.value,
-        optimizer = Gurobi.Optimizer,
+        optimizer = SCIP.Optimizer,
         sense = Minimal,
     )
     isnothing(sol) && return nothing
