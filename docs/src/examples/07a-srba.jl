@@ -406,7 +406,7 @@ function with_srba_constraints(ct, mu)
         rbatree.flux_stoichiometry[aa].value -=
             mu *
             0.001 *
-            ( #= mol to mmol conversion ratio=#
+            (
                 sum(
                     aacount[g][aa] * c.value for (g, c) in rbatree.gene_product_amounts if
                     haskey(aacount, g) && haskey(aacount[g], aa);
@@ -433,7 +433,7 @@ function with_srba_constraints(ct, mu)
     # energy costs of protein synthesis
     for (k, kk) in energy_metabolites
         rbatree.flux_stoichiometry[k].value +=
-            (kk * mu * 0.001 #= mmol conversion =# * atp_polymerization_cost) * sum(
+            (kk * mu * 0.001 * atp_polymerization_cost) * sum(
                 sum(values(aacount[g])) * C.value(c) for
                 (g, c) in rbatree.gene_product_amounts if haskey(aacount, g);
                 init = C.zero(C.LinearValue),
