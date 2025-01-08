@@ -58,7 +58,7 @@ import HiGHS
 import CSV
 import Statistics: mean
 
-data_root = joinpath(@__DIR__, "src", "examples", "data")
+data_root = joinpath(dirname(pathof(COBREXA)), "..", "docs", "src", "examples", "data")
 
 # ### Helper functions
 
