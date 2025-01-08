@@ -500,7 +500,6 @@ res = screen(mus) do mu
         )
     sol = optimized_values(
         rbat;
-        settings = [silence],
         objective = rbat.lp_objective.value,
         optimizer = HiGHS.Optimizer,
         sense = Minimal,
