@@ -34,6 +34,7 @@ julia = "1.5"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Clarabel = "61c947e1-3e6d-4ee4-985a-eec8c727bd6e"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
@@ -44,4 +45,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Tulip = "6dd1b50a-3aae-11e9-10b5-ef983d2400fa"
 
 [targets]
-test = ["Aqua", "Clarabel", "Downloads", "HiGHS", "JSONFBCModels", "SBMLFBCModels", "SHA", "Test", "Tulip"]
+test = ["Aqua", "CSV", "Clarabel", "Downloads", "HiGHS", "JSONFBCModels", "SBMLFBCModels", "SHA", "Test", "Tulip"]
