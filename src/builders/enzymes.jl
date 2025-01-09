@@ -219,7 +219,7 @@ function enzyme_constraints(;
                        !isnothing(gpmm) && haskey(gene_product_amounts, gp);
                        init = zero(C.LinearValue),
                    ),
-                   bound,
+                   C.BetweenT(bound...),
                ) for (id, gps, bound) in capacity_limits
            )
 end
@@ -297,7 +297,7 @@ function simplified_enzyme_constraints(;
                 contribution(fluxes_reverse, mass_cost_reverse, f) for f in fs;
                 init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
             ),
-            bound,
+            C.BetweenT(bound...),
         ) for (id, fs, bound) in capacity_limits
     )
 end
