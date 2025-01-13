@@ -92,7 +92,6 @@ function add_kcats!(
         end
         if length(unique(suffixes)) > 1
             if !haskey(kcat_data, rid)
-                # println("Transporter ", rid, " assigned kcat.")
                 kcat_data[rid] = transporter_kcat
             end
         end
@@ -102,11 +101,8 @@ function add_kcats!(
         !has_reaction_grr(model, rid) && continue
         if !haskey(kcat_data, rid)
             kcat_data[rid] = average_kcat
-            # println("Assigned average kcat to: ", rid)
         elseif haskey(kcat_data, rid)
             continue
-        else
-            # println("Rid not assigned a kcat: ", rid)
         end
     end
 
@@ -127,7 +123,6 @@ end
 # this also gets rid of low confidence complexes if any complex in the set can
 # be found in the ComplexPortal.
 function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
-    # protein stoich map, infer from uniprot
     mer_map = Dict(
         "Homomonomer" => 1,
         "Monomer" => 1,
@@ -141,8 +136,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
         "Homodecamer" => 10,
         "Homododecamer" => 12,
     )
-
-    # infer protein stoichiometry from uniprot annotations
     reaction_isozymes = Dict{String,Dict{String,Isozyme}}()
     multi_component_enzymes = [] # for use later
     for rid in A.reactions(model)
@@ -152,7 +145,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
             for (i, grr) in enumerate(grrs)
                 isozyme_id = "isozyme_" * string(i)
                 d = get!(reaction_isozymes, rid, Dict{String,Isozyme}())
-
                 if length(grr) == 1 # only assign homomers
                     gid = first(grr)
                     if haskey(proteome_data, gid) # has uniprot data
@@ -165,7 +157,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
                     ss_counts = fill(1.0, length(grr))
                     push!(multi_component_enzymes, (rid, isozyme_id))
                 end
-
                 d[isozyme_id] = Isozyme(
                     gene_product_stoichiometry = Dict(grr .=> ss_counts),
                     kcat_forward = kcat_data[rid] * scale,
@@ -174,13 +165,10 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
             end
         end
     end
-
-    # fix complex stoichiometry using ComplexPortal data
     fixed_multi_component_enzymes = []
     not_fixed_multi_component_enzymes = []
     for (rid, isozyme_id) in multi_component_enzymes
         grr = collect(keys(reaction_isozymes[rid][isozyme_id].gene_product_stoichiometry))
-
         stoichs = []
         for v in values(complex_data)
             if length(intersect(collect(keys(v)), grr)) == length(grr) &&
@@ -188,7 +176,6 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
                 push!(stoichs, v)
             end
         end
-
         if length(stoichs) == 1
             push!(fixed_multi_component_enzymes, (rid, isozyme_id))
             d = first(stoichs)
@@ -202,14 +189,11 @@ function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, s
             push!(not_fixed_multi_component_enzymes, (rid, isozyme_id))
         end
     end
-
-    # use only the entries where the stoichiometry is known, if any are known
     for (rid, isozyme_id) in not_fixed_multi_component_enzymes
         if rid in first.(fixed_multi_component_enzymes)
             delete!(reaction_isozymes[rid], isozyme_id)
         end
     end
-
     return reaction_isozymes
 end
 
@@ -278,8 +262,6 @@ gene_product_molar_masses["s0001"] = 54.58
 
 # below we create a community assembly function, assuming an input of a wildtype model
 function auxotrophe_community(wt, aa_ko; fbc_only = false)
-
-    # these are the possible KOs we consider
     kos = Dict(
         :argA => (:ACGS, :arg),
         :ilvA => (:THRD_L, :ile),
@@ -294,10 +276,7 @@ function auxotrophe_community(wt, aa_ko; fbc_only = false)
         :tyrA => (:PPND, :tyr),
         :lysA => (:DAPDC, :lys),
     )
-
     aa_id(aa) = Symbol("EX_", aa, "__L_e")
-
-    # bound the exchanges
     boundf(id) = begin
         ex_id = first(id)
         if fbc_only && ex_id == :EX_glc__D_e
@@ -306,16 +285,11 @@ function auxotrophe_community(wt, aa_ko; fbc_only = false)
             wt.interface.exchanges[ex_id].bound
         end
     end
-
-    # create KO pairs to be joined via their exchanges
     ko_pairs = [
         ko => (deepcopy(wt), deepcopy(wt.interface.exchanges), ko_ab) for
         (ko, ko_ab) in aa_ko
     ]
-
-    # create community model (interface joins them)
     x = interface_constraints(ko_pairs...; bound = boundf)
-
     all_kos = first.(aa_ko) # get model ids
     x *= # set all growth rates equal
         :equalgrowth^all_equal_constraints(
@@ -329,13 +303,9 @@ function auxotrophe_community(wt, aa_ko; fbc_only = false)
             x[first(all_kos)].fluxes.BIOMASS_Ec_iML1515_core_75p37M.value,
             nothing,
         )
-
-    # knockout - single gene
     for ko in all_kos
         x[ko].fluxes[first(kos[ko])].bound = C.EqualTo(0)
     end
-
-    # allow exchanges of KO'd aa
     all_aa_exs = [aa_id(last(kos[ko])) for ko in all_kos]
     for ko in all_kos
         for aa_ex in all_aa_exs
@@ -346,14 +316,12 @@ function auxotrophe_community(wt, aa_ko; fbc_only = false)
             end
         end
     end
-
     x
 end
 
 # simulate a model
 function auxotrophe_fba(wt, aa_ko; fbc_only = false)
     x = auxotrophe_community(wt, aa_ko; fbc_only)
-
     sol = optimized_values(
         x;
         optimizer = HiGHS.Optimizer,
@@ -361,7 +329,6 @@ function auxotrophe_fba(wt, aa_ko; fbc_only = false)
         sense = Maximal,
     )
     isnothing(sol) && return nothing
-
     (; mu = sol.objective, (Symbol(aa) => ab for (aa, ab) in aa_ko)...)
 end
 
