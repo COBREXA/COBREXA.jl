@@ -483,7 +483,7 @@ settings = [
     set_optimizer_attribute("simplex_strategy", 4),
 ]
 
-res = screen(mus) do mu
+res = screen(mus, workers = [1]) do mu
     @info "sRBA step" mu
     rbat = with_srba_constraints(ct, mu)
     rbat *=

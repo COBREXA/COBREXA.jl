@@ -423,7 +423,7 @@ specs = [
 wt = flux_balance_constraints(model; interface = :identifier_prefixes)
 open_bounds_fbc!(wt, :EX_glc__D_e)
 
-cfba_res = screen(specs) do spec
+cfba_res = screen(specs, workers = [1]) do spec
     auxotrophe_fba(wt, spec; fbc_only = true)
 end
 
@@ -439,7 +439,7 @@ wt = simplified_enzyme_constrained_flux_balance_constraints(
 open_bounds_ecfbc!(wt, :EX_glc__D_e)
 fix_bounds_ecfbc!(wt)
 
-eccfba_res = screen(specs) do spec
+eccfba_res = screen(specs. workers = [1]) do spec
     auxotrophe_fba(wt, spec)
 end
 
