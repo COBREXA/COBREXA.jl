@@ -51,6 +51,30 @@ const Isozyme = IsozymeT{Float64}
 
 export Isozyme
 
+
+"""
+$(TYPEDSIGNATURES)
+
+Expand the `capacity` argument as given to
+[`enzyme_constrained_flux_balance_constraints`](@ref) and
+[`simplified_enzyme_constrained_flux_balance_constraints`](@ref) into a form
+accepted by [`enzyme_constraints`](@ref) and
+[`simplified_enzyme_constraints`](@ref) (respectively).
+
+Overloading this function gives a way to simplify the interface of the
+functions by accomodating custom capacity types.
+
+By default, `Bound`s are kept intact, `Real` values are converted to a fixed
+interval between a zero and the value. All other values are assumed to be lists
+of capacities.
+
+The second argument is given to the function as a list of full scope of the
+capacities it can work with, by default "all capacities".
+"""
+expand_enzyme_capacity(x::Bound, all) = [:total_capacity => (all, x)]
+expand_enzyme_capacity(x::Real, all) = [:total_capacity => (all, (zero(x), x))]
+#TODO
+
 """
 $(TYPEDSIGNATURES)
 
@@ -79,7 +103,7 @@ function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
     reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
+    capacity,
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
 ) where {R<:Real}
@@ -137,12 +161,7 @@ function enzyme_constrained_flux_balance_constraints(
         kcat_reverse,
         isozyme_gene_product_stoichiometry,
         gene_product_molar_mass,
-        capacity_limits = capacity isa Real ?
-                          [(:total_capacity, gene_ids, (zero(capacity), capacity))] :
-                          [
-            (Symbol(k), Symbol.(gs), C.BetweenT(; lower = zero(cap), upper = cap)) for
-            (k, gs, cap) in capacity
-        ],
+        capacity_limits = expand_enzyme_capacity(capacity, gene_ids),
     )
 end
 
@@ -251,16 +270,7 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                    maybemap(last, get(min_isozyme_cost_forward, rid, nothing)),
                mass_cost_reverse = rid ->
                    maybemap(last, get(min_isozyme_cost_reverse, rid, nothing)),
-               capacity_limits = capacity isa Real ?
-                                 [(
-                   :total_capacity,
-                   keys(constraints.fluxes),
-                   (zero(capacity), capacity),
-               )] :
-                                 [
-                   (Symbol(k), Symbol.(fs), C.BetweenT(; lower = zero(cap), upper = cap))
-                   for (k, fs, cap) in capacity
-               ],
+               capacity_limits = expand_enzyme_capacity(capacity, keys(constraints.fluxes)),
            ) *
            :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
                (
