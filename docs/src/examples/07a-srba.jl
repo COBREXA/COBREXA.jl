@@ -514,35 +514,3 @@ res = screen(mus, workers = [1]) do mu
         o2_flux = sol.fluxes.EX_o2_e,
     )
 end
-
-# finally, we can plot the data, to see if we can recapitulate known phenomena
-
-#= TODO
-
-using CairoMakie
-
-# load measured ribosome protein mass fractions
-ribosome_measurements = CSV.File(joinpath(data_root, "ecoli_ribosomes.tsv"))
-
-# First, show that the predicted ribosome density matches experimental
-# observations, and also show that overflow metabolism occurs (latter is due to
-# the membrane bound).
-fig = Figure();
-ax = Axis(fig[1, 1], xlabel = "Growth rate, 1/h", ylabel = "Ribosome mass fraction")
-scatter!(
-    ax,
-    ribosome_measurements.GR,
-    ribosome_measurements.ActiveR ./ 100,
-    label = "Measurements",
-)
-lines!(ax, mus, [r.ribosome_mass / r.total_mass for r in res], label = "Model predictions")
-axislegend(ax, position = :lt)
-
-ax2 = Axis(fig[2, 1], xlabel = "Growth rate, 1/h", ylabel = "Metabolite flux")
-lines!(ax2, mus, [r.ac_flux for r in res], label = "Acetate")
-lines!(ax2, mus, [abs(r.glc_flux) for r in res], label = "Glucose")
-lines!(ax2, mus, [abs(r.o2_flux) for r in res], label = "Oxygen")
-axislegend(ax2, position = :lt)
-fig
-
-=#
