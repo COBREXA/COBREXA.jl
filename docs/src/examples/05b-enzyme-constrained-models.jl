@@ -400,7 +400,7 @@ simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
 
 # In this case, the result is the same as with the full analysis:
 
-simplified_ec_solution.capacity_limits.total_capacity
+simplified_ec_solution.capacity_limits.total
 
 # Gene product amounts are not present in the model but are reconstructed
 # nevertheless (they are uniquely determined by the flux):
