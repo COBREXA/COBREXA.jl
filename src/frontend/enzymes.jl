@@ -90,7 +90,7 @@ $(TYPEDSIGNATURES)
 Overload of [`expand_enzyme_capacity`](@ref) that provides compatibility with
 the earlier capacity specifications (using triples instead of pairs).
 """
-expand_enzyme_capacity(x::Vector{Tuple}, all) =
+expand_enzyme_capacity(x::Vector{<:Tuple}, all) =
     return expand_enzyme_capacity_iterable(x, all)
 
 export expand_enzyme_capacity
