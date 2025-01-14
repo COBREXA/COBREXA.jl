@@ -34,6 +34,7 @@ download_model(
 # -- let's use HiGHS here:
 
 import AbstractFBCModels as A
+import ConstraintTrees as C
 import JSONFBCModels
 import HiGHS
 
@@ -377,12 +378,23 @@ ec_solution.gene_product_capacity
 # arguments as the [`enzyme_constrained_flux_balance_analysis`](@ref), but
 # automatically chooses the "fastest" reaction isozyme for each reaction
 # direction and builds the model with that.
+#
+# We additionally show how to specify more complex bounds for the capacities;
+# in this case we list all fluxes for which we have isozyme data and add a
+# realistic lower limit for the capacity.
+
+minimum_enzyme_capacity = 20.0
 
 simplified_ec_solution = simplified_enzyme_constrained_flux_balance_analysis(
     model;
     reaction_isozymes,
     gene_product_molar_masses = ecoli_core_gene_product_masses,
-    capacity = total_enzyme_capacity,
+    capacity = Dict(
+        :total => (
+            Symbol.(keys(reaction_isozymes)),
+            C.Between(minimum_enzyme_capacity, total_enzyme_capacity),
+        ),
+    ),
     optimizer = HiGHS.Optimizer,
 )
 
@@ -425,7 +437,6 @@ ec_optimum = optimized_values(
 )
 
 # ...then creating a system constrained to near-optimal growth:
-import ConstraintTrees as C
 
 ec_system.objective.bound = C.Between(0.99 * ec_optimum, Inf)
 
