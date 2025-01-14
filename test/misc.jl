@@ -18,6 +18,8 @@
 # documentation. If you want to add tests here, first consider actually
 # documenting the functionality in `docs/src/examples/` instead.
 
+import ConstraintTrees as C
+
 @testset "Switch bound" begin
     x = Switch(5, 10)
     y = -(((1 + 0.5 * (((1 - x) + 1) * 4)) / 2) - 2.5)
@@ -123,4 +125,22 @@ end
         universal_fluxes = vs,
         universal_stoichiometry = stoi,
     )
+end
+
+@testset "Enzyme capacity expansion compat & corner cases" begin
+    x = C.EqualTo(123.0)
+    all = [:ident]
+    y = expand_enzyme_capacity(x, all)
+    @test length(y) == 1
+    (_, (ks, v)) = y[1]
+    # these things should not be touched, thus triple =
+    @test ks === all
+    @test v === x
+
+    x = expand_enzyme_capacity([(:test, [:ident], 123)], [:defa, :ults])
+    @test length(x) == 1
+    (i, (ks, v)) = x[1]
+    @test i == :test
+    @test ks == [:ident]
+    @test v == (0, 123)
 end

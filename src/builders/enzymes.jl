@@ -175,10 +175,11 @@ gene product IDs to numbers (such as `Dict{Symbol, Float64}`), and
 All parameter functions may return `nothing`, at which point the given
 object is considered nonexistent and is omitted from constraints.
 
-`capacity_limits` is an interable container of triples `(limit_id,
-gene_product_ids, capacity_bound)` which are converted to a constraint
+`capacity_limits` is an interable container of pairs `limit_id =>
+(gene_product_ids, capacity_bound)` which are converted to a constraint
 identified by the `limit_id` that limits the total mass of `gene_product_ids`
-(which is any iterable container) by `capacity_bound`.
+(which is any iterable container) by `capacity_bound` (which may be anything
+usable as a bound in `Constraint`s).
 """
 function enzyme_constraints(;
     fluxes_forward::C.ConstraintTree,
@@ -220,7 +221,7 @@ function enzyme_constraints(;
                        init = zero(C.LinearValue),
                    ),
                    bound,
-               ) for (id, gps, bound) in capacity_limits
+               ) for (id, (gps, bound)) in capacity_limits
            )
 end
 
@@ -271,7 +272,7 @@ Parameter functions `mass_cost_forward` and `mass_cost_reverse` take a flux ID
 the enzyme mass required to catalyze one "unit" of reaction in the forward or
 reverse direction, respectively. Returning `nothing` ignores the mass cost.
 
-`capacity_limits` is an iterable container of triples `(limit_id, flux_ids,
+`capacity_limits` is an iterable container of pairs `limit_id => (flux_ids,
 bound)`, which creates the capacity bounds over groups of fluxes (in the same
 manner as for gene products in [`enzyme_constraints`](@ref)).
 """
@@ -292,13 +293,13 @@ function simplified_enzyme_constraints(;
         id => C.Constraint(;
             value = C.sum(
                 contribution(fluxes_forward, mass_cost_forward, f) for f in fs;
-                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
+                init = zero(C.LinearValue),
             ) + C.sum(
                 contribution(fluxes_reverse, mass_cost_reverse, f) for f in fs;
-                init = zero(C.LinearValue), # TODO not type stable if LinearValueT{not Float64}
+                init = zero(C.LinearValue),
             ),
             bound,
-        ) for (id, fs, bound) in capacity_limits
+        ) for (id, (fs, bound)) in capacity_limits
     )
 end
 

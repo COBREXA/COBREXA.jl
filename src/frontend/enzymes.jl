@@ -51,6 +51,78 @@ const Isozyme = IsozymeT{Float64}
 
 export Isozyme
 
+
+"""
+$(TYPEDSIGNATURES)
+
+Expand the `capacity` argument as given to
+[`enzyme_constrained_flux_balance_constraints`](@ref) and
+[`simplified_enzyme_constrained_flux_balance_constraints`](@ref) into a form
+accepted by [`enzyme_constraints`](@ref) and
+[`simplified_enzyme_constraints`](@ref) (respectively).
+
+By default, `Bound`s are kept intact, `Real` values are converted to a fixed
+interval between a zero and the value. All other values are assumed to be lists
+of capacities. (See [`expand_enzyme_capacity_bound`](@ref) for translation of
+actual bounds).
+
+Overloading this function (or [`expand_enzyme_capacity_bound`](@ref)) gives a
+way to simplify the interface of the functions by accomodating custom capacity
+types.
+
+The second argument is provided to this function as a list of full scope of the
+capacities it can work with, by default "all capacities".
+"""
+expand_enzyme_capacity(x, all) =
+    return [:total_capacity => (all, expand_enzyme_capacity_bound(x))]
+
+"""
+$(TYPEDSIGNATURES)
+
+Overload of [`expand_enzyme_capacity`](@ref) for all `Dict`-like iterables.
+"""
+expand_enzyme_capacity(x::Union{Vector{Pair},Dict}, _) =
+    return expand_enzyme_capacity_iterable(x)
+
+"""
+$(TYPEDSIGNATURES)
+
+Overload of [`expand_enzyme_capacity`](@ref) that provides compatibility with
+the earlier capacity specifications (using triples instead of pairs).
+"""
+expand_enzyme_capacity(x::Vector{<:Tuple}, _) =
+    return expand_enzyme_capacity_iterable(id => (grp, cap) for (id, grp, cap) in x)
+
+export expand_enzyme_capacity
+
+"""
+$(TYPEDSIGNATURES)
+
+Internal helper for implementation of [`expand_enzyme_capacity`](@ref) over
+iterable `Dict`-like objects.
+"""
+expand_enzyme_capacity_iterable(x) =
+    return [id => (grp, expand_enzyme_capacity_bound(cap)) for (id, (grp, cap)) in x]
+
+"""
+$(TYPEDSIGNATURES)
+
+Expand a single capacity bound for use in enzyme-constrained models.
+Overloading this function provides additional ways to interpret the capacity
+specifications. Typically used via [`expand_enzyme_capacity`](@ref).
+"""
+expand_enzyme_capacity_bound(x::Real) = return (zero(x), x)
+
+"""
+$(TYPEDSIGNATURES)
+
+By default, [`expand_enzyme_capacity_bound`](@ref) leaves all `Bound`s intact.
+This overload implements this property.
+"""
+expand_enzyme_capacity_bound(x::C.Bound) = return x
+
+export expand_enzyme_capacity_bound
+
 """
 $(TYPEDSIGNATURES)
 
@@ -70,7 +142,9 @@ material is limited by `capacity`.
 `capacity` may be a single number, which sets the mass limit for "all described
 enzymes". Alternatively, `capacity` may be a vector of identifier-genes-limit
 triples that together form a constraint (identified by the given identifier)
-that limits the total sum of the listed genes to the given limit.
+that limits the total sum of the listed genes to the given limit. The
+interpretation of `capacity` is implemented (and can be extended) via
+[`expand_enzyme_capacity`](@ref).
 
 `interface` and `interface_name` are forwarded to
 [`flux_balance_constraints`](@ref).
@@ -79,7 +153,7 @@ function enzyme_constrained_flux_balance_constraints(
     model::A.AbstractFBCModel;
     reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
+    capacity,
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
 ) where {R<:Real}
@@ -137,11 +211,7 @@ function enzyme_constrained_flux_balance_constraints(
         kcat_reverse,
         isozyme_gene_product_stoichiometry,
         gene_product_molar_mass,
-        capacity_limits = capacity isa Real ?
-                          [(:total_capacity, gene_ids, (zero(capacity), capacity))] :
-                          [
-            (Symbol(k), Symbol.(gs), (zero(cap), cap)) for (k, gs, cap) in capacity
-        ],
+        capacity_limits = expand_enzyme_capacity(capacity, gene_ids),
     )
 end
 
@@ -180,15 +250,15 @@ constraints. BMC Bioinformatics 21, 19 (2020).
 https://doi.org/10.1186/s12859-019-3329-9*.
 
 Arguments are as with [`enzyme_constrained_flux_balance_constraints`](@ref),
-with a major difference in `capacity` handling: the identifier lists (2nd
-elements of the triples given in the list) are not identifiers of gene
-products, but identifiers of reactions.
+with a major difference in `capacity` handling: the identifier lists contain
+reactions identifiers (i.e., keys of `fluxes` in the constraint tree), instead
+of the gene product identifiers.
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
     reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
+    capacity,
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
 ) where {R<:Real}
@@ -250,15 +320,7 @@ function simplified_enzyme_constrained_flux_balance_constraints(
                    maybemap(last, get(min_isozyme_cost_forward, rid, nothing)),
                mass_cost_reverse = rid ->
                    maybemap(last, get(min_isozyme_cost_reverse, rid, nothing)),
-               capacity_limits = capacity isa Real ?
-                                 [(
-                   :total_capacity,
-                   keys(constraints.fluxes),
-                   (zero(capacity), capacity),
-               )] :
-                                 [
-                   (Symbol(k), Symbol.(fs), (zero(cap), cap)) for (k, fs, cap) in capacity
-               ],
+               capacity_limits = expand_enzyme_capacity(capacity, keys(constraints.fluxes)),
            ) *
            :gene_product_amounts^simplified_isozyme_gene_product_amount_constraints(
                (
