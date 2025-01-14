@@ -134,15 +134,13 @@ end
     @test length(y) == 1
     (_, (ks, v)) = y[1]
     # these things should not be touched, thus triple =
-    @test ks === ident
+    @test ks === all
     @test v === x
 
     x = expand_enzyme_capacity([(:test, [:ident], 123)], [:defa, :ults])
     @test length(x) == 1
-    (i, (ks, v)) = x
+    (i, (ks, v)) = x[1]
     @test i == :test
     @test ks == [:ident]
-    @test v isa C.Between
-    @test v.lower == 0.0
-    @test v.upper == 123.0
+    @test v == (0, 123)
 end

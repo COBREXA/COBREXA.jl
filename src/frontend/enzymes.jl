@@ -81,8 +81,8 @@ $(TYPEDSIGNATURES)
 
 Overload of [`expand_enzyme_capacity`](@ref) for all `Dict`-like iterables.
 """
-expand_enzyme_capacity(x::Union{Vector{Pair},Dict}, all) =
-    return expand_enzyme_capacity_iterable(x, all)
+expand_enzyme_capacity(x::Union{Vector{Pair},Dict}, _) =
+    return expand_enzyme_capacity_iterable(x)
 
 """
 $(TYPEDSIGNATURES)
@@ -90,8 +90,8 @@ $(TYPEDSIGNATURES)
 Overload of [`expand_enzyme_capacity`](@ref) that provides compatibility with
 the earlier capacity specifications (using triples instead of pairs).
 """
-expand_enzyme_capacity(x::Vector{<:Tuple}, all) =
-    return expand_enzyme_capacity_iterable((id => (grp, cap) for (id, grp, cap) in x), all)
+expand_enzyme_capacity(x::Vector{<:Tuple}, _) =
+    return expand_enzyme_capacity_iterable(id => (grp, cap) for (id, grp, cap) in x)
 
 export expand_enzyme_capacity
 
@@ -101,7 +101,7 @@ $(TYPEDSIGNATURES)
 Internal helper for implementation of [`expand_enzyme_capacity`](@ref) over
 iterable `Dict`-like objects.
 """
-expand_enzyme_capacity_iterable(x, all) =
+expand_enzyme_capacity_iterable(x) =
     return [id => (grp, expand_enzyme_capacity_bound(cap)) for (id, (grp, cap)) in x]
 
 """
