@@ -56,10 +56,10 @@ end
 # documentation, which doesn't get erased to improve the test caching.
 
 @testset "COBREXA test suite" begin
-    run_doc_examples()
     @testset "Miscellaneous tests" begin
         run_test_file("misc.jl")
     end
+    run_doc_examples()
     run_test_file("aqua.jl")
 end
 
