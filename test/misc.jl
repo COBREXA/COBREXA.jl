@@ -124,3 +124,17 @@ end
         universal_stoichiometry = stoi,
     )
 end
+
+@testset "Enzyme capacity expansion compat & corner cases" begin
+    x = C.EqualTo(123.0)
+    @test expand_enzyme_capacity(x) === x # should not be touched, thus triple =
+
+    x = expand_enzyme_capacity([(:test, [:ident], 123)])
+    @test length(x) == 1
+    (i, (ks, v)) = x
+    @test i == :test
+    @test ks == [:ident]
+    @test v isa C.Between
+    @test v.lower == 0.0
+    @test v.upper == 123.0
+end
