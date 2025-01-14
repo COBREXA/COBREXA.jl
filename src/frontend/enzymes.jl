@@ -73,7 +73,8 @@ types.
 The second argument is provided to this function as a list of full scope of the
 capacities it can work with, by default "all capacities".
 """
-expand_enzyme_capacity(x, all) = [:total_capacity => (all, expand_enzyme_capacity_bound(x))]
+expand_enzyme_capacity(x, all) =
+    return [:total_capacity => (all, expand_enzyme_capacity_bound(x))]
 
 """
 $(TYPEDSIGNATURES)
@@ -81,7 +82,7 @@ $(TYPEDSIGNATURES)
 Overload of [`expand_enzyme_capacity`](@ref) for all `Dict`-like iterables.
 """
 expand_enzyme_capacity(x::Union{Vector{Pair},Dict}, all) =
-    expand_enzyme_capacity_iterable(x, all)
+    return expand_enzyme_capacity_iterable(x, all)
 
 """
 $(TYPEDSIGNATURES)
@@ -89,7 +90,8 @@ $(TYPEDSIGNATURES)
 Overload of [`expand_enzyme_capacity`](@ref) that provides compatibility with
 the earlier capacity specifications (using triples instead of pairs).
 """
-expand_enzyme_capacity(x::Vector{Tuple}, all) = expand_enzyme_capacity_iterable(x, all)
+expand_enzyme_capacity(x::Vector{Tuple}, all) =
+    return expand_enzyme_capacity_iterable(x, all)
 
 export expand_enzyme_capacity
 
@@ -100,7 +102,7 @@ Internal helper for implementation of [`expand_enzyme_capacity`](@ref) over
 iterable `Dict`-like objects.
 """
 expand_enzyme_capacity_iterable(x, all) =
-    [id => (grp, expand_enzyme_capacity_bound(cap)) for (id, (grp, cap)) in x]
+    return [id => (grp, expand_enzyme_capacity_bound(cap)) for (id, (grp, cap)) in x]
 
 """
 $(TYPEDSIGNATURES)
@@ -109,7 +111,7 @@ Expand a single capacity bound for use in enzyme-constrained models.
 Overloading this function provides additional ways to interpret the capacity
 specifications. Typically used via [`expand_enzyme_capacity`](@ref).
 """
-expand_enzyme_capacity_bound(x::Real) = (zero(x), x)
+expand_enzyme_capacity_bound(x::Real) = return (zero(x), x)
 
 """
 $(TYPEDSIGNATURES)
@@ -117,7 +119,7 @@ $(TYPEDSIGNATURES)
 By default, [`expand_enzyme_capacity_bound`](@ref) leaves all `Bound`s intact.
 This overload implements this property.
 """
-expand_enzyme_capacity_bound(x::C.Bound) = x
+expand_enzyme_capacity_bound(x::C.Bound) = return x
 
 export expand_enzyme_capacity_bound
 
