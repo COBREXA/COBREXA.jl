@@ -142,7 +142,9 @@ material is limited by `capacity`.
 `capacity` may be a single number, which sets the mass limit for "all described
 enzymes". Alternatively, `capacity` may be a vector of identifier-genes-limit
 triples that together form a constraint (identified by the given identifier)
-that limits the total sum of the listed genes to the given limit.
+that limits the total sum of the listed genes to the given limit. The
+interpretation of `capacity` is implemented (and can be extended) via
+[`expand_enzyme_capacity`](@ref).
 
 `interface` and `interface_name` are forwarded to
 [`flux_balance_constraints`](@ref).
@@ -248,9 +250,9 @@ constraints. BMC Bioinformatics 21, 19 (2020).
 https://doi.org/10.1186/s12859-019-3329-9*.
 
 Arguments are as with [`enzyme_constrained_flux_balance_constraints`](@ref),
-with a major difference in `capacity` handling: the identifier lists (2nd
-elements of the triples given in the list) are not identifiers of gene
-products, but identifiers of reactions.
+with a major difference in `capacity` handling: the identifier lists contain
+reactions identifiers (i.e., keys of `fluxes` in the constraint tree), instead
+of the gene product identifiers.
 """
 function simplified_enzyme_constrained_flux_balance_constraints(
     model;
