@@ -91,7 +91,7 @@ Overload of [`expand_enzyme_capacity`](@ref) that provides compatibility with
 the earlier capacity specifications (using triples instead of pairs).
 """
 expand_enzyme_capacity(x::Vector{<:Tuple}, all) =
-    return expand_enzyme_capacity_iterable(x, all)
+    return expand_enzyme_capacity_iterable((id => (grp, cap) for (id, grp, cap) in x), all)
 
 export expand_enzyme_capacity
 
