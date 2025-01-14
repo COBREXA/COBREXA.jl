@@ -258,7 +258,7 @@ function simplified_enzyme_constrained_flux_balance_constraints(
     model;
     reaction_isozymes::Dict{String,Dict{String,IsozymeT{R}}},
     gene_product_molar_masses::Dict{String,Float64},
-    capacity::Union{Vector{Tuple{String,Vector{String},R}},R},
+    capacity,
     interface::Maybe{Symbol} = nothing,
     interface_name = :interface,
 ) where {R<:Real}
