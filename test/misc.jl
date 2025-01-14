@@ -127,9 +127,13 @@ end
 
 @testset "Enzyme capacity expansion compat & corner cases" begin
     x = C.EqualTo(123.0)
-    @test expand_enzyme_capacity(x) === x # should not be touched, thus triple =
+    y = expand_enzyme_capacity(x, [:ident])
+    @test length(y) == 1
+    (_, (ks, v)) = y[1]
+    @test ks == [:ident]
+    @test v === x # should not be touched, thus triple =
 
-    x = expand_enzyme_capacity([(:test, [:ident], 123)])
+    x = expand_enzyme_capacity([(:test, [:ident], 123)], [:defa, :ults])
     @test length(x) == 1
     (i, (ks, v)) = x
     @test i == :test
