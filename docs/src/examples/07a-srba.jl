@@ -235,19 +235,8 @@ function with_srba_constraints(ct, mu; ribosome_aa_per_second = 12)
             0,
         )
     #+
-    # Compute the total gene product and ribosome production mass (which can
+    # Compute the total ribosome production mass (which can
     # serve as minimization objective)
-    rbatree *=
-        :total_enzyme_mass^C.Constraint(
-            C.sum(
-                (
-                    C.value(v) * e_coli_gp_mass[string(k)] for
-                    (k, v) in rbatree.gene_product_amounts
-                ),
-                init = zero(C.LinearValue),
-            ),
-        )
-
     rbatree *=
         :total_ribosome_mass^C.Constraint(
             C.sum(
@@ -258,10 +247,6 @@ function with_srba_constraints(ct, mu; ribosome_aa_per_second = 12)
                 init = zero(C.LinearValue),
             ),
         )
-    rbatree *=
-        :total_mass^C.Constraint(
-            rbatree.total_ribosome_mass.value + rbatree.total_enzyme_mass.value,
-        )
     #+
     return rbatree
 end
@@ -271,22 +256,24 @@ end
 # Here we use screen to efficiently run all the simulations through the
 # expectably viable growth range
 
-mus = range(0.1, 1.3, 20) # simulate at these growth rates
+mus = range(0.1, 1.0, 10) # simulate at these growth rates
 
 @time res = screen(mus, workers = [1]) do mu
-    rba_constraints = with_srba_constraints(ct, mu, ribosome_aa_per_second = 12 * 3.46)
+    rba_constraints = with_srba_constraints(ct, mu, ribosome_aa_per_second = 12)
     sol = optimized_values(
         rba_constraints;
-        objective = rba_constraints.total_mass.value,
-        optimizer = HiGHS.Optimizer,
+        objective = rba_constraints.gene_product_capacity.total.value +
+                    rba_constraints.total_ribosome_mass.value,
         sense = Minimal,
+        optimizer = HiGHS.Optimizer,
     )
     isnothing(sol) && return nothing
     return (;
         mu,
+        membrane_mass = sol.gene_product_capacity.membrane,
         ribosome_mass = sol.total_ribosome_mass,
         enzyme_mass = sol.total_enzyme_mass,
-        total_mass = sol.total_mass,
+        total_mass = sol.gene_product_capacity.total,
         ac_flux = sol.fluxes.EX_ac_e,
         glc_flux = sol.fluxes.EX_glc__D_e,
         o2_flux = sol.fluxes.EX_o2_e,
