@@ -69,7 +69,7 @@ e_coli_rxn_isozymes = Dict{String,Dict{String,Isozyme}}()
 for x in CSV.File(joinpath(data_dir, "e_coli_isozyme_gp.tsv"), delim = '\t')
     haskey(e_coli_rxn_kcat_isozyme, x.reaction) || continue
     rxn = get!(e_coli_rxn_isozymes, x.reaction, Dict{String,Isozyme}())
-    iso = get!(rxn, x.isozyme, e_coli_rxn_kcat_isozyme[x.reaction])
+    iso = get!(rxn, x.isozyme, deepcopy(e_coli_rxn_kcat_isozyme[x.reaction]))
     iso.gene_product_stoichiometry[x.gene_product] = x.stoichiometry
 end
 
