@@ -59,8 +59,8 @@ e_coli_gp_mass = Dict{String,Float64}(
 kcat_scale = 3600 / 1e3
 e_coli_rxn_kcat_isozyme = Dict{String,Isozyme}(
     x.reaction => Isozyme(
-        kcat_forward = x.kcat * scale,
-        kcat_reverse = x.kcat * scale,
+        kcat_forward = x.kcat * kcat_scale,
+        kcat_reverse = x.kcat * kcat_scale,
         gene_product_stoichiometry = Dict(),
     ) for x in CSV.File(joinpath(data_dir, "e_coli_reaction_kcat.tsv"), delim = '\t')
 )
@@ -88,7 +88,6 @@ amino_acids = Set(aa for (k, v) in e_coli_gp_aas for (aa, _) in v)
 aas_in_ribosome = sum(values(e_coli_gp_aas["ribosome"]))
 atp_polymerization_cost = 4.2
 protein_polymerization_atp_per_gDW = 12.0
-ribosomes_per_protein = 3.46
 
 # ## Model assembly
 
@@ -131,11 +130,14 @@ ct = enzyme_constrained_flux_balance_constraints(
     model;
     reaction_isozymes = e_coli_rxn_isozymes,
     gene_product_molar_masses = e_coli_gp_mass,
-    capacity = [
+    capacity = Tuple{String,Vector{String},Float64}[
         ("membrane", membrane_gids, float(total_capacity * membrane_frac)),
         ("total", A.genes(model), float(total_capacity)),
     ],
 )
+
+# How ATP gets consumed (this is used to power the RBA processes).
+energy_stoichiometry = Dict(:atp_c => -1, :h2o_c => -1, :adp_c => 1, :h_c => 1, :pi_c => 1)
 
 # We now need to extend the enzyme constrained model with further resource
 # allocation constraints. Since RBA models are bilinear, it is simpler to create
@@ -144,13 +146,9 @@ ct = enzyme_constrained_flux_balance_constraints(
 # to be inserted into models directly, obviating the need for this
 # function-based appraoch. The function belows glues the sRBA constraint system
 # to the given ecRBA model at a specific growth rate.
-function with_srba_constraints(ct, mu)
+function with_srba_constraints(ct, mu; ribosome_aa_per_second = 12)
     #+
-    # atp + h2o -> adp + h + po4
-    energy_metabolites =
-        Dict(:atp_c => -1, :h2o_c => -1, :adp_c => 1, :h_c => 1, :pi_c => 1)
-    #+
-    # attach new variables for ribosome production (recall ribosomes are
+    # First, attach new variables for ribosome production (recall ribosomes are
     # required to make proteins, and ribosomes themselves)
     rbatree =
         ct +
@@ -177,12 +175,14 @@ function with_srba_constraints(ct, mu)
             0.001 *
             (
                 sum(
-                    aacount[g][aa] * c.value for (g, c) in rbatree.gene_product_amounts if
-                    haskey(aacount, g) && haskey(aacount[g], aa);
+                    e_coli_gp_aas[g][aa] * c.value for
+                    (g, c) in rbatree.gene_product_amounts if
+                    haskey(e_coli_gp_aas, g) && haskey(e_coli_gp_aas[g], aa);
                     init = zero(C.LinearValue),
                 ) + sum(
-                    aacount["ribosome"][String(aa)] * C.value(c) for
-                    (_, c) in rbatree.ribosomes if haskey(aacount[:ribosome], String(aa));
+                    e_coli_gp_aas["ribosome"][String(aa)] * C.value(c) for
+                    (_, c) in rbatree.ribosomes if
+                    haskey(e_coli_gp_aas["ribosome"], String(aa));
                     init = zero(C.LinearValue),
                 )
             )
@@ -193,17 +193,19 @@ function with_srba_constraints(ct, mu)
     # polymerization.
     for (mid, v) in biomass.stoichiometry
         k = Symbol(mid)
-        haskey(amino_acids, k) && continue
-        offset = haskey(energy_metabolites, k) ? -energy_metabolites[k] * protein_polymerization_atp_per_gDW : 0.0
+        k in amino_acids && continue
+        offset =
+            haskey(energy_stoichiometry, k) ?
+            -energy_stoichiometry[k] * protein_polymerization_atp_per_gDW : 0.0
         rbatree.flux_stoichiometry[k].value += mu * (v + offset)
     end
     #+
     # Consume energy (ATP) for all polymerization.
-    for (k, kk) in energy_metabolites
+    for (k, kk) in energy_stoichiometry
         rbatree.flux_stoichiometry[k].value +=
             (kk * mu * 0.001 * atp_polymerization_cost) * sum(
-                sum(values(aacount[g])) * C.value(c) for
-                (g, c) in rbatree.gene_product_amounts if haskey(aacount, g);
+                sum(values(e_coli_gp_aas[g])) * C.value(c) for
+                (g, c) in rbatree.gene_product_amounts if haskey(e_coli_gp_aas, g);
                 init = C.zero(C.LinearValue),
             )
         #+
@@ -215,8 +217,8 @@ function with_srba_constraints(ct, mu)
     #+
     # Use and consume ribosomes for protein synthesis.
     # (the conversion below is: ribosome elongation rate amino acids/second => amino acids/hr)
-    kr = ribosomes_per_protein * 12 * 3600
-    aa_sum(g) = haskey(aacount, g) ? sum(values(aacount[g])) : 300
+    kr = ribosome_aa_per_second * 3600
+    aa_sum(g) = haskey(e_coli_gp_aas, g) ? sum(values(e_coli_gp_aas[g])) : 300
     rbatree *=
         :protein_synthesis^C.ConstraintTree(
             g =>
@@ -233,10 +235,34 @@ function with_srba_constraints(ct, mu)
             0,
         )
     #+
-    # patch the total gene product capacity bound with the new ribosomes
-    rbatree.gene_product_capacity.total.value +=
-        sum(C.value.(values(rbatree.ribosomes))) * gene_product_molar_masses["ribosome"]
+    # Compute the total gene product and ribosome production mass (which can
+    # serve as minimization objective)
+    rbatree *=
+        :total_enzyme_mass^C.Constraint(
+            C.sum(
+                (
+                    C.value(v) * e_coli_gp_mass[string(k)] for
+                    (k, v) in rbatree.gene_product_amounts
+                ),
+                init = zero(C.LinearValue),
+            ),
+        )
 
+    rbatree *=
+        :total_ribosome_mass^C.Constraint(
+            C.sum(
+                (
+                    C.value(v) * e_coli_gp_mass["ribosome"] for
+                    v in values(rbatree.ribosomes)
+                ),
+                init = zero(C.LinearValue),
+            ),
+        )
+    rbatree *=
+        :total_mass^C.Constraint(
+            rbatree.total_ribosome_mass.value + rbatree.total_enzyme_mass.value,
+        )
+    #+
     return rbatree
 end
 
@@ -245,38 +271,22 @@ end
 # Here we use screen to efficiently run all the simulations through the
 # expectably viable growth range
 
-mus = range(0.1, 0.95, 10) # simulate at these growth rates
+mus = range(0.1, 1.3, 20) # simulate at these growth rates
 
-settings = [
-    set_optimizer_attribute("solver", "simplex"),
-    set_optimizer_attribute("simplex_strategy", 4),
-]
-
-res = screen(mus, workers = [1]) do mu
-    @info "sRBA step" mu
-    rbat = with_srba_constraints(ct, mu)
-    rbat *=
-        :lp_objective^C.Constraint(
-            sum(
-                C.value(v) * gene_product_molar_masses[string(k)] for
-                (k, v) in rbat.gene_product_amounts
-            ) + sum(
-                C.value(v) * gene_product_molar_masses["ribosome"] for
-                v in values(rbat.ribosomes)
-            ),
-        )
+@time res = screen(mus, workers = [1]) do mu
+    rba_constraints = with_srba_constraints(ct, mu, ribosome_aa_per_second = 12 * 3.46)
     sol = optimized_values(
-        rbat;
-        objective = rbat.lp_objective.value,
+        rba_constraints;
+        objective = rba_constraints.total_mass.value,
         optimizer = HiGHS.Optimizer,
         sense = Minimal,
-        settings,
     )
     isnothing(sol) && return nothing
     return (;
         mu,
-        ribosome_mass = gene_product_molar_masses["ribosome"] * sum(values(sol.ribosomes)),
-        total_mass = sol.gene_product_capacity.total,
+        ribosome_mass = sol.total_ribosome_mass,
+        enzyme_mass = sol.total_enzyme_mass,
+        total_mass = sol.total_mass,
         ac_flux = sol.fluxes.EX_ac_e,
         glc_flux = sol.fluxes.EX_glc__D_e,
         o2_flux = sol.fluxes.EX_o2_e,
