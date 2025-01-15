@@ -248,6 +248,8 @@ function with_srba_constraints(ct, mu; ribosome_aa_per_second = 12)
             ),
         )
     #+
+    # Add the ribosome mass into the total capacity bound
+    rbatree.gene_product_capacity.total.value += rbatree.total_ribosome_mass.value
     return rbatree
 end
 
@@ -256,14 +258,13 @@ end
 # Here we use screen to efficiently run all the simulations through the
 # expectably viable growth range
 
-mus = range(0.1, 1.0, 10) # simulate at these growth rates
+mus = range(0.1, 1.2, 10) # simulate at these growth rates
 
 @time res = screen(mus, workers = [1]) do mu
     rba_constraints = with_srba_constraints(ct, mu, ribosome_aa_per_second = 12)
     sol = optimized_values(
         rba_constraints;
-        objective = rba_constraints.gene_product_capacity.total.value +
-                    rba_constraints.total_ribosome_mass.value,
+        objective = rba_constraints.gene_product_capacity.total.value,
         sense = Minimal,
         optimizer = HiGHS.Optimizer,
     )
@@ -272,7 +273,7 @@ mus = range(0.1, 1.0, 10) # simulate at these growth rates
         mu,
         membrane_mass = sol.gene_product_capacity.membrane,
         ribosome_mass = sol.total_ribosome_mass,
-        enzyme_mass = sol.total_enzyme_mass,
+        enzyme_mass = sol.gene_product_capacity.total - sol.total_ribosome_mass,
         total_mass = sol.gene_product_capacity.total,
         ac_flux = sol.fluxes.EX_ac_e,
         glc_flux = sol.fluxes.EX_glc__D_e,
