@@ -49,7 +49,7 @@ import HiGHS
 import CSV
 import Statistics: mean
 
-data_dir = joinpath(dirname(pathof(COBREXA)), "..", "docs", "src", "examples", "data")V
+data_dir = joinpath(dirname(pathof(COBREXA)), "..", "docs", "src", "examples", "data")
 
 e_coli_gp_mass = Dict{String,Float64}(
     x.gene_product => x.mass for
