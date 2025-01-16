@@ -101,8 +101,9 @@ $(TYPEDSIGNATURES)
 Internal helper for implementation of [`expand_enzyme_capacity`](@ref) over
 iterable `Dict`-like objects.
 """
-expand_enzyme_capacity_iterable(x) =
-    return [id => (grp, expand_enzyme_capacity_bound(cap)) for (id, (grp, cap)) in x]
+expand_enzyme_capacity_iterable(x) = return [
+    Symbol(id) => (grp, expand_enzyme_capacity_bound(cap)) for (id, (grp, cap)) in x
+]
 
 """
 $(TYPEDSIGNATURES)
