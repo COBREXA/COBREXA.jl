@@ -105,8 +105,8 @@ export interface_constraints
 $(TYPEDSIGNATURES)
 
 Glue an interface made of additional variables into a constraint system that
-lacks one. Returns a tuple of a "module" and its "interface", usable in
-[`interface_constraint`](@ref).
+lacks variables to support one. Returns a tuple of a "module" and its
+"interface", usable in [`interface_constraint`](@ref).
 
 The values in `interface` are injected into `constraints` that have the same
 "path" in the constraint tree. Attempts to inject into missing `constraints`
