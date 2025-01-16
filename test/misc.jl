@@ -143,4 +143,7 @@ end
     @test i == :test
     @test ks == [:ident]
     @test v == (0, 123)
+
+    x = expand_enzyme_capacity([("test", [], 0)], [])
+    @test first(x[1]) == :test
 end
