@@ -139,10 +139,10 @@ ecfba_constraints(m, capacity) = enzyme_constrained_flux_balance_constraints(
 # connecting them via [`community_flux_balance_constraints`](@ref). We have to
 # pick the model abundances for cFBA, so we pick 1:1 abundance ratio. We also
 # have to pick the capacities for the enzyme-constrained models (these will be
-# properly dissolved by the community FBA formulation), and specify that the
+# properly diluted by the community FBA formulation), and specify that the
 # community is not allowed to exchange either of our two selected amino acids
-# externally (the individual models might cheat the auxotrophe community setting
-# by consuming these).
+# externally (the individual models might cheat the auxotrophe community
+# setting by consuming these).
 
 community_constraints = community_flux_balance_constraints(
     [
