@@ -156,13 +156,13 @@ ec_constraints = enzyme_constrained_flux_balance_constraints(
 # simplistic FBA-style analysis; in our case the enzyme capacity serves as a
 # sufficient and more realistic limiter. We have to unblock both the
 # bidirectional reaction and the "reversed" view, since both carry the bound.)
-ec_constraints.fluxes.EX_glc__D_e.bound.lower = -1000
-ec_constraints.fluxes_reverse.EX_glc__D_e.bound.upper = 1000
+ec_constraints.fluxes.EX_glc__D_e.bound.lower = -1000;
+ec_constraints.fluxes_reverse.EX_glc__D_e.bound.upper = 1000;
 
 # To avoid the model from growing in unexpected modes, we will constraint the
 # original biomass reaction to zero:
-ec_constraints.fluxes.BIOMASS_Ec_iML1515_core_75p37M.bound = C.EqualTo(0)
-ec_constraints.fluxes.BIOMASS_Ec_iML1515_WT_75p37M.bound = C.EqualTo(0)
+ec_constraints.fluxes.BIOMASS_Ec_iML1515_core_75p37M.bound = C.EqualTo(0);
+ec_constraints.fluxes.BIOMASS_Ec_iML1515_WT_75p37M.bound = C.EqualTo(0);
 
 # ### RBA translation machinery
 
@@ -200,7 +200,7 @@ end
 
 # To make the construction nicer, we'll make a helper for summing up
 # constraint-tree values:
-sum_values(x...) = C.sum(x..., init = zero(C.LinearValue))
+sum_values(x...) = C.sum(x..., init = zero(C.LinearValue));
 
 # ...and another helper for adding values in constraint trees together:
 add_trees(ts...) =
@@ -210,7 +210,7 @@ add_trees(ts...) =
         return C.merge(t1, t2) do c1, c2
             C.Constraint(z(c1) + z(c2))
         end
-    end
+    end;
 
 # Since we have to solve the problem for multiple growth rates to be able to
 # scan for optimum, we will wrap the growth-dependent part in a reusable
@@ -330,12 +330,12 @@ rb_constraints *= translation_constraints(
 # growth; to obtain a realistic solution for we can ask the solver to minimize
 # the mass of used resources. Accordingly, we re-constraint the total mass of
 # the model:
-rb_constraints.gene_product_capacity.total_capacity.bound = nothing
+rb_constraints.gene_product_capacity.total_capacity.bound = nothing;
 rb_constraints.total_capacity = C.Constraint(
     rb_constraints.gene_product_capacity.total_capacity.value +
     rb_constraints.total_ribosome_mass.value,
     (0.0, 550.0),
-)
+);
 
 # We can optimize the model now, minimizing the mass:
 res = optimized_values(

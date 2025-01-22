@@ -102,15 +102,15 @@ wt_model = load_model("iML1515.json", A.CanonicalModel.Model)
 
 # As the usual quirk, we loosen the lower bound on glucose intake that is
 # required for plain FBA:
-wt_model.reactions["EX_glc__D_e"].lower_bound = -1000.0
+wt_model.reactions["EX_glc__D_e"].lower_bound = -1000.0;
 
 # Additionally we allow the models isoleucine and methionine uptake:
-wt_model.reactions["EX_ile__L_e"].lower_bound = -1000.0
-wt_model.reactions["EX_met__L_e"].lower_bound = -1000.0
+wt_model.reactions["EX_ile__L_e"].lower_bound = -1000.0;
+wt_model.reactions["EX_met__L_e"].lower_bound = -1000.0;
 
 # ...and for good manners, we also remove the biomass annotation from the
 # biomass reaction that we are not interested in:
-wt_model.reactions["BIOMASS_Ec_iML1515_WT_75p37M"].annotations["sbo"] = []
+wt_model.reactions["BIOMASS_Ec_iML1515_WT_75p37M"].annotations["sbo"] = [];
 
 # Let's create these two knockouts-- one incapable of producing isoleucine:
 
