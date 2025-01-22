@@ -135,13 +135,14 @@ ecfba_constraints(m, capacity) = enzyme_constrained_flux_balance_constraints(
 )
 
 # We can now create the community by creating each model's constraint tree with
-# an interface with [`flux_balance_constraints`](@ref), and connecting them via
-# [`interface_constraints`](@ref). We have to pick the model abundances for
-# cFBA, so we pick 1:1 abundance ratio. We also have to pick the capacities for
-# the enzyme-constrained models (these will be properly dissolved by the
-# community FBA formulation), and specify that the community is not allowed to
-# exchange either of our two selected amino acids externally (the individual
-# models might cheat the auxtrophe community setting by consuming these).
+# an interface with [`enzyme_constrained_flux_balance_constraints`](@ref), and
+# connecting them via [`community_flux_balance_constraints`](@ref). We have to
+# pick the model abundances for cFBA, so we pick 1:1 abundance ratio. We also
+# have to pick the capacities for the enzyme-constrained models (these will be
+# properly dissolved by the community FBA formulation), and specify that the
+# community is not allowed to exchange either of our two selected amino acids
+# externally (the individual models might cheat the auxtrophe community setting
+# by consuming these).
 
 community_constraints = community_flux_balance_constraints(
     [
