@@ -22,9 +22,9 @@
 # mechanistic knowledge about the processes, but also dramatically improves the
 # predictive capability of the model.
 #
-# Here we demonstrate the approach to build such extensions in COBREXA, using a
-# simplified RBA model that accounts for the major translation costs (synthesis
-# of proteins and ribosomes).
+# Here we demonstrate the approach for building such extensions with COBREXA,
+# over a demonstrational simplified RBA model that accounts for the major
+# translation costs (synthesis of proteins and ribosomes).
 #
 # For comprehensiveness, we use the full genome-scale model of E. coli
 # (iML1515):
@@ -133,7 +133,7 @@ energy_stoichiometry = Dict(:atp_c => -1, :h2o_c => -1, :adp_c => 1, :h_c => 1, 
 # changes:
 model = load_model("iML1515.json")
 
-# We will requre some access to the stoichiometry of the biomass reaction (in
+# We will require some access to the stoichiometry of the biomass reaction (in
 # essence, we copy a part of it, but replace the part that uses amino acids as
 # a building material, and slightly enhance the energy consumption part). So we
 # save it here:
@@ -166,18 +166,19 @@ ec_constraints.fluxes.BIOMASS_Ec_iML1515_WT_75p37M.bound = C.EqualTo(0)
 
 # ### RBA translation machinery
 
-# First, a common issue with RBA formulations is that the biomass-based growth
-# formula depends on the determined optimal composition of the enzyme pool and
-# actual production of metabolites; which makes the underlying constrained
-# problem quadratic.
+# A common issue with RBA formulations is that the biomass-based growth formula
+# depends on a determined optimal composition of the enzyme pool and actual
+# production of metabolites; which makes the underlying constrained problem
+# quadratic.
 #
 # A common way to dodge the need for quadratic solvers is to solve the problem
-# for a fixed growth rate, which we do here. Alternatively, one might state the
-# full quadratic problem and solve it, with some performance cost stemming from
-# use of QP solvers.
+# for a fixed growth rate, which we is the approach that we choose here.
+# Alternatively, one might state the full quadratic problem and solve it, with
+# some performance cost stemming from use of QP solvers.
 #
-# Let's first make a utility function that prepares the connection and new
-# variables atop a given enzyme-constrained model:
+# Let's first make a utility function that prepares the connection to the
+# metabolite pool, and adds several useful variables atop a given
+# enzyme-constrained model:
 function with_translation_variables(ec_constraints::C.ConstraintTree)
     #+
     # Create a "resource pool" and connect it to the stoichiometry of the
@@ -253,7 +254,7 @@ function translation_constraints(
     # the protein-producing ribosomes and themselves, so we add a constraint
     # that ensures there's enough ribosomes for both.
     ribosome_balance_constraint = equal_value_constraint(
-        sum_values(aa.value for (_, aa) in aas_required_for_ribos), #TODO maybe *growth is required here. Check units.
+        sum_values(aa.value for (_, aa) in aas_required_for_ribos),
         ribos_required_for_ribos.value * ribosome_speed_aa_per_hour,
     )
     #+
@@ -293,7 +294,7 @@ function translation_constraints(
         end
     end
     #+
-    # Finaly, let's wrap all the constraints and some useful derived helper
+    # Finally, let's wrap all the constraints and some useful derived helper
     # values in one big tree:
     return C.ConstraintTree(
         :resource_stoichiometry => resource_stoichiometry,
@@ -342,7 +343,6 @@ res = optimized_values(
     objective = rb_constraints.total_capacity.value,
     sense = Minimal,
     optimizer = HiGHS.Optimizer,
-    settings = [unsilence],
 )
 
 # The model can be used to observe various interesting effects. For example,

@@ -18,10 +18,10 @@
 #
 # This example demonstrates a simple way to create enzyme-constrained community
 # models. We use the genome-scale iML1515 E. coli model to simulate a community
-# of 2 auxtrophic organisms (both of which exhibit no growth in isolation due
+# of 2 auxotrophic organisms (both of which exhibit no growth in isolation due
 # to the lack of the amino acid), and observe how they can save each other by
 # supplying themselves amino-acids. Such analysis easily extends to more
-# auxtrophes and even communities of several different species.
+# auxotrophes and even communities of several different species.
 #
 # The simulations are, very roughly, replicating the logic of the experimental
 # work by *Mee, Michael T., et al.  "Syntrophic exchange in synthetic microbial
@@ -141,7 +141,7 @@ ecfba_constraints(m, capacity) = enzyme_constrained_flux_balance_constraints(
 # have to pick the capacities for the enzyme-constrained models (these will be
 # properly dissolved by the community FBA formulation), and specify that the
 # community is not allowed to exchange either of our two selected amino acids
-# externally (the individual models might cheat the auxtrophe community setting
+# externally (the individual models might cheat the auxotrophe community setting
 # by consuming these).
 
 community_constraints = community_flux_balance_constraints(
@@ -154,7 +154,7 @@ community_constraints = community_flux_balance_constraints(
 
 # ## Simulating the community
 #
-# Since the community constraints created above form a commpletely normal
+# Since the community constraints created above form a completely normal
 # optimization problem, we can optimize them as usual via
 # [`optimized_values`](@ref); picking the `community_biomass` value as an
 # objective:
@@ -190,6 +190,6 @@ sort(collect(res.community_exchanges), by = last)
 # secretion.)
 #
 # Finally, one might be interested in finding the optimal community composition
-# for the auxtrophes. [The example on community
+# for the auxotrophes. [The example on community
 # building](04-community-models.md) describes a common way to find the optimal
 # abundance ratios via screening.
