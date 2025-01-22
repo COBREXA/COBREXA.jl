@@ -117,8 +117,8 @@ e_coli_gp_aas
 
 # To make the RBA problem working, we also need to assume some constant parameters (many of such can be found via https://bionumbers.hms.harvard.edu):
 
-atp_polymerization_cost = 4.2;
-protein_polymerization_atp_per_gDW = 0.012; # TODO explain this one
+atp_polymerization_cost = 0.042;
+protein_polymerization_atp_per_gDW = 12.0;
 ribosome_speed_aa_per_hour = 12.0 * 3600;
 ribosome_molar_mass = 2700.0;
 
@@ -225,7 +225,7 @@ function translation_constraints(
     # amount of gene products:
     aas_required_for_gps = C.imap(gene_product_amounts) do (i,), gp
         C.ConstraintTree(
-            aa => C.Constraint(gp.value * v * growth) for
+            aa => C.Constraint(gp.value * v * growth * 0.001) for
             (aa, v) in e_coli_gp_aas[String(i)]
         )
     end
@@ -253,8 +253,8 @@ function translation_constraints(
     # the protein-producing ribosomes and themselves, so we add a constraint
     # that ensures there's enough ribosomes for both.
     ribosome_balance_constraint = equal_value_constraint(
-        sum_values(aa.value for (_, aa) in aas_required_for_ribos) * growth, #TODO is growth required here?
-        ribos_required_for_ribos * ribosome_speed_aa_per_hour,
+        sum_values(aa.value for (_, aa) in aas_required_for_ribos), #TODO maybe *growth is required here. Check units.
+        ribos_required_for_ribos.value * ribosome_speed_aa_per_hour,
     )
     #+
     # With the AA requirements solved, we can estimate how much energy we need
@@ -264,44 +264,51 @@ function translation_constraints(
         sum_values(aa.value for (_, aas) in aas_required_for_gps for (_, aa) in aas) +
         sum_values(v.value for (_, v) in aas_required_for_ribos)
     #+
-    # With all that in hand, we can put together the final resource consumption
-    # equation:
+    # With all that in hand, we can put together the final resource consumption:
     resource_consumption = add_trees(
         C.values(aas_required_for_gps)...,
         aas_required_for_ribos,
         C.map(stoi -> -stoi * energy_required, C.Tree{Int}(energy_stoichiometry), C.Value),
     )
+    #+
+    # ...and make a stoichiometry out of that, with exact cases for amino acids
+    # (these are completely replaced in the original biomass), energy
+    # metabolites (these are partially re-used from the original biomass, but
+    # with an adjustment that tries to remove the polymerization cost portion
+    # in the original model), and everything other scaled for growth:
     resource_stoichiometry = C.imap(resources) do (resource,), input
-        if resource in amino_acids
+        if resource in amino_acids # AA case
             equal_value_constraint(resource_consumption[resource], input)
-        elseif resource in keys(energy_stoichiometry)
+        elseif resource in keys(energy_stoichiometry) # energy case
             equal_value_constraint(
-                -resource_consumption[resource].value * energy_stoichiometry[resource] -
-                growth * biomass[resource] -
-                growth *
-                energy_stoichiometry[resource] *
-                protein_polymerization_atp_per_gDW,
+                -growth * (
+                    biomass[resource] -
+                    energy_stoichiometry[resource] * protein_polymerization_atp_per_gDW
+                ) -
+                resource_consumption[resource].value * energy_stoichiometry[resource],
                 input,
             )
-        else
+        else # everything else
             C.Constraint(input.value, -growth * biomass[resource])
         end
     end
     #+
     # Finaly, let's wrap all the constraints and some useful derived helper
     # values in one big tree:
-    return :resource_stoichiometry^resource_stoichiometry *
-           :ribosome_balance^ribosome_balance_constraint *
-           :gene_product_production^ribo_required_for_gps *
-           :total_ribosome_mass^C.Constraint(
-               ribosome_molar_mass * (
-                   sum_values(v.value for (_, v) in ribo_required_for_gps) +
-                   ribos_required_for_ribos.value
-               ),
-           ) *
-           :amino_acid_use^(ribo_required_for_gps * :ribosome^aas_required_for_ribos) *
-           :polymerization_energy^C.Constraint(energy_required) *
-           :translation_resource_consumption^resource_consumption
+    return C.ConstraintTree(
+        :resource_stoichiometry => resource_stoichiometry,
+        :ribosome_balance => ribosome_balance_constraint,
+        :gene_product_production => ribo_required_for_gps,
+        :total_ribosome_mass => C.Constraint(
+            ribosome_molar_mass * (
+                sum_values(v.value for (_, v) in ribo_required_for_gps) +
+                ribos_required_for_ribos.value
+            ),
+        ),
+        :amino_acid_use => (aas_required_for_gps * :ribosome^aas_required_for_ribos),
+        :polymerization_energy => C.Constraint(energy_required),
+        :translation_resource_consumption => resource_consumption,
+    )
 end
 
 # ## Running the resource-balanced simulation
@@ -315,7 +322,7 @@ rb_constraints *= translation_constraints(
     rb_constraints.resources,
     rb_constraints.ribosome_production,
     rb_constraints.gene_product_amounts,
-    0.001,
+    0.9,
 )
 
 # The model may be slightly under-constrained for less-than-extreme values of
@@ -341,11 +348,12 @@ res = optimized_values(
 # The model can be used to observe various interesting effects. For example,
 # how much building material is required to reach such growth?
 res.total_capacity
+@test isapprox(res.total_capacity, 538.778495150974, atol = TEST_TOLERANCE) #src
 
 # What is the resource composition used for building up biomass?
-res.resources
+sort(collect(res.resources), by = last)
 
-# How much of that comes into and out of translation?
+# How much of that comes into (and out of) translation?
 res.translation_resource_consumption
 
 # How much arginine is used to build the ribosomes?
