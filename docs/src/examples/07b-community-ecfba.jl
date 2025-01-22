@@ -14,23 +14,26 @@
 # See the License for the specific language governing permissions and       #src
 # limitations under the License.                                            #src
 
-# # Enzyme constrained community flux balance analysis
-# In this example we will demonstrate how to merge two enzyme constrained models
-# together, and run community flux balance analysis simulation on them. The goal
-# is to compare the optimal community abundance of models using cFBA and ec-cFBA
-# simulations, illustrating the superiority of the latter approach. The specific
-# communities simulated here will be _E.coli_ auxotrophic co-cultures. Each
-# community member is dependent on the other through an amino acid knockout. The
-# simulations are based on the experimental work in *Mee, Michael T., et al.
-# "Syntrophic exchange in synthetic microbial communities." Proceedings of the
-# National Academy of Sciences 111.20 (2014)*. Finally, the predicted abundances
-# using the two modeling approaches will be compared to experimental data.
+# # Enzyme-constrained communities
+#
+# This example demonstrates a simple way to create enzyme-constrained community
+# models. We use the genome-scale iML1515 E. coli model to simulate a community
+# of 2 auxtrophic organisms (both of which exhibit no growth in isolation due
+# to the lack of the amino acid), and observe how they can save each other by
+# supplying themselves amino-acids. Such analysis easily extends to more
+# auxtrophes and even communities of several different species.
+#
+# The simulations are, very roughly, replicating the logic of the experimental
+# work by *Mee, Michael T., et al.  "Syntrophic exchange in synthetic microbial
+# communities." Proceedings of the National Academy of Sciences 111.20 (2014)*.
+
+# As usual, we start by loading packages and downloading models:
 
 using COBREXA
-
-# Like the previous tutorial, we will use the iML1515 model of _E.
-# coli_, which is the latest, full-scale genome-scale metabolic model of the
-# organism.
+import AbstractFBCModels as A
+import JSONFBCModels
+import ConstraintTrees as C
+import HiGHS
 
 download_model(
     "http://bigg.ucsd.edu/static/models/iML1515.json",
@@ -38,374 +41,154 @@ download_model(
     "b0f9199f048779bb08a14dfa6c09ec56d35b8750d2f99681980d0f098355fbf5",
 )
 
-# In additional to COBREXA, the optimization solver, and the model format
-# package, we will use ConstraintTrees to simplify the model construction
-# process:
-
-import AbstractFBCModels as A
-import JSONFBCModels
-import ConstraintTrees as C
-import HiGHS
-
-# ## Collect data for enzyme constrained models
-# Like in the previous example, we will spend some time gathering the necessary
-# data to build the wild type enzyme constrained metabolic models.
-
+# ## Collecting data and parameters
+#
+# Enzyme-constrained models require parameters for protein molar masses and
+# reaction turnover numbers (kcats). COBREXA supplies prepared example data for
+# the iML1515 model; in this section we summarize the loading of the data into
+# Julia structures from the used format. Other formats will work just as well.
+#
+# The loading is hidden by default for brevity:
+#
 #md # ```@raw html
-#md # <details><summary><strong>Data for reaction turnover numbers</strong></summary>
+#md # <details><summary><strong>Loading the model parameters</strong></summary>
 #md # ```
 
 import CSV
-import Statistics: mean
 
-data_root = joinpath(dirname(pathof(COBREXA)), "..", "docs", "src", "examples", "data")
+data_dir = joinpath(dirname(pathof(COBREXA)), "..", "docs", "src", "examples", "data");
 
-# ### Helper functions
+e_coli_gp_mass = Dict{String,Float64}(
+    x.gene_product => x.mass for
+    x in CSV.File(joinpath(data_dir, "e_coli_gp_mass.tsv"), delim = '\t')
+);
 
-# Checks if reaction has a gene reaction rule assigned to it.
-function has_reaction_grr(model, rid)
-    grr = A.reaction_gene_association_dnf(model, rid)
-    if isnothing(grr) || isempty(grr) || isnothing(first(grr)) || isempty(first(grr))
-        return false
-    end
-    return true
-end
+kcat_scale = 3600 / 1e3;
+e_coli_rxn_kcat_isozyme = Dict{String,Isozyme}(
+    x.reaction => Isozyme(
+        kcat_forward = x.kcat * kcat_scale,
+        kcat_reverse = x.kcat * kcat_scale,
+        gene_product_stoichiometry = Dict(),
+    ) for x in CSV.File(joinpath(data_dir, "e_coli_reaction_kcat.tsv"), delim = '\t')
+);
 
-# This adds kcats to
-# 1] transporters (if the kcat is missing and the transporter has a grr)
-# 2] physiological reactions which don't have a kcat (but they get an average
-#    one if grr is present)
-function add_kcats!(
-    model,
-    kcat_data;
-    transporter_kcat = 180.0,
-    average_kcat = 25.0,
-    block_brackets = false,
-)
-    for rid in A.reactions(model)
-        !has_reaction_grr(model, rid) && continue
-        rxn = A.reaction_stoichiometry(model, rid)
-        if block_brackets
-            suffixes = [split(met, "[")[end] for met in keys(rxn)]
-        else
-            suffixes = [split(met, "_")[end] for met in keys(rxn)]
-        end
-        if length(unique(suffixes)) > 1
-            if !haskey(kcat_data, rid)
-                kcat_data[rid] = transporter_kcat
-            end
-        end
-    end
-
-    for rid in A.reactions(model)
-        !has_reaction_grr(model, rid) && continue
-        if !haskey(kcat_data, rid)
-            kcat_data[rid] = average_kcat
-        elseif haskey(kcat_data, rid)
-            continue
-        end
-    end
-
-    return nothing
-end
-
-# Finds mass of each gene product in a model
-function get_protein_masses(model, proteome_data)
-    avg_mass = (mean([x[1] for x in values(proteome_data)]),)
-    return Dict{String,Float64}(
-        gid => get(proteome_data, gid, avg_mass)[1] for gid in A.genes(model)
-    )
-end
-
-# Assemble reaction isozymes from kcat data, Uniprot proteome data, and
-# ComplexPortal data. This changes the GRR structure of the model (basically
-# making it match the expectations from the data files). In a set of complexes,
-# this also gets rid of low confidence complexes if any complex in the set can
-# be found in the ComplexPortal.
-function get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
-    mer_map = Dict(
-        "Homomonomer" => 1,
-        "Monomer" => 1,
-        "Homodimer" => 2,
-        "Homotrimer" => 3,
-        "Homotetramer" => 4,
-        "Homopentamer" => 5,
-        "Homohexamer" => 6,
-        "Homoheptamer" => 7,
-        "Homooctamer" => 8,
-        "Homodecamer" => 10,
-        "Homododecamer" => 12,
-    )
-    reaction_isozymes = Dict{String,Dict{String,Isozyme}}()
-    multi_component_enzymes = [] # for use later
-    for rid in A.reactions(model)
-        haskey(kcat_data, rid) || continue # skip if no kcat data available
-        if has_reaction_grr(model, rid)
-            grrs = A.reaction_gene_association_dnf(model, rid)
-            for (i, grr) in enumerate(grrs)
-                isozyme_id = "isozyme_" * string(i)
-                d = get!(reaction_isozymes, rid, Dict{String,Isozyme}())
-                if length(grr) == 1 # only assign homomers
-                    gid = first(grr)
-                    if haskey(proteome_data, gid) # has uniprot data
-                        idx = proteome_data[gid][2]
-                        ss_counts = [get(mer_map, idx, 1.0)]
-                    else # no data
-                        ss_counts = [1.0]
-                    end
-                else # assume complexes have uni-stoichiometry, fix in next step
-                    ss_counts = fill(1.0, length(grr))
-                    push!(multi_component_enzymes, (rid, isozyme_id))
-                end
-                d[isozyme_id] = Isozyme(
-                    gene_product_stoichiometry = Dict(grr .=> ss_counts),
-                    kcat_forward = kcat_data[rid] * scale,
-                    kcat_reverse = kcat_data[rid] * scale, # assume forward and reverse are the same
-                )
-            end
-        end
-    end
-    fixed_multi_component_enzymes = []
-    not_fixed_multi_component_enzymes = []
-    for (rid, isozyme_id) in multi_component_enzymes
-        grr = collect(keys(reaction_isozymes[rid][isozyme_id].gene_product_stoichiometry))
-        stoichs = []
-        for v in values(complex_data)
-            if length(intersect(collect(keys(v)), grr)) == length(grr) &&
-               length(intersect(collect(keys(v)), grr)) == length(v)
-                push!(stoichs, v)
-            end
-        end
-        if length(stoichs) == 1
-            push!(fixed_multi_component_enzymes, (rid, isozyme_id))
-            d = first(stoichs)
-            for (k, v) in d
-                if v == 0
-                    d[k] = 1.0
-                end
-            end
-            reaction_isozymes[rid][isozyme_id].gene_product_stoichiometry = d
-        else
-            push!(not_fixed_multi_component_enzymes, (rid, isozyme_id))
-        end
-    end
-    for (rid, isozyme_id) in not_fixed_multi_component_enzymes
-        if rid in first.(fixed_multi_component_enzymes)
-            delete!(reaction_isozymes[rid], isozyme_id)
-        end
-    end
-    return reaction_isozymes
-end
-
-# ### Data loading
-# load data from papers, complex DB, and Uniprot
-
-proteome_data = begin
-    x = CSV.File(joinpath(data_root, "e_coli_uniprot.tsv"), delim = '\t')
-    Dict{String,Tuple{Float64,String}}(
-        gp => (m, coalesce(k, "")) for (gp, m, k) in zip(x.gene_product, x.mass, x.kind)
-    )
-end
-
-# this data is taken from: *Heckmann, David, et al. "Machine learning applied
-# to enzyme turnover numbers reveals protein structural correlates and improves
-# metabolic models." Nature communications 9.1 (2018): 1-10.*
-kcat_data = Dict(
-    String(r.KcatID) => r.KcatHeckmann for
-    r in CSV.File(joinpath(data_root, "ecoli_kcats.tsv"))
-)
-
-complex_data = begin
-    x = CSV.File(joinpath(data_root, "e_coli_complex.tsv"), delim = '\t')
-    res = Dict{String,Dict{String,Float64}}()
-    for c in x.complex
-        res[c] = Dict{String,Float64}()
-    end
-    for (c, gp, s) in zip(x.complex, x.gene_product, x.stoichiometry)
-        res[c][gp] = s
-    end
-    res
-end
-
-# load the E. coli model as a basis to assemble the data around
-
-model = load_model("iML1515.json", A.CanonicalModel.Model)
-
-# Assemble the isozymes and gene product masses increase protein concentrations
-# by changing units, convert kcat units from 1/s to k/h
-scale = 3600 / 1e3
-
-# add kcats that are not measured
-# https://bionumbers.hms.harvard.edu/bionumber.aspx?id=114686&ver=3&trm=glucose+transport&org=
-add_kcats!(model, kcat_data; transporter_kcat = 180.0, average_kcat = 25.0)
-
-# get uniprot molar masses (units: kDa = kg/mol)
-gene_product_molar_masses = get_protein_masses(model, proteome_data)
-
-# collect kcats and stoichiometry
-reaction_isozymes =
-    get_reaction_isozymes!(model, kcat_data, proteome_data, complex_data, scale)
-
-# apply analysis-specific quirks
-gene_product_molar_masses["b1692"] = 54.58
-gene_product_molar_masses["s0001"] = 54.58
+e_coli_rxn_isozymes = Dict{String,Dict{String,Isozyme}}();
+for x in CSV.File(joinpath(data_dir, "e_coli_isozyme_gp.tsv"), delim = '\t')
+    haskey(e_coli_rxn_kcat_isozyme, x.reaction) || continue
+    rxn = get!(e_coli_rxn_isozymes, x.reaction, Dict{String,Isozyme}())
+    iso = get!(rxn, x.isozyme, deepcopy(e_coli_rxn_kcat_isozyme[x.reaction]))
+    iso.gene_product_stoichiometry[x.gene_product] = x.stoichiometry
+end;
 
 #md # ```@raw html
 #md # </details>
 #md # ```
+#
+# In the end, we have gene product weight data (just like in the
+# [enzyme-constrained model example](05b-enzyme-constrained-models.md)):
 
-# ## Build community models
-# Now we will focus on building the community models. Since constraints can be
-# added incrementally, and are not dependent on the modeling framework, we only
-# need to write a general purpose community construction function, which will
-# naturally work with either classic FBA or enzyme constrained FBA models.
+e_coli_gp_mass
 
-# below we create a community assembly function, assuming an input of a wildtype model
-function auxotrophe_community(wt, aa_ko; fbc_only = false)
-    kos = Dict(
-        :argA => (:ACGS, :arg),
-        :ilvA => (:THRD_L, :ile),
-        :metA => (:HSST, :met),
-        :hisB => (:HISTP, :his),
-        :proA => (:G5SD, :pro),
-        :cysE => (:SERAT, :cys),
-        :thrC => (:THRS, :thr),
-        :leuB => (:IPMD, :leu),
-        :trpC => (:IGPS, :trp),
-        :pheA => (:PPNDH, :phe),
-        :tyrA => (:PPND, :tyr),
-        :lysA => (:DAPDC, :lys),
-    )
-    aa_id(aa) = Symbol("EX_", aa, "__L_e")
-    boundf(id) = begin
-        ex_id = first(id)
-        if fbc_only && ex_id == :EX_glc__D_e
-            C.Between(-50, 0)
-        else
-            wt.interface.exchanges[ex_id].bound
-        end
-    end
-    ko_pairs = [
-        ko => (deepcopy(wt), deepcopy(wt.interface.exchanges), ko_ab) for
-        (ko, ko_ab) in aa_ko
-    ]
-    x = interface_constraints(ko_pairs...; bound = boundf)
-    all_kos = first.(aa_ko) # get model ids
-    x *= # set all growth rates equal
-        :equalgrowth^all_equal_constraints(
-            x[first(all_kos)].fluxes.BIOMASS_Ec_iML1515_core_75p37M,
-            C.ConstraintTree(
-                ko => x[ko].fluxes.BIOMASS_Ec_iML1515_core_75p37M for ko in all_kos[2:end]
-            ),
-        )
-    x *= # set objective
-        :objective^C.Constraint(
-            x[first(all_kos)].fluxes.BIOMASS_Ec_iML1515_core_75p37M.value,
-            nothing,
-        )
-    for ko in all_kos
-        x[ko].fluxes[first(kos[ko])].bound = C.EqualTo(0)
-    end
-    all_aa_exs = [aa_id(last(kos[ko])) for ko in all_kos]
-    for ko in all_kos
-        for aa_ex in all_aa_exs
-            if fbc_only
-                open_bounds_fbc!(x[ko], aa_ex)
-            else
-                open_bounds_ecfbc!(x[ko], aa_ex)
-            end
-        end
-    end
-    x
-end
+# ... as well as isozyme data with kcats:
 
-# simulate a model
-function auxotrophe_fba(wt, aa_ko; fbc_only = false)
-    x = auxotrophe_community(wt, aa_ko; fbc_only)
-    sol = optimized_values(
-        x;
-        optimizer = HiGHS.Optimizer,
-        objective = x.objective.value,
-        sense = Maximal,
-    )
-    isnothing(sol) && return nothing
-    (; mu = sol.objective, (Symbol(aa) => ab for (aa, ab) in aa_ko)...)
-end
+e_coli_rxn_isozymes
 
-# open specific bounds
-function open_bounds_fbc!(ct, rxn_id)
-    ct.fluxes[rxn_id].bound = C.Between(-1000, 1000)
-    ct.interface.exchanges[rxn_id].bound = C.Between(-1000, 1000)
-end
+# ## Model assembly
+#
+# For simplicity, we will work with the "canonical" Julia-structured view of
+# the iML1515:
 
-# since enzyme constrained models add more reactions to the models, the bound opening is more intensive
-function open_bounds_ecfbc!(ct, rxn_id)
-    ct.fluxes[rxn_id].bound = C.Between(-1000, 1000)
-    ct.fluxes_forward[rxn_id].bound = C.Between(0, 1000)
-    ct.fluxes_reverse[rxn_id].bound = C.Between(0, 1000)
-    ct.interface.exchanges[rxn_id].bound = C.Between(-1000, 1000)
-end
+wt_model = load_model("iML1515.json", A.CanonicalModel.Model)
 
-# fix some model quirks
-function fix_bounds_ecfbc!(ct)
-    ct.fluxes[:EX_5dglcn_e].bound = C.EqualTo(0.0)
-    ct.fluxes[:EX_for_e].bound = C.EqualTo(0.0)
-    ct.fluxes[:EX_pyr_e].bound = C.EqualTo(0.0)
-end
+# As the usual quirk, we loosen the lower bound on glucose intake that is
+# required for plain FBA:
+wt_model.reactions["EX_glc__D_e"].lower_bound = -1000.0
 
-# ##  Assemble community models
+# Additionally we allow the models isoleucine and methionine uptake:
+wt_model.reactions["EX_ile__L_e"].lower_bound = -1000.0
+wt_model.reactions["EX_met__L_e"].lower_bound = -1000.0
 
-# load the basis model
-model = load_model("iML1515.json", A.CanonicalModel.Model)
+# ...and for good manners, we also remove the biomass annotation from the
+# biomass reaction that we are not interested in:
+wt_model.reactions["BIOMASS_Ec_iML1515_WT_75p37M"].annotations["sbo"] = []
 
-# identify membrane reactions (transporting stuff between compartments), used in the capacity bounds
-membrane_rids = [
-    rid for (rid, r) in model.reactions if
-    length(unique(last.(split.(keys(r.stoichiometry), "_")))) != 1
-]
+# Let's create these two knockouts-- one incapable of producing isoleucine:
 
-# these co-cultures will be simulated
-aa_pairs = [
-    (:metA, :thrC),
-    (:ilvA, :pheA),
-    (:argA, :lysA),
-    (:metA, :proA),
-    (:argA, :metA),
-    (:argA, :ilvA),
-    (:metA, :pheA),
-    (:ilvA, :lysA),
-    (:ilvA, :metA),
-]
+ile_model = deepcopy(wt_model)
+delete!(ile_model.reactions, "THRD_L");
 
-# abundance range to screen through
-abundances = [(a, 1 - a) for a in range(0.001, 0.999, length = 10)]
+# ...and another one without the reaction that is required for producing
+# methionine:
 
-# parameters fed into screen function below
-specs = [
-    [(aa1, abun1), (aa2, abun2)] for (aa1, aa2) in aa_pairs for (abun1, abun2) in abundances
-]
+met_model = deepcopy(wt_model)
+delete!(met_model.reactions, "HSST");
 
-# ## Simulate cFBA
+# For brevity, let's make a shortcut that creates enzyme-constrained FBA system
+# from the model together with a proper interface for community building:
 
-wt = flux_balance_constraints(model; interface = :identifier_prefixes)
-open_bounds_fbc!(wt, :EX_glc__D_e)
-
-cfba_res = screen(specs, workers = [1]) do spec
-    auxotrophe_fba(wt, spec; fbc_only = true)
-end
-
-# ## Simulate ec-cFBA
-
-wt = simplified_enzyme_constrained_flux_balance_constraints(
-    model;
-    reaction_isozymes,
-    gene_product_molar_masses,
-    capacity = [("membrane", membrane_rids, 166.0), ("total", A.reactions(model), 500.0)],
-    interface = :identifier_prefixes,
+ecfba_constraints(m, capacity) = enzyme_constrained_flux_balance_constraints(
+    m,
+    reaction_isozymes = e_coli_rxn_isozymes,
+    gene_product_molar_masses = e_coli_gp_mass,
+    interface = :sbo;
+    capacity,
 )
-open_bounds_ecfbc!(wt, :EX_glc__D_e)
-fix_bounds_ecfbc!(wt)
 
-eccfba_res = screen(specs, workers = [1]) do spec
-    auxotrophe_fba(wt, spec)
-end
+# We can now create the community by creating each model's constraint tree with
+# an interface with [`flux_balance_constraints`](@ref), and connecting them via
+# [`interface_constraints`](@ref). We have to pick the model abundances for
+# cFBA, so we pick 1:1 abundance ratio. We also have to pick the capacities for
+# the enzyme-constrained models (these will be properly dissolved by the
+# community FBA formulation), and specify that the community is not allowed to
+# exchange either of our two selected amino acids externally (the individual
+# models might cheat the auxtrophe community setting by consuming these).
+
+community_constraints = community_flux_balance_constraints(
+    [
+        "ile_ko" => (ecfba_constraints(ile_model, 100.0), 0.5),
+        "met_ko" => (ecfba_constraints(met_model, 100.0), 0.5),
+    ],
+    ["EX_ile__L_e" => 0.0, "EX_met__L_e" => 0.0],
+)
+
+# ## Simulating the community
+#
+# Since the community constraints created above form a commpletely normal
+# optimization problem, we can optimize them as usual via
+# [`optimized_values`](@ref); picking the `community_biomass` value as an
+# objective:
+
+res = optimized_values(
+    community_constraints,
+    objective = community_constraints.community_biomass.value,
+    optimizer = HiGHS.Optimizer,
+)
+
+# We can observe that the community indeed grows, although not as quickly as
+# the WT model normally would:
+
+res.community_biomass
+@test isapprox(res.community_biomass, 0.2304879809596633, atol = TEST_TOLERANCE)
+
+# One may also observe the "global" community exchanges:
+sort(collect(res.community_exchanges), by = last)
+
+# Appropriately, we can check that the individual community members exchange
+# the expected amino acids (the individual values are scaled to the individual
+# members' biomasses; in the community view these values would be halved by the
+# 0.5 abundances):
+
+[
+    res.met_ko.fluxes.EX_ile__L_e res.met_ko.fluxes.EX_met__L_e
+    res.ile_ko.fluxes.EX_ile__L_e res.ile_ko.fluxes.EX_met__L_e
+]
+
+# We can see that isoleucine is indeed moving into the isoleucine knockout, and
+# methionine into the methionine knockout. (The signs follow the usual exchange
+# convention where negative values mean uptake and positive values mean
+# secretion.)
+#
+# Finally, one might be interested in finding the optimal community composition
+# for the auxtrophes. [The example on community
+# building](04-community-models.md) describes a common way to find the optimal
+# abundance ratios via screening.
