@@ -154,8 +154,10 @@ ec_constraints = enzyme_constrained_flux_balance_constraints(
 # Before we continue, we apply a small quirk to remove an artificial limit on
 # the glucose intake. (The limit is required to prevent "infinite" growth in
 # simplistic FBA-style analysis; in our case the enzyme capacity serves as a
-# sufficient and more realistic limiter.)
+# sufficient and more realistic limiter. We have to unblock both the
+# bidirectional reaction and the "reversed" view, since both carry the bound.)
 ec_constraints.fluxes.EX_glc__D_e.bound.lower = -1000
+ec_constraints.fluxes_reverse.EX_glc__D_e.bound.upper = 1000
 
 # To avoid the model from growing in unexpected modes, we will constraint the
 # original biomass reaction to zero:
