@@ -106,7 +106,7 @@ $(TYPEDSIGNATURES)
 
 Glue an interface made of additional variables into a constraint system that
 lacks variables to support one. Returns a tuple of a "module" and its
-"interface", usable in [`interface_constraint`](@ref).
+"interface", usable in [`interface_constraints`](@ref).
 
 First, `interface` variables are renumbered to not collide with `constraints`.
 The values in `interface` are then multiplied by `multiplier` (by default 1)
