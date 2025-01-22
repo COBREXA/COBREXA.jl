@@ -131,7 +131,7 @@ function inject_interface(
         C.ConstraintTree(k => haskey(iface, k) ? go(v, iface[k]) : v for (k, v) in cs)
     go(cs::C.Constraint, iface::C.Constraint) =
         C.Constraint(value = cs.value + multiplier * iface.value, bound = cs.bound)
-    go(_, _) = cs # any non-matching interface is simply ignored
+    go(cs, _) = cs # any non-matching interface is simply ignored
 
     interface_ = C.incr_var_idxs(interface, C.var_count(constraints))
     return (go(constraints, interface_), interface_)
