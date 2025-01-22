@@ -168,7 +168,7 @@ res = optimized_values(
 # the WT model normally would:
 
 res.community_biomass
-@test isapprox(res.community_biomass, 0.2304879809596633, atol = TEST_TOLERANCE)
+@test isapprox(res.community_biomass, 0.2304879809596633, atol = TEST_TOLERANCE) #src
 
 # One may also observe the "global" community exchanges:
 sort(collect(res.community_exchanges), by = last)
