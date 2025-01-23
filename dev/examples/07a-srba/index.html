@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Simplified resource balance analysis · COBREXA.jl</title><meta name="title" content="Simplified resource balance analysis · COBREXA.jl"/><meta property="og:title" content="Simplified resource balance analysis · COBREXA.jl"/><meta property="twitter:title" content="Simplified resource balance analysis · COBREXA.jl"/><meta name="description" content="Documentation for COBREXA.jl."/><meta property="og:description" content="Documentation for COBREXA.jl."/><meta property="twitter:description" content="Documentation for COBREXA.jl."/><meta property="og:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/07a-srba/"/><meta property="twitter:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/07a-srba/"/><link rel="canonical" href="https://cobrexa.github.io/COBREXA.jl/stable/examples/07a-srba/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="COBREXA.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="COBREXA.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">COBREXA.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../">Contents</a></li><li><a class="tocitem" href="../01-loading-and-saving/">Loading and saving models</a></li><li><a class="tocitem" href="../02a-flux-balance-analysis/">Flux balance analysis (FBA)</a></li><li><a class="tocitem" href="../02b-optimizer-parameters/">Changing optimizer parameters</a></li><li><a class="tocitem" href="../02c-model-modifications/">Making adjustments to the model</a></li><li><a class="tocitem" href="../02d-constraint-modifications/">Making adjustments to the constraint system</a></li><li><a class="tocitem" href="../03a-flux-variability-analysis/">Flux variability analysis (FVA)</a></li><li><a class="tocitem" href="../03b-parsimonious-flux-balance/">Parsimonious flux balance analysis</a></li><li><a class="tocitem" href="../03c-envelopes/">Production envelopes</a></li><li><a class="tocitem" href="../03d-unidirectional/">Split unidirectional reactions in models</a></li><li><a class="tocitem" href="../04-community-models/">Community FBA models</a></li><li><a class="tocitem" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis</a></li><li><a class="tocitem" href="../05b-enzyme-constrained-models/">Enzyme constrained models</a></li><li><a class="tocitem" href="../05c-mmdf/">Thermodynamic models</a></li><li><a class="tocitem" href="../05d-loopless-models/">Loopless flux balance analysis (ll-FBA)</a></li><li><a class="tocitem" href="../05e-knockouts/">Gene knockouts</a></li><li><a class="tocitem" href="../05f-cyclefree/">CycleFreeFlux</a></li><li><a class="tocitem" href="../05g-gapfilling/">Gap filling</a></li><li><a class="tocitem" href="../06a-sampling/">Flux sampling</a></li><li><a class="tocitem" href="../06b-screening/">Screening through many model variants</a></li><li class="is-active"><a class="tocitem" href>Simplified resource balance analysis</a><ul class="internal"><li><a class="tocitem" href="#Data-and-parameters-for-the-RBA-model"><span>Data and parameters for the RBA model</span></a></li><li><a class="tocitem" href="#Model-assembly"><span>Model assembly</span></a></li><li><a class="tocitem" href="#Running-the-resource-balanced-simulation"><span>Running the resource-balanced simulation</span></a></li></ul></li><li><a class="tocitem" href="../07b-community-ecfba/">Enzyme-constrained communities</a></li></ul></li><li><a class="tocitem" href="../../structure/">Core concepts and structure</a></li><li><span class="tocitem">Parallel, distributed and HPC processing</span><ul><li><a class="tocitem" href="../../distributed/">Contents</a></li><li><a class="tocitem" href="../../distributed/1_functions/">Parallel processing overview</a></li><li><a class="tocitem" href="../../distributed/2_parallel/">Local parallel processing</a></li><li><a class="tocitem" href="../../distributed/3_slurm/">Working in a HPC environment</a></li></ul></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="../../reference/">Contents</a></li><li><a class="tocitem" href="../../reference/analysis/">Specialized analysis functions</a></li><li><a class="tocitem" href="../../reference/builders/">Constraint system builders</a></li><li><a class="tocitem" href="../../reference/core/">Core functionality</a></li><li><a class="tocitem" href="../../reference/frontend/">Front-end user interface</a></li><li><a class="tocitem" href="../../reference/misc/">Miscellaneous functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Simplified resource balance analysis</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Simplified resource balance analysis</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl/blob/master/docs/src/examples/07a-srba.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Simplified-resource-balance-analysis"><a class="docs-heading-anchor" href="#Simplified-resource-balance-analysis">Simplified resource balance analysis</a><a id="Simplified-resource-balance-analysis-1"></a><a class="docs-heading-anchor-permalink" href="#Simplified-resource-balance-analysis" title="Permalink"></a></h1><p>Resource balance analysis (RBA) models are extensions of enzyme constrained models that additionally incorporate other cellular mechanisms, such as translation, transcription and replication. This requires much more mechanistic knowledge about the processes, but also dramatically improves the predictive capability of the model.</p><p>Here we demonstrate the approach for building such extensions with COBREXA, over a demonstrational simplified RBA model that accounts for the major translation costs (synthesis of proteins and ribosomes).</p><p>For comprehensiveness, we use the full genome-scale model of E. coli (iML1515):</p><pre><code class="language-julia hljs">using COBREXA
+
+download_model(
+    &quot;http://bigg.ucsd.edu/static/models/iML1515.json&quot;,
+    &quot;iML1515.json&quot;,
+    &quot;b0f9199f048779bb08a14dfa6c09ec56d35b8750d2f99681980d0f098355fbf5&quot;,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;iML1515.json&quot;</code></pre><p>We use several packages as usual; additionally we import <code>ConstraintTrees</code> for later modifications.</p><pre><code class="language-julia hljs">import AbstractFBCModels as A
+import JSONFBCModels
+import HiGHS
+import ConstraintTrees as C</code></pre><h2 id="Data-and-parameters-for-the-RBA-model"><a class="docs-heading-anchor" href="#Data-and-parameters-for-the-RBA-model">Data and parameters for the RBA model</a><a id="Data-and-parameters-for-the-RBA-model-1"></a><a class="docs-heading-anchor-permalink" href="#Data-and-parameters-for-the-RBA-model" title="Permalink"></a></h2><p>For the purposes of this example, COBREXA comes with example data for the whole iML1515 model, aggregated from several publications and databases. In this section we simply load the data into suitable Julia structures. Other data formats may work just as well.</p><p>The loading is hidden by default for brevity:</p><details><summary><strong>Loading the RBA model parameters</strong></summary><pre><code class="language-julia hljs">import CSV
+
+data_dir = joinpath(dirname(pathof(COBREXA)), &quot;..&quot;, &quot;docs&quot;, &quot;src&quot;, &quot;examples&quot;, &quot;data&quot;);
+
+e_coli_gp_mass = Dict{String,Float64}(
+    x.gene_product =&gt; x.mass for
+    x in CSV.File(joinpath(data_dir, &quot;e_coli_gp_mass.tsv&quot;), delim = &#39;\t&#39;)
+);
+
+kcat_scale = 3600 / 1e3;
+e_coli_rxn_kcat_isozyme = Dict{String,Isozyme}(
+    x.reaction =&gt; Isozyme(
+        kcat_forward = x.kcat * kcat_scale,
+        kcat_reverse = x.kcat * kcat_scale,
+        gene_product_stoichiometry = Dict(),
+    ) for x in CSV.File(joinpath(data_dir, &quot;e_coli_reaction_kcat.tsv&quot;), delim = &#39;\t&#39;)
+);
+
+e_coli_rxn_isozymes = Dict{String,Dict{String,Isozyme}}();
+for x in CSV.File(joinpath(data_dir, &quot;e_coli_isozyme_gp.tsv&quot;), delim = &#39;\t&#39;)
+    haskey(e_coli_rxn_kcat_isozyme, x.reaction) || continue
+    rxn = get!(e_coli_rxn_isozymes, x.reaction, Dict{String,Isozyme}())
+    iso = get!(rxn, x.isozyme, deepcopy(e_coli_rxn_kcat_isozyme[x.reaction]))
+    iso.gene_product_stoichiometry[x.gene_product] = x.stoichiometry
+end;
+
+e_coli_gp_aas = Dict{String,Dict{Symbol,Int}}(
+    begin
+        d = Dict(keys(x) .=&gt; values(x))
+        gp = d[:gene_product]
+        delete!(d, :gene_product)
+        gp =&gt; d
+    end for x in CSV.File(joinpath(data_dir, &quot;e_coli_gp_aa.tsv&quot;), delim = &#39;\t&#39;)
+);
+
+amino_acids = Set(Symbol(aa) for (k, v) in e_coli_gp_aas for (aa, _) in v);</code></pre></details><p>In the end, we have gene product weight data (just like in the <a href="../05b-enzyme-constrained-models/">enzyme-constrained model example</a>):</p><pre><code class="language-julia hljs">e_coli_gp_mass</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 1517 entries:
+  &quot;b1329&quot; =&gt; 59.9
+  &quot;b3236&quot; =&gt; 32.337
+  &quot;b0688&quot; =&gt; 58.361
+  &quot;b2052&quot; =&gt; 36.141
+  &quot;b0832&quot; =&gt; 33.238
+  &quot;b0586&quot; =&gt; 141.991
+  &quot;b2245&quot; =&gt; 28.916
+  &quot;b1759&quot; =&gt; 15.046
+  &quot;b3772&quot; =&gt; 56.195
+  &quot;b1692&quot; =&gt; 54.58
+  &quot;b3850&quot; =&gt; 21.226
+  &quot;b1006&quot; =&gt; 45.557
+  &quot;b3428&quot; =&gt; 93.173
+  &quot;b0635&quot; =&gt; 70.857
+  &quot;b1387&quot; =&gt; 73.003
+  &quot;b1588&quot; =&gt; 89.987
+  &quot;b2541&quot; =&gt; 28.5
+  &quot;b4478&quot; =&gt; 42.523
+  &quot;b2143&quot; =&gt; 31.54
+  ⋮       =&gt; ⋮</code></pre><p>... as well as isozyme data with kcats:</p><pre><code class="language-julia hljs">e_coli_rxn_isozymes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Dict{String, Isozyme}} with 2266 entries:
+  &quot;PACOAT&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1396&quot;=&gt;4.0), 33.9551, 33.9551))
+  &quot;Zn2tex&quot;        =&gt; Dict(&quot;iso3&quot;=&gt;Isozyme(Dict(&quot;b1377&quot;=&gt;3.0), 648.0, 648.0), &quot;i…
+  &quot;GUI1&quot;          =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3092&quot;=&gt;1.0), 21.4406, 21.4406))
+  &quot;DXYLK&quot;         =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3564&quot;=&gt;2.0), 28.7528, 28.7528))
+  &quot;CBL1tonex&quot;     =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3005&quot;=&gt;1.0, &quot;b3006&quot;=&gt;4.0, &quot;b39…
+  &quot;FE3DCITtonex&quot;  =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3005&quot;=&gt;3.0, &quot;b3006&quot;=&gt;6.0, &quot;b42…
+  &quot;FACOAL180t2pp&quot; =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1701&quot;=&gt;2.0), 28.4896, 28.4896)…
+  &quot;METSOXR1&quot;      =&gt; Dict(&quot;iso3&quot;=&gt;Isozyme(Dict(&quot;b3781&quot;=&gt;1.0, &quot;b3551&quot;=&gt;1.0), 115…
+  &quot;LIPOtex&quot;       =&gt; Dict(&quot;iso3&quot;=&gt;Isozyme(Dict(&quot;b1377&quot;=&gt;3.0), 648.0, 648.0), &quot;i…
+  &quot;NTD11&quot;         =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b2744&quot;=&gt;1.0), 24.6906, 24.6906)…
+  &quot;GLUNpp&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b2957&quot;=&gt;4.0), 18.2572, 18.2572))
+  &quot;ORNDC&quot;         =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b0693&quot;=&gt;1.0), 130.25, 130.25), …
+  &quot;ALAGLUE&quot;       =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1325&quot;=&gt;1.0), 24.1219, 24.1219))
+  &quot;UAGCVT&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3189&quot;=&gt;1.0), 11.88, 11.88))
+  &quot;I2FE2ST&quot;       =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b2529&quot;=&gt;1.0, &quot;b2528&quot;=&gt;1.0), 11.…
+  &quot;6D6SPA&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3881&quot;=&gt;1.0), 149.289, 149.289))
+  &quot;BMOCOS&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b0827&quot;=&gt;2.0), 0.072, 0.072))
+  &quot;GLCURt2rpp&quot;    =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3093&quot;=&gt;1.0), 648.0, 648.0), &quot;i…
+  &quot;PGSA141&quot;       =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1912&quot;=&gt;1.0), 40.7639, 40.7639))
+  ⋮               =&gt; ⋮</code></pre><p>We additionally need a list of amino acids in the model:</p><pre><code class="language-julia hljs">amino_acids</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Set{Symbol} with 20 elements:
+  :pro__L_c
+  :gln__L_c
+  :asn__L_c
+  :glu__L_c
+  :cys__L_c
+  :tyr__L_c
+  :asp__L_c
+  :phe__L_c
+  :arg__L_c
+  :gly_c
+  :met__L_c
+  :ser__L_c
+  :thr__L_c
+  :his__L_c
+  :val__L_c
+  :ile__L_c
+  :trp__L_c
+  :leu__L_c
+  :ala__L_c
+  :lys__L_c</code></pre><p>...together with a list of how much amino acids there are in which gene product:</p><pre><code class="language-julia hljs">e_coli_gp_aas</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Dict{Symbol, Int64}} with 4259 entries:
+  &quot;b1329&quot; =&gt; Dict(:ala__L_c=&gt;51, :lys__L_c=&gt;39, :pro__L_c=&gt;34, :gln__L_c=&gt;27, :…
+  &quot;b2531&quot; =&gt; Dict(:ala__L_c=&gt;13, :lys__L_c=&gt;6, :pro__L_c=&gt;4, :gln__L_c=&gt;7, :asn…
+  &quot;b3236&quot; =&gt; Dict(:ala__L_c=&gt;35, :lys__L_c=&gt;21, :pro__L_c=&gt;13, :gln__L_c=&gt;14, :…
+  &quot;b0688&quot; =&gt; Dict(:ala__L_c=&gt;67, :lys__L_c=&gt;29, :pro__L_c=&gt;28, :gln__L_c=&gt;18, :…
+  &quot;b3834&quot; =&gt; Dict(:ala__L_c=&gt;27, :lys__L_c=&gt;11, :pro__L_c=&gt;8, :gln__L_c=&gt;8, :as…
+  &quot;b1604&quot; =&gt; Dict(:ala__L_c=&gt;46, :lys__L_c=&gt;26, :pro__L_c=&gt;11, :gln__L_c=&gt;12, :…
+  &quot;b0832&quot; =&gt; Dict(:ala__L_c=&gt;39, :lys__L_c=&gt;4, :pro__L_c=&gt;14, :gln__L_c=&gt;8, :as…
+  &quot;b1339&quot; =&gt; Dict(:ala__L_c=&gt;23, :lys__L_c=&gt;11, :pro__L_c=&gt;14, :gln__L_c=&gt;29, :…
+  &quot;b3609&quot; =&gt; Dict(:ala__L_c=&gt;14, :lys__L_c=&gt;3, :pro__L_c=&gt;7, :gln__L_c=&gt;14, :as…
+  &quot;b1282&quot; =&gt; Dict(:ala__L_c=&gt;8, :lys__L_c=&gt;14, :pro__L_c=&gt;3, :gln__L_c=&gt;3, :asn…
+  &quot;b4754&quot; =&gt; Dict(:ala__L_c=&gt;1, :lys__L_c=&gt;7, :pro__L_c=&gt;0, :gln__L_c=&gt;0, :asn_…
+  &quot;b0586&quot; =&gt; Dict(:ala__L_c=&gt;160, :lys__L_c=&gt;25, :pro__L_c=&gt;92, :gln__L_c=&gt;83, …
+  &quot;b3772&quot; =&gt; Dict(:ala__L_c=&gt;60, :lys__L_c=&gt;21, :pro__L_c=&gt;21, :gln__L_c=&gt;19, :…
+  &quot;b1759&quot; =&gt; Dict(:ala__L_c=&gt;20, :lys__L_c=&gt;3, :pro__L_c=&gt;8, :gln__L_c=&gt;9, :asn…
+  &quot;b1884&quot; =&gt; Dict(:ala__L_c=&gt;23, :lys__L_c=&gt;7, :pro__L_c=&gt;11, :gln__L_c=&gt;15, :a…
+  &quot;b3505&quot; =&gt; Dict(:ala__L_c=&gt;28, :lys__L_c=&gt;19, :pro__L_c=&gt;12, :gln__L_c=&gt;22, :…
+  &quot;b3850&quot; =&gt; Dict(:ala__L_c=&gt;16, :lys__L_c=&gt;12, :pro__L_c=&gt;7, :gln__L_c=&gt;7, :as…
+  &quot;b1006&quot; =&gt; Dict(:ala__L_c=&gt;53, :lys__L_c=&gt;8, :pro__L_c=&gt;20, :gln__L_c=&gt;9, :as…
+  &quot;b4283&quot; =&gt; Dict(:ala__L_c=&gt;7, :lys__L_c=&gt;12, :pro__L_c=&gt;3, :gln__L_c=&gt;6, :asn…
+  ⋮       =&gt; ⋮</code></pre><p>To make the RBA problem working, we also need to assume some constant parameters (many of such can be found via https://bionumbers.hms.harvard.edu):</p><pre><code class="language-julia hljs">atp_polymerization_cost = 0.042;
+protein_polymerization_atp_per_gDW = 12.0;
+ribosome_speed_aa_per_hour = 12.0 * 3600;
+ribosome_molar_mass = 2700.0;</code></pre><p>We also need a stoichiometry for &quot;energy consumption&quot; reaction, which we will use to simulate the energy cost of translation:</p><pre><code class="language-julia hljs">energy_stoichiometry = Dict(:atp_c =&gt; -1, :h2o_c =&gt; -1, :adp_c =&gt; 1, :h_c =&gt; 1, :pi_c =&gt; 1)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Symbol, Int64} with 5 entries:
+  :atp_c =&gt; -1
+  :h_c   =&gt; 1
+  :pi_c  =&gt; 1
+  :h2o_c =&gt; -1
+  :adp_c =&gt; 1</code></pre><h2 id="Model-assembly"><a class="docs-heading-anchor" href="#Model-assembly">Model assembly</a><a id="Model-assembly-1"></a><a class="docs-heading-anchor-permalink" href="#Model-assembly" title="Permalink"></a></h2><h3 id="Enzyme-constrained-base-model"><a class="docs-heading-anchor" href="#Enzyme-constrained-base-model">Enzyme-constrained base model</a><a id="Enzyme-constrained-base-model-1"></a><a class="docs-heading-anchor-permalink" href="#Enzyme-constrained-base-model" title="Permalink"></a></h3><p>First, we load the model in a format that is suitable for doing small changes:</p><pre><code class="language-julia hljs">model = load_model(&quot;iML1515.json&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">JSONFBCModels.JSONFBCModel(#= 2712 reactions, 1877 metabolites =#)</code></pre><p>We will require some access to the stoichiometry of the biomass reaction (in essence, we copy a part of it, but replace the part that uses amino acids as a building material, and slightly enhance the energy consumption part). So we save it here:</p><pre><code class="language-julia hljs">biomass = Dict(
+    Symbol(k) =&gt; v for
+    (k, v) in A.reaction_stoichiometry(model, &quot;BIOMASS_Ec_iML1515_core_75p37M&quot;)
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{Symbol, Float64} with 70 entries:
+  :sheme_c          =&gt; -0.000223
+  :gtp_c            =&gt; -0.215096
+  :ppi_c            =&gt; 0.773903
+  :mg2_c            =&gt; -0.008675
+  :pydx5p_c         =&gt; -0.000223
+  :fe3_c            =&gt; -0.007808
+  :zn2_c            =&gt; -0.000341
+  :nh4_c            =&gt; -0.013013
+  :phe__L_c         =&gt; -0.185265
+  :ni2_c            =&gt; -0.000323
+  :nadp_c           =&gt; -0.000447
+  :met__L_c         =&gt; -0.153686
+  :thr__L_c         =&gt; -0.253687
+  :atp_c            =&gt; -75.5522
+  :cl_c             =&gt; -0.005205
+  Symbol(&quot;2ohph_c&quot;) =&gt; -0.000223
+  :dctp_c           =&gt; -0.027017
+  :k_c              =&gt; -0.195193
+  :mlthf_c          =&gt; -0.000223
+  ⋮                 =&gt; ⋮</code></pre><p>We can create the enzyme-constrained model for iML1515. This will be extended later.</p><pre><code class="language-julia hljs">ec_constraints = enzyme_constrained_flux_balance_constraints(
+    model;
+    reaction_isozymes = e_coli_rxn_isozymes,
+    gene_product_molar_masses = e_coli_gp_mass,
+    capacity = 550.0,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 12 elements:
+  :coupling                     =&gt; ConstraintTrees.ConstraintTree(#= 0 elements…
+  :flux_stoichiometry           =&gt; ConstraintTrees.ConstraintTree(#= 1877 eleme…
+  :fluxes                       =&gt; ConstraintTrees.ConstraintTree(#= 2712 eleme…
+  :fluxes_forward               =&gt; ConstraintTrees.ConstraintTree(#= 2712 eleme…
+  :fluxes_reverse               =&gt; ConstraintTrees.ConstraintTree(#= 2712 eleme…
+  :gene_product_amounts         =&gt; ConstraintTrees.ConstraintTree(#= 1496 eleme…
+  :gene_product_capacity        =&gt; ConstraintTrees.ConstraintTree(#= 1 element …
+  :isozyme_flux_forward_balance =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :isozyme_flux_reverse_balance =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :isozyme_forward_amounts      =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :isozyme_reverse_amounts      =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :objective                    =&gt; ConstraintTrees.Constraint(ConstraintTrees.L…</code></pre><p>Before we continue, we apply a small quirk to remove an artificial limit on the glucose intake. (The limit is required to prevent &quot;infinite&quot; growth in simplistic FBA-style analysis; in our case the enzyme capacity serves as a sufficient and more realistic limiter. We have to unblock both the bidirectional reaction and the &quot;reversed&quot; view, since both carry the bound.)</p><pre><code class="language-julia hljs">ec_constraints.fluxes.EX_glc__D_e.bound.lower = -1000;
+ec_constraints.fluxes_reverse.EX_glc__D_e.bound.upper = 1000;</code></pre><p>To avoid the model from growing in unexpected modes, we will constraint the original biomass reaction to zero:</p><pre><code class="language-julia hljs">ec_constraints.fluxes.BIOMASS_Ec_iML1515_core_75p37M.bound = C.EqualTo(0);
+ec_constraints.fluxes.BIOMASS_Ec_iML1515_WT_75p37M.bound = C.EqualTo(0);</code></pre><h3 id="RBA-translation-machinery"><a class="docs-heading-anchor" href="#RBA-translation-machinery">RBA translation machinery</a><a id="RBA-translation-machinery-1"></a><a class="docs-heading-anchor-permalink" href="#RBA-translation-machinery" title="Permalink"></a></h3><p>A common issue with RBA formulations is that the biomass-based growth formula depends on a determined optimal composition of the enzyme pool and actual production of metabolites; which makes the underlying constrained problem quadratic.</p><p>A common way to dodge the need for quadratic solvers is to solve the problem for a fixed growth rate, which we is the approach that we choose here. Alternatively, one might state the full quadratic problem and solve it, with some performance cost stemming from use of QP solvers.</p><p>Let&#39;s first make a utility function that prepares the connection to the metabolite pool, and adds several useful variables atop a given enzyme-constrained model:</p><pre><code class="language-julia hljs">function with_translation_variables(ec_constraints::C.ConstraintTree)</code></pre><p>Create a &quot;resource pool&quot; and connect it to the stoichiometry of the intracellular (and other) metabolites. (This effectively creates new exchange reactions in <code>ec_constraints</code>.)</p><pre><code class="language-julia hljs">    resources = C.variables(
+        keys = Symbol.(
+            collect(union(amino_acids, keys(energy_stoichiometry), keys(biomass)))
+        ),
+    )
+    (cs, rs) =
+        inject_interface(ec_constraints, :flux_stoichiometry^resources, multiplier = -1)</code></pre><p>Also add a single new variable for the production of ribosomes by ribosomes.</p><pre><code class="language-julia hljs">    return cs * :resources^rs.flux_stoichiometry +
+           :ribosome_production^C.variable(; bound = (0, Inf))
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">with_translation_variables (generic function with 1 method)</code></pre><p>To make the construction nicer, we&#39;ll make a helper for summing up constraint-tree values:</p><pre><code class="language-julia hljs">sum_values(x...) = C.sum(x..., init = zero(C.LinearValue));</code></pre><p>...and another helper for adding values in constraint trees together:</p><pre><code class="language-julia hljs">add_trees(ts...) =
+    C.preduce(ts, init = C.ConstraintTree()) do t1, t2
+        z(::Missing) = zero(C.LinearValue)
+        z(x) = C.value(x)
+        return C.merge(t1, t2) do c1, c2
+            C.Constraint(z(c1) + z(c2))
+        end
+    end;</code></pre><p>Since we have to solve the problem for multiple growth rates to be able to scan for optimum, we will wrap the growth-dependent part in a reusable function:</p><pre><code class="language-julia hljs">function translation_constraints(
+    resources::C.ConstraintTree,
+    ribos_required_for_ribos::C.Constraint,
+    gene_product_amounts::C.ConstraintTree,
+    growth::Float64,
+)</code></pre><p>First we can calculate how much amino acids we need to build the expected amount of gene products:</p><pre><code class="language-julia hljs">    aas_required_for_gps = C.imap(gene_product_amounts) do (i,), gp
+        C.ConstraintTree(
+            aa =&gt; C.Constraint(gp.value * v * growth * 0.001) for
+            (aa, v) in e_coli_gp_aas[String(i)]
+        )
+    end</code></pre><p>This allows us to calculate how much ribosome we have to produce to make the production of all of the above enzymes possible:</p><pre><code class="language-julia hljs">    ribo_required_for_gps = C.ConstraintTree(
+        i =&gt; C.Constraint(
+            sum_values(aa.value for (_, aa) in aas) / ribosome_speed_aa_per_hour,
+        ) for (i, aas) in aas_required_for_gps
+    )</code></pre><p>Now we know the total amount of ribosome to produce (both for the above protein production and for production of ribosomes itself) so we can see how much amino acids in total are required for production of ribosomes:</p><pre><code class="language-julia hljs">    total_ribos_required =
+        ribos_required_for_ribos.value +
+        sum_values(c.value for (_, c) in ribo_required_for_gps)
+    aas_required_for_ribos = C.ConstraintTree(
+        aa =&gt; C.Constraint(total_ribos_required * v) for
+        (aa, v) in e_coli_gp_aas[&quot;ribosome&quot;]
+    )</code></pre><p>Now we solve a &quot;rocket equation&quot; – the ribosomes need to produce both the protein-producing ribosomes and themselves, so we add a constraint that ensures there&#39;s enough ribosomes for both.</p><pre><code class="language-julia hljs">    ribosome_balance_constraint = equal_value_constraint(
+        sum_values(aa.value for (_, aa) in aas_required_for_ribos),
+        ribos_required_for_ribos.value * ribosome_speed_aa_per_hour,
+    )</code></pre><p>With the AA requirements solved, we can estimate how much energy we need for polymerization of the proteins and ribosomes:</p><pre><code class="language-julia hljs">    energy_required =
+        atp_polymerization_cost *
+        sum_values(aa.value for (_, aas) in aas_required_for_gps for (_, aa) in aas) +
+        sum_values(v.value for (_, v) in aas_required_for_ribos)</code></pre><p>With all that in hand, we can put together the final resource consumption:</p><pre><code class="language-julia hljs">    resource_consumption = add_trees(
+        C.values(aas_required_for_gps)...,
+        aas_required_for_ribos,
+        C.map(stoi -&gt; -stoi * energy_required, C.Tree{Int}(energy_stoichiometry), C.Value),
+    )</code></pre><p>...and make a stoichiometry out of that, with exact cases for amino acids (these are completely replaced in the original biomass), energy metabolites (these are partially re-used from the original biomass, but with an adjustment that tries to remove the polymerization cost portion in the original model), and everything other scaled for growth:</p><pre><code class="language-julia hljs">    resource_stoichiometry = C.imap(resources) do (resource,), input
+        if resource in amino_acids # AA case
+            equal_value_constraint(resource_consumption[resource], input)
+        elseif resource in keys(energy_stoichiometry) # energy case
+            equal_value_constraint(
+                -growth * (
+                    biomass[resource] -
+                    energy_stoichiometry[resource] * protein_polymerization_atp_per_gDW
+                ) -
+                resource_consumption[resource].value * energy_stoichiometry[resource],
+                input,
+            )
+        else # everything else
+            C.Constraint(input.value, -growth * biomass[resource])
+        end
+    end</code></pre><p>Finally, let&#39;s wrap all the constraints and some useful derived helper values in one big tree:</p><pre><code class="language-julia hljs">    return C.ConstraintTree(
+        :resource_stoichiometry =&gt; resource_stoichiometry,
+        :ribosome_balance =&gt; ribosome_balance_constraint,
+        :gene_product_production =&gt; ribo_required_for_gps,
+        :total_ribosome_mass =&gt; C.Constraint(
+            ribosome_molar_mass * (
+                sum_values(v.value for (_, v) in ribo_required_for_gps) +
+                ribos_required_for_ribos.value
+            ),
+        ),
+        :amino_acid_use =&gt; (aas_required_for_gps * :ribosome^aas_required_for_ribos),
+        :polymerization_energy =&gt; C.Constraint(energy_required),
+        :translation_resource_consumption =&gt; resource_consumption,
+    )
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">translation_constraints (generic function with 1 method)</code></pre><h2 id="Running-the-resource-balanced-simulation"><a class="docs-heading-anchor" href="#Running-the-resource-balanced-simulation">Running the resource-balanced simulation</a><a id="Running-the-resource-balanced-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Running-the-resource-balanced-simulation" title="Permalink"></a></h2><p>With the above functions, assembling a resource-balanced model amounts to adding new variables and connecting them with the rest of the enzyme-constrained model. We assemble a model for growth value of 0.6 gDW/gDWh:</p><pre><code class="language-julia hljs">rb_constraints = with_translation_variables(ec_constraints)
+rb_constraints *= translation_constraints(
+    rb_constraints.resources,
+    rb_constraints.ribosome_production,
+    rb_constraints.gene_product_amounts,
+    0.9,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 21 elements:
+  :amino_acid_use               =&gt; ConstraintTrees.ConstraintTree(#= 1497 eleme…
+  :coupling                     =&gt; ConstraintTrees.ConstraintTree(#= 0 elements…
+  :flux_stoichiometry           =&gt; ConstraintTrees.ConstraintTree(#= 1877 eleme…
+  :fluxes                       =&gt; ConstraintTrees.ConstraintTree(#= 2712 eleme…
+  :fluxes_forward               =&gt; ConstraintTrees.ConstraintTree(#= 2712 eleme…
+  :fluxes_reverse               =&gt; ConstraintTrees.ConstraintTree(#= 2712 eleme…
+  :gene_product_amounts         =&gt; ConstraintTrees.ConstraintTree(#= 1496 eleme…
+  :gene_product_capacity        =&gt; ConstraintTrees.ConstraintTree(#= 1 element …
+  :gene_product_production      =&gt; ConstraintTrees.ConstraintTree(#= 1496 eleme…
+  :isozyme_flux_forward_balance =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :isozyme_flux_reverse_balance =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :isozyme_forward_amounts      =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :isozyme_reverse_amounts      =&gt; ConstraintTrees.ConstraintTree(#= 2266 eleme…
+  :objective                    =&gt; ConstraintTrees.Constraint(ConstraintTrees.L…
+  :polymerization_energy        =&gt; ConstraintTrees.Constraint(ConstraintTrees.L…
+  :resource_stoichiometry       =&gt; ConstraintTrees.ConstraintTree(#= 70 element…
+  :resources                    =&gt; ConstraintTrees.ConstraintTree(#= 70 element…
+  :ribosome_balance             =&gt; ConstraintTrees.Constraint(ConstraintTrees.L…
+  :ribosome_production          =&gt; ConstraintTrees.Constraint(ConstraintTrees.L…
+  ⋮                             =&gt; ⋮</code></pre><p>The model may be slightly under-constrained for less-than-extreme values of growth; to obtain a realistic solution for we can ask the solver to minimize the mass of used resources. Accordingly, we re-constraint the total mass of the model:</p><pre><code class="language-julia hljs">rb_constraints.gene_product_capacity.total_capacity.bound = nothing;
+rb_constraints.total_capacity = C.Constraint(
+    rb_constraints.gene_product_capacity.total_capacity.value +
+    rb_constraints.total_ribosome_mass.value,
+    (0.0, 550.0),
+);</code></pre><p>We can optimize the model now, minimizing the mass:</p><pre><code class="language-julia hljs">res = optimized_values(
+    rb_constraints,
+    objective = rb_constraints.total_capacity.value,
+    sense = Minimal,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 22 elements:
+  :amino_acid_use               =&gt; ConstraintTrees.Tree{Float64}(#= 1497 elemen…
+  :coupling                     =&gt; ConstraintTrees.Tree{Float64}(#= 0 elements …
+  :flux_stoichiometry           =&gt; ConstraintTrees.Tree{Float64}(#= 1877 elemen…
+  :fluxes                       =&gt; ConstraintTrees.Tree{Float64}(#= 2712 elemen…
+  :fluxes_forward               =&gt; ConstraintTrees.Tree{Float64}(#= 2712 elemen…
+  :fluxes_reverse               =&gt; ConstraintTrees.Tree{Float64}(#= 2712 elemen…
+  :gene_product_amounts         =&gt; ConstraintTrees.Tree{Float64}(#= 1496 elemen…
+  :gene_product_capacity        =&gt; ConstraintTrees.Tree{Float64}(#= 1 element =…
+  :gene_product_production      =&gt; ConstraintTrees.Tree{Float64}(#= 1496 elemen…
+  :isozyme_flux_forward_balance =&gt; ConstraintTrees.Tree{Float64}(#= 2266 elemen…
+  :isozyme_flux_reverse_balance =&gt; ConstraintTrees.Tree{Float64}(#= 2266 elemen…
+  :isozyme_forward_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 2266 elemen…
+  :isozyme_reverse_amounts      =&gt; ConstraintTrees.Tree{Float64}(#= 2266 elemen…
+  :objective                    =&gt; 0.0
+  :polymerization_energy        =&gt; 1.09189
+  :resource_stoichiometry       =&gt; ConstraintTrees.Tree{Float64}(#= 70 elements…
+  :resources                    =&gt; ConstraintTrees.Tree{Float64}(#= 70 elements…
+  :ribosome_balance             =&gt; 3.33067e-16
+  :ribosome_production          =&gt; 2.10408e-5
+  ⋮                             =&gt; ⋮</code></pre><p>The model can be used to observe various interesting effects. For example, how much building material is required to reach such growth?</p><pre><code class="language-julia hljs">res.total_capacity</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">538.778495150974</code></pre><p>What is the resource composition used for building up biomass?</p><pre><code class="language-julia hljs">sort(collect(res.resources), by = last)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">70-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
+            :adp_c =&gt; -55.94761600595841
+              :h_c =&gt; -55.9476160059584
+             :pi_c =&gt; -55.94401600595841
+            :ppi_c =&gt; -0.6965127
+            :btn_c =&gt; 1.8e-6
+           :mobd_c =&gt; 6.3e-6
+        :cobalt2_c =&gt; 2.25e-5
+ Symbol(&quot;2fe2s_c&quot;) =&gt; 2.34e-5
+         :udcpdp_c =&gt; 4.9500000000000004e-5
+         :succoa_c =&gt; 8.82e-5
+                   ⋮
+         :asp__L_c =&gt; 0.2868797917530791
+         :glu__L_c =&gt; 0.3135021356844055
+         :ile__L_c =&gt; 0.32275794515577283
+         :val__L_c =&gt; 0.39727031873391333
+            :gly_c =&gt; 0.45084868440163167
+         :leu__L_c =&gt; 0.5038252398350951
+         :ala__L_c =&gt; 0.5237625785614599
+            :h2o_c =&gt; 53.3177713940416
+            :atp_c =&gt; 58.28889799404162</code></pre><p>How much of that comes into (and out of) translation?</p><pre><code class="language-julia hljs">res.translation_resource_consumption</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 25 elements:
+  :adp_c    =&gt; -1.09189
+  :ala__L_c =&gt; 0.523763
+  :arg__L_c =&gt; 0.254827
+  :asn__L_c =&gt; 0.217669
+  :asp__L_c =&gt; 0.28688
+  :atp_c    =&gt; 1.09189
+  :cys__L_c =&gt; 0.0490187
+  :gln__L_c =&gt; 0.188324
+  :glu__L_c =&gt; 0.313502
+  :gly_c    =&gt; 0.450849
+  :h2o_c    =&gt; 1.09189
+  :h_c      =&gt; -1.09189
+  :his__L_c =&gt; 0.117845
+  :ile__L_c =&gt; 0.322758
+  :leu__L_c =&gt; 0.503825
+  :lys__L_c =&gt; 0.25248
+  :met__L_c =&gt; 0.159176
+  :phe__L_c =&gt; 0.221654
+  :pi_c     =&gt; -1.09189
+  ⋮         =&gt; ⋮</code></pre><p>How much arginine is used to build the ribosomes?</p><pre><code class="language-julia hljs">res.amino_acid_use.ribosome.arg__L_c</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.04971935935347408</code></pre><p>This solution is not necessarily optimal though. To find an optimal growth, one may use e.g. <a href="../../reference/analysis/#COBREXA.screen-Tuple{Any, Vararg{Any}}"><code>screen</code></a> to run the same simulation over many growth values, and pick the largest feasible growth.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../06b-screening/">« Screening through many model variants</a><a class="docs-footer-nextpage" href="../07b-community-ecfba/">Enzyme-constrained communities »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Thursday 23 January 2025 07:44">Thursday 23 January 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
