@@ -100,3 +100,41 @@ Overload of [`interface_constraints`](@ref) for general key-value containers.
 interface_constraints(kv; kwargs...) = interface_constraints(kv...; kwargs...)
 
 export interface_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Glue an interface made of additional variables into a constraint system that
+lacks variables to support one. Returns a tuple of a "module" and its
+"interface", usable in [`interface_constraints`](@ref).
+
+First, `interface` variables are renumbered to not collide with `constraints`.
+The values in `interface` are then multiplied by `multiplier` (by default 1)
+and injected into `constraints` that have the same "path" in the constraint
+tree. Attempts to inject into missing `constraints` and mismatches between leaf
+constraints and subtrees are ignored. The output consists of the extended
+`constraints` and the renumbered `interface` (in particular, numbering of
+the original variables in `constraints` is retained). Constraints in both trees
+retain their bounds.
+
+In metabolic modeling terms, this adds interfaces that contribute to any
+constrained quantity in a model. For example, one may conveniently create new
+exchange reactions to contribute to an existing metabolite balance, which can
+in turn be used as an interface in a more complex model.
+"""
+function inject_interface(
+    constraints::C.ConstraintTree,
+    interface::C.ConstraintTree;
+    multiplier = 1,
+)
+    go(cs::C.ConstraintTree, iface::C.ConstraintTree) =
+        C.ConstraintTree(k => haskey(iface, k) ? go(v, iface[k]) : v for (k, v) in cs)
+    go(cs::C.Constraint, iface::C.Constraint) =
+        C.Constraint(value = cs.value + multiplier * iface.value, bound = cs.bound)
+    go(cs, _) = cs # any non-matching interface is simply ignored
+
+    interface_ = C.incr_var_idxs(interface, C.var_count(constraints))
+    return (go(constraints, interface_), interface_)
+end
+
+export inject_interface

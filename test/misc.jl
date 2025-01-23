@@ -105,6 +105,9 @@ end
     @test c.interface_balance.x.value.idxs == [1, 3, 5, 7, 9]
     @test c.interface_balance.x.value.weights == [1.0, 2.0, 1.0, 3.0, -1.0]
 
+    (c, v) = inject_interface(C.variables(keys = [:x, :y]), :x^C.variables(keys = [:x, :y]))
+    @test issetequal(keys(c), [:x, :y])
+    @test c.x isa C.Constraint
 end
 
 @testset "Uncommon bounds in gapfilling" begin
