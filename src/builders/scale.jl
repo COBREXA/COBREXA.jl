@@ -43,3 +43,73 @@ scale_constraints(tree::C.ConstraintTree, factor) =
     end
 
 export scale_constraints
+
+"""
+$(TYPEDSIGNATURES)
+
+Given the value `x` constrained by bound `b`, produce a constraint system where
+the value is bounded by `b` scaled by `scale`. The result may contain multiple
+constraints.
+
+Additional overloads may be implemented to handle custom kinds of bounds.
+
+This overload scales an equality constraint; producing a single constraint in
+the form `x-bound*scale == 0`.
+"""
+value_scaled_bound_constraint(x::C.Value, b::C.EqualTo, scale::C.Value) =
+    C.Constraint(x - b.equal_to * scale, 0)
+
+"""
+$(TYPEDSIGNATURES)
+
+Overload of [`value_scaled_bound_constraint`](@ref) for interval bounds.
+
+This produces up to 2 constraints:
+- `lower` bound in the form `x + lower_bound * scale >= 0`
+- `upper` bound in the form `x - upper_bound * scale <= 0`
+"""
+function value_scaled_bound_constraint(x::C.Value, b::C.Between, scale::C.Value)
+    bounds = [
+        b.lower > -Inf ? (:lower => C.Constraint(x + b.lower * scale, (0, Inf))) : nothing,
+        b.upper < Inf ? (:upper => C.Constraint(x - b.upper * scale, (-Inf, 0))) : nothing,
+    ]
+    return C.ConstraintTree(b for b in bounds if !isnothing(b))
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+No-op overload of [`value_scaled_bound_constraint`](@ref) for unbounded
+constriants. Produces an empty constraint tree.
+"""
+value_scaled_bound_constraint(x::C.Value, b::Nothing, scale::C.Value) = C.ConstraintTree()
+
+# TODO handle Switch bounds too
+
+export value_scaled_bound_constraint
+
+"""
+$(TYPEDSIGNATURES)
+
+Produce a constraint tree with all bounds scaled by the `scale`, as defined by
+[`value_scaled_bound_constraint`](@ref).
+
+Values that carry no bound (and generally all empty constraint trees in the
+solution) are removed. To preserve the original values without the risk of
+violating the scaled constraints, use [`remove_bounds`](@ref) on `x`.
+"""
+value_scaled_bound_constraints(x::C.ConstraintTree, scale::C.Value) = C.ConstraintTree(
+    k => v for (k, v) in (k => value_scaled_bound_constraints(v) for (k, v) in x) if
+    !v isa ConstraintTree || !isempty(v)
+)
+
+"""
+$(TYPEDSIGNATURES)
+
+Convenience overload of [`value_scaled_bound_constraints`](@ref) for a single
+constraint.
+"""
+value_scaled_bound_constraints(x::C.Constraint, scale::C.Value) =
+    value_scaled_bound_constraint(x.value, x.bound, scale)
+
+export value_scaled_bound_constraints
