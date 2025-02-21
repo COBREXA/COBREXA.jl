@@ -16,8 +16,6 @@
 
 # TODO this might eventually deserve the QP version
 
-# TODO steadycom
-
 """
 $(TYPEDSIGNATURES)
 
@@ -77,6 +75,7 @@ function community_flux_balance_constraints(
         for (k, _) in model_abundances
     ]
 
+    # TODO: this should be prefixed by `:community` to avoid name collisions.
     constraints *
     :equal_growth^all_equal_constraints(
         last(growth_sums[1]).value,
@@ -126,16 +125,12 @@ function community_composition_balance_constraints(
         (
             Symbol(k) => if m isa A.AbstractFBCModel
                 c = flux_balance_constraints(m; interface)
-                (c, interface_exchanges(c), a)
-                #TODO scale this
+                (:community^c, interface_exchanges(c))
             elseif m isa C.ConstraintTree
-                (m, interface_exchanges(m), a)
-                # TODO how do we scale this thing most easily?
-                # one tree with retained bounds and a few bounds with something else?
-                # also how do we scale here with a new variable? :)
+                (:community^m, interface_exchanges(m))
             else
                 throw(DomainError(m, "unsupported community member type"))
-            end for (k, (m, a)) in model_abundances
+            end for (k, m) in models
         );
         out_interface = :community_exchanges,
         out_balance = :community_balance,
@@ -143,18 +138,23 @@ function community_composition_balance_constraints(
             get(bounds_lookup, String(last(x)), default_community_exchange_bound),
     )
 
-    growth_sums = [
-        Symbol(k) => C.Constraint(sum_value(interface_biomass(constraints[Symbol(k)])))
-        for (k, _) in model_abundances
-    ]
+    constraints += :abundances^C.variables(keys = keys(constraints.community))
 
-    constraints *
-    :community_balance^C.Constraint(#=TODO sum of Xs=#)
-    *
-    :community_composition^C.ConstraintTree(
-        #=TODO pick out the individual compositions outta the individual trees=#
+    return C.ConstraintTree(
+        :community => erase_bounds(constraints.community),
+        :diluted_constraints => C.ConstraintTree(
+            k => value_scaled_bound_constraints(v, constraints.abundances[k]) for
+            (k, v) in constraints.community
+        ),
+        :abundances => constraints.abundances,
+        :total_abundance_constraint => C.Constraint(sum_value(constraints.growths), 1.0),
+        :biomass_constraints => C.ConstraintTree(
+            k => equal_value_constraint(
+                sum_value(interface_biomass(constraints.community[k])),
+                constraints.abundances[k].value * growth,
+            ) for (k, v) in constraints.community
+        ),
     )
-    
 end
 
 export community_composition_balance_constraints
@@ -162,16 +162,16 @@ export community_composition_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-Run the SteadyCom analysis on several models. All arguments are forwarded to
-[`community_composition_balance_constraints`](@ref) which constructs the model;
-this function returns the solved model.
+TODO TODO
 """
-community_composition_balance_analysis(args...; kwargs...) = frontend_optimized_values(
-    community_composition_balance_constraints,
-    args...;
-    #TODO zero objective = x -> x.community_biomass.value,
-    #TODO feasibility sense
-    kwargs...,
-)
+community_composition_balance_analysis(args...; kwargs...) = nothing
+
+export community_composition_balance_analysis
+"""
+$(TYPEDSIGNATURES)
+
+TODO TODO
+"""
+community_composition_variability_analysis(args...; kwargs...) = nothing
 
 export community_composition_balance_analysis
