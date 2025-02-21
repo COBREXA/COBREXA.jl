@@ -42,7 +42,7 @@ interface part to contribute to the community exchanges and community biomass.
 """
 function community_flux_balance_constraints(
     model_abundances,
-    community_exchange_bounds;
+    community_exchange_bounds = Dict();
     interface = :identifier_prefixes,
     interface_exchanges = x -> x.interface.exchanges,
     interface_biomass = x -> x.interface.biomass,
@@ -105,12 +105,28 @@ export community_flux_balance_analysis
 """
 $(TYPEDSIGNATURES)
 
-TODO TODO
+Build a community of `models` of fixed total biomass `growth`, where the
+community abundances are represented as variables. This allows finding feasible
+community compositions at a given growth rate, following the methodology of
+SteadyCom algorithm (Chan SH, Simons MN, Maranas CD. *SteadyCom: predicting
+microbial abundances while ensuring community stability*. PLoS computational
+biology. 2017 May 15;13(5):e1005539).
+
+`models` is an interable of pairs in the shape of `(name, model)`, where a
+`model` can be a constraint tree or an abstract metabolic model. The models are
+connected by interfaces and bounded just like in
+`community_flux_balance_constraints` (as the main difference, this function
+does not accept abundances, but requires knowledge of growth in advance).
+
+The output constraint tree contains the target growth value as `growth`,
+relative abundances in subtree `abundances`, all values of the original
+models in subtree `community`, and SteadyCom-style diluted constraints in
+subtree `diluted_constraints`.
 """
 function community_composition_balance_constraints(
     models,
     growth,
-    community_exchange_bounds;
+    community_exchange_bounds = Dict();
     interface = :identifier_prefixes,
     interface_exchanges = x -> x.interface.exchanges,
     interface_biomass = x -> x.interface.biomass,
@@ -138,7 +154,11 @@ function community_composition_balance_constraints(
             get(bounds_lookup, String(last(x)), default_community_exchange_bound),
     )
 
-    constraints += :abundances^C.variables(keys = keys(constraints.community))
+    constraints +=
+        :abundances^C.variables(
+            keys = keys(constraints.community),
+            bounds = C.Between(0, 1),
+        )
 
     return C.ConstraintTree(
         :community => erase_bounds(constraints.community),
@@ -147,7 +167,8 @@ function community_composition_balance_constraints(
             (k, v) in constraints.community
         ),
         :abundances => constraints.abundances,
-        :total_abundance_constraint => C.Constraint(sum_value(constraints.growths), 1.0),
+        :total_abundance_constraint => C.Constraint(sum_value(constraints.abundances), 1.0),
+        :growth => C.Constraint(C.LinearValue(growth)),
         :biomass_constraints => C.ConstraintTree(
             k => equal_value_constraint(
                 sum_value(interface_biomass(constraints.community[k])),
@@ -162,16 +183,90 @@ export community_composition_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-TODO TODO
+Run a SteadyCom-style analysis on a community formed by given models, scanning
+for the maximum achievable growth. The scanning proceeds sequentially by
+halving the interval `(0, maximum_growth)`, until the interval size becomes
+smaller than the desired `tolerance`.
+
+Positional and keyword arguments are forwarded to
+[`community_composition_balance_constraints`](@ref). `optimizer` and `settings`
+are forwarded to [`optimization_model`](@ref).
+
+Function `output` may be specified to restrict the reported result by reducing
+the best-growing constraint tree to a sensible set of constraints to report.
+`output` is executed on the tree before the solution variables are substituted
+in. For example to just return the best achieved growth and abundances, use
+`output = x -> :growth^x.growth * :abundances^x.abundances`.
 """
-community_composition_balance_analysis(args...; kwargs...) = nothing
+function community_composition_balance_analysis(
+    models,
+    maximum_growth,
+    args...;
+    tolerance = 1e-4,
+    optimizer,
+    settings = [],
+    output = identity,
+    kwargs...,
+)
+    @assert maximum_growth >= 0 "maximum_growth must not be negative"
+
+    (gl, gu) = (0, maximum_growth)
+
+    best_solution = nothing
+
+    while gu - gl >= tolerance
+        g = (gu - gl) / 2
+        constraints =
+            community_composition_balance_constraints(models, g, args...; kwargs...)
+        m = optimized_model(
+            optimization_model(constraints, sense = Feasible; optimizer, settings),
+        )
+        if isnothing(m)
+            gu = g
+        else
+            gl = g
+            best_solution = (variable_vector(m), constraints)
+        end
+    end
+
+    if isnothing(best_solution)
+        return nothing
+    else
+        (vars, cs) = best_solution
+        return C.substitute_values(output(cs), vars)
+    end
+end
 
 export community_composition_balance_analysis
+
 """
 $(TYPEDSIGNATURES)
 
-TODO TODO
-"""
-community_composition_variability_analysis(args...; kwargs...) = nothing
+Run a SteadyCom-style analysis, and return the variability of the community
+composition at the given growth rate.
 
-export community_composition_balance_analysis
+Positional and keyword arguments are forwarded to
+[`community_composition_balance_constraints`](@ref); `optimizer`, `settings`
+and `workers` are internally forwarded to [`constraints_variability`](@ref).
+"""
+function community_composition_variability_analysis(
+    models,
+    growth,
+    args...;
+    optimizer,
+    settings = [],
+    workers = D.workers(),
+    kwargs...,
+)
+    constraints =
+        community_composition_balance_constraints(models, growth, args...; kwargs...)
+    return constraints_variability(
+        constraints,
+        constraints.abundances;
+        optimizer,
+        workers,
+        settings,
+    )
+end
+
+export community_composition_variability_analysis
