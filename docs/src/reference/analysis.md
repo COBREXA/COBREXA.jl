@@ -17,7 +17,7 @@ Pages = ["src/analysis/parsimonious.jl"]
 
 ```@autodocs
 Modules = [COBREXA]
-Pages = ["src/analysis/screen.jl", "src/analysis/variability.jl", "src/analysis/envelope.jl" ]
+Pages = [ "src/analysis/screen.jl", "src/analysis/variability.jl", "src/analysis/envelope.jl", "src/analysis/threshold.jl" ]
 ```
 
 ## Sampling
