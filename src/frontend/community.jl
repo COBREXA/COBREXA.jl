@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO this might eventually deserve the QP version
-
 """
 $(TYPEDSIGNATURES)
 
@@ -105,15 +103,15 @@ community_flux_balance_analysis(args...; kwargs...) = frontend_optimized_values(
 
 export community_flux_balance_analysis
 
+# TODO this might eventually deserve the QP community-FBA version
+
 """
 $(TYPEDSIGNATURES)
 
 Build a community of `models` of fixed total biomass `growth`, where the
 community abundances are represented as variables. This allows finding feasible
 community compositions at a given growth rate, following the methodology of
-SteadyCom algorithm (Chan SH, Simons MN, Maranas CD. *SteadyCom: predicting
-microbial abundances while ensuring community stability*. PLoS computational
-biology. 2017 May 15;13(5):e1005539).
+SteadyCom algorithm.
 
 `models` is an interable of pairs in the shape of `(name, model)`, where a
 `model` can be a constraint tree or an abstract metabolic model. The models are
@@ -190,19 +188,17 @@ export community_composition_balance_constraints
 """
 $(TYPEDSIGNATURES)
 
-Run a SteadyCom-style analysis on a community formed by given models, scanning
-for the maximum achievable growth. The scanning proceeds sequentially by
-halving the interval `(0, maximum_growth)`, until the interval size becomes
-smaller than the desired `tolerance`.
+Build a variable-composition community from given models, and scan for the
+maximum achievable growth. The scanning proceeds by halving the
+interval `(0, maximum_growth)`, until the interval size becomes smaller than
+the desired `tolerance`.
 
 Positional and keyword arguments are forwarded to
-[`community_composition_balance_constraints`](@ref). `optimizer` and `settings`
-are forwarded to [`optimization_model`](@ref).
+[`community_composition_balance_constraints`](@ref). `optimizer`, `settings`,
+`tolerance` and `output` are forwarded to [`feasibility_threshold`](@ref).
 
-Function `output` may be specified to restrict the reported result by reducing
-the best-growing constraint tree to a sensible set of constraints to report.
-`output` is executed on the tree before the solution variables are substituted
-in. For example to just return the best achieved growth and abundances, use
+Function `output` may be specified to restrict the reported result: For
+example, to just return the best achieved growth and abundances, one may use
 `output = x -> :growth^x.growth * :abundances^x.abundances`.
 """
 function community_composition_balance_analysis(
@@ -217,32 +213,16 @@ function community_composition_balance_analysis(
 )
     @assert maximum_growth >= 0 "maximum_growth must not be negative"
 
-    (gl, gu) = (0, maximum_growth)
-
-    best_solution = nothing
-
-    while gu - gl >= tolerance
-        g = (gu + gl) / 2
-        constraints =
-            community_composition_balance_constraints(models, g, args...; kwargs...)
-
-        x = optimized_values(
-            constraints;
-            optimizer,
-            settings,
-            sense = Feasible,
-            output = output(constraints),
-        )
-
-        if isnothing(x)
-            gu = g
-        else
-            gl = g
-            best_solution = x
-        end
+    return feasibility_threshold(
+        0,
+        maximum_growth;
+        tolerance,
+        optimizer,
+        settings,
+        output,
+    ) do growth
+        community_composition_balance_constraints(models, growth, args...; kwargs...)
     end
-
-    return best_solution
 end
 
 export community_composition_balance_analysis
