@@ -39,6 +39,7 @@ If required, constraint trees may be supplied instead of `AbstracFBCModel`s in
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
 interface part to contribute to the community exchanges and community biomass.
+`wrap` is forwarded to internal call of [`interface_constraints`](@ref).
 """
 function community_flux_balance_constraints(
     model_abundances,
@@ -47,6 +48,7 @@ function community_flux_balance_constraints(
     interface_exchanges = x -> x.interface.exchanges,
     interface_biomass = x -> x.interface.biomass,
     default_community_exchange_bound = nothing,
+    wrap = identity,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
     @assert isapprox(sum(a for (_, (_, a)) in model_abundances), 1) "community member abundances must sum to 1"
@@ -68,6 +70,7 @@ function community_flux_balance_constraints(
         out_balance = :community_balance,
         bound = x ->
             get(bounds_lookup, String(last(x)), default_community_exchange_bound),
+        wrap,
     )
 
     growth_sums = [
@@ -141,38 +144,42 @@ function community_composition_balance_constraints(
         (
             Symbol(k) => if m isa A.AbstractFBCModel
                 c = flux_balance_constraints(m; interface)
-                (:community^c, interface_exchanges(c))
+                (c, interface_exchanges(c))
             elseif m isa C.ConstraintTree
-                (:community^m, interface_exchanges(m))
+                (m, interface_exchanges(m))
             else
                 throw(DomainError(m, "unsupported community member type"))
             end for (k, m) in models
         );
         out_interface = :community_exchanges,
         out_balance = :community_balance,
+        wrap = x -> :community^x,
         bound = x ->
             get(bounds_lookup, String(last(x)), default_community_exchange_bound),
     )
 
     constraints +=
-        :abundances^C.variables(
-            keys = keys(constraints.community),
+        :community_abundances^C.variables(
+            keys = collect(keys(constraints.community)),
             bounds = C.Between(0, 1),
         )
 
     return C.ConstraintTree(
-        :community => erase_bounds(constraints.community),
+        :community => remove_bounds(constraints.community),
         :diluted_constraints => C.ConstraintTree(
-            k => value_scaled_bound_constraints(v, constraints.abundances[k]) for
-            (k, v) in constraints.community
+            k => value_scaled_bound_constraints(
+                v,
+                constraints.community_abundances[k].value,
+            ) for (k, v) in constraints.community
         ),
-        :abundances => constraints.abundances,
-        :total_abundance_constraint => C.Constraint(sum_value(constraints.abundances), 1.0),
+        :abundances => constraints.community_abundances,
+        :total_abundance_constraint =>
+            C.Constraint(sum_value(constraints.community_abundances), 1.0),
         :growth => C.Constraint(C.LinearValue(growth)),
         :biomass_constraints => C.ConstraintTree(
             k => equal_value_constraint(
                 sum_value(interface_biomass(constraints.community[k])),
-                constraints.abundances[k].value * growth,
+                constraints.community_abundances[k].value * growth,
             ) for (k, v) in constraints.community
         ),
     )
@@ -215,26 +222,27 @@ function community_composition_balance_analysis(
     best_solution = nothing
 
     while gu - gl >= tolerance
-        g = (gu - gl) / 2
+        g = (gu + gl) / 2
         constraints =
             community_composition_balance_constraints(models, g, args...; kwargs...)
-        m = optimized_model(
-            optimization_model(constraints, sense = Feasible; optimizer, settings),
+
+        x = optimized_values(
+            constraints;
+            optimizer,
+            settings,
+            sense = Feasible,
+            output = output(constraints),
         )
-        if isnothing(m)
+
+        if isnothing(x)
             gu = g
         else
             gl = g
-            best_solution = (variable_vector(m), constraints)
+            best_solution = x
         end
     end
 
-    if isnothing(best_solution)
-        return nothing
-    else
-        (vars, cs) = best_solution
-        return C.substitute_values(output(cs), vars)
-    end
+    return best_solution
 end
 
 export community_composition_balance_analysis

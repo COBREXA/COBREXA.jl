@@ -70,7 +70,7 @@ This produces up to 2 constraints:
 """
 function value_scaled_bound_constraint(x::C.Value, b::C.Between, scale::C.Value)
     bounds = [
-        b.lower > -Inf ? (:lower => C.Constraint(x + b.lower * scale, (0, Inf))) : nothing,
+        b.lower > -Inf ? (:lower => C.Constraint(x - b.lower * scale, (0, Inf))) : nothing,
         b.upper < Inf ? (:upper => C.Constraint(x - b.upper * scale, (-Inf, 0))) : nothing,
     ]
     return C.ConstraintTree(b for b in bounds if !isnothing(b))
@@ -99,8 +99,9 @@ solution) are removed. To preserve the original values without the risk of
 violating the scaled constraints, use [`remove_bounds`](@ref) on `x`.
 """
 value_scaled_bound_constraints(x::C.ConstraintTree, scale::C.Value) = C.ConstraintTree(
-    k => v for (k, v) in (k => value_scaled_bound_constraints(v) for (k, v) in x) if
-    !v isa ConstraintTree || !isempty(v)
+    k => v for
+    (k, v) in (k => value_scaled_bound_constraints(v, scale) for (k, v) in x) if
+    !(v isa C.ConstraintTree) || !isempty(v)
 )
 
 """
