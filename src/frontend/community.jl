@@ -157,27 +157,24 @@ function community_composition_balance_constraints(
     )
 
     constraints +=
-        :community_abundances^C.variables(
+        :abundances^C.variables(
             keys = collect(keys(constraints.community)),
             bounds = C.Between(0, 1),
         )
 
     return C.ConstraintTree(
+        (kv for kv in constraints if first(kv) != :community)...,
         :community => remove_bounds(constraints.community),
         :diluted_constraints => C.ConstraintTree(
-            k => value_scaled_bound_constraints(
-                v,
-                constraints.community_abundances[k].value,
-            ) for (k, v) in constraints.community
+            k => value_scaled_bound_constraints(v, constraints.abundances[k].value) for
+            (k, v) in constraints.community
         ),
-        :abundances => constraints.community_abundances,
-        :total_abundance_constraint =>
-            C.Constraint(sum_value(constraints.community_abundances), 1.0),
+        :total_abundance_constraint => C.Constraint(sum_value(constraints.abundances), 1.0),
         :growth => C.Constraint(C.LinearValue(growth)),
         :biomass_constraints => C.ConstraintTree(
             k => equal_value_constraint(
                 sum_value(interface_biomass(constraints.community[k])),
-                constraints.community_abundances[k].value * growth,
+                constraints.abundances[k].value * growth,
             ) for (k, v) in constraints.community
         ),
     )
@@ -214,8 +211,8 @@ function community_composition_balance_analysis(
     @assert maximum_growth >= 0 "maximum_growth must not be negative"
 
     return feasibility_threshold(
-        0,
-        maximum_growth;
+        0.0,
+        Float64(maximum_growth);
         tolerance,
         optimizer,
         settings,

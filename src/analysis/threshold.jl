@@ -46,13 +46,7 @@ function feasibility_threshold(
     while abs(base - extreme) >= tolerance
         target = (base + extreme) / 2
         cs = constraints_at_value(target)
-        x = optimized_value(
-            constraints;
-            optimizer,
-            settings,
-            sense = Feasible,
-            output = output(cs),
-        )
+        x = optimized_values(cs; optimizer, settings, sense = Feasible, output = output(cs))
 
         if isnothing(x)
             extreme = target

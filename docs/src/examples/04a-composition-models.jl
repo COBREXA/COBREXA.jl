@@ -53,11 +53,49 @@ ko_ecolis = Dict(begin
     Symbol(r) => m
 end for r in knockouts)
 
+# ## Finding feasible community compositions
+#
 # Now, let's use [`community_composition_variability_analysis`](@ref) to
 # determine the feasible range of abundances if the community if these 2
 # reaction knockouts is forced to grow 0.5 g/gDW/h:
 
-res =
-    community_composition_variability_analysis(ko_ecolis, 0.5, optimizer = HiGHS.Optimizer)
+res = community_composition_variability_analysis(
+    ko_ecolis,
+    0.5,
+    ["EX_glc__D_e" => (-10.0, 0.0)],
+    optimizer = HiGHS.Optimizer,
+)
 
-community_composition_balance_analysis(ko_ecolis, 30, optimizer = HiGHS.Optimizer)
+# It seems like the FBA-knockout has to be present for the community to be
+# feasible at this rate.
+
+@test isapprox(first(res.CYTBD), 0, atol = TEST_TOLERANCE) #src
+@test isapprox(last(res.CYTBD), 0.6642931585890363, atol = TEST_TOLERANCE) #src
+@test isapprox(first(res.FBA), 0.33570684141096374, atol = TEST_TOLERANCE) #src
+@test isapprox(last(res.FBA), 1, atol = TEST_TOLERANCE) #src
+
+# ## Finding the community composition at optimum growth
+#
+# The variable community composition allows us to also scan for optimal growth
+# (via simple interval splitting), determining the community composition near
+# this optimum:
+res = community_composition_balance_analysis(
+    ko_ecolis,
+    1.0,
+    ["EX_glc__D_e" => (-10.0, 0.0)],
+    optimizer = HiGHS.Optimizer,
+    tolerance = 1e-4,
+)
+
+# The achieved growth is reported in the result tree:
+res.growth
+
+@test isapprox(res.growth, 0.7039794921875, atol = TEST_TOLERANCE) #src
+
+# We can also have a look at the abundances at optimum. In this case, it looks
+# like CYTBD knockout will be practically missing (within the tolerance
+# requested above, it is technically zero):
+res.abundances
+
+@test isapprox(sum(values(res.abundances)), 1.0, atol = TEST_TOLERANCE) #src
+@test isapprox(res.abundances.FBA, 1.0, atol = 1e-4) #src
