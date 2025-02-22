@@ -29,7 +29,7 @@ Arguments `optimizer` and `settings` are passed to [`optimized_value`](@ref).
 set of constraints which should be substitued into and returned in the
 resulting value tree.
 
-If no feasible solution is found, the function returs `nothing`.
+If no feasible solution is found, the function returns `nothing`.
 """
 function feasibility_threshold(
     constraints_at_value,
