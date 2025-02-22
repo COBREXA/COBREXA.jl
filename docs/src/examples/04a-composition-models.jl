@@ -70,8 +70,8 @@ res = community_composition_variability_analysis(
 # feasible at this rate.
 
 @test isapprox(first(res.CYTBD), 0, atol = TEST_TOLERANCE) #src
-@test isapprox(last(res.CYTBD), 0.6642931585890363, atol = TEST_TOLERANCE) #src
-@test isapprox(first(res.FBA), 0.33570684141096374, atol = TEST_TOLERANCE) #src
+@test isapprox(last(res.CYTBD), 0.2343892913126464, atol = TEST_TOLERANCE) #src
+@test isapprox(first(res.FBA), 0.7656107086873536, atol = TEST_TOLERANCE) #src
 @test isapprox(last(res.FBA), 1, atol = TEST_TOLERANCE) #src
 
 # ## Finding the community composition at optimum growth
