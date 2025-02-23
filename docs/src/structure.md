@@ -27,9 +27,9 @@ With ConstraintTrees, the typical workflow in COBREXA is as follows:
 1. "Raw" data and base model data are loaded from semantically organized models
    (such as SBML, or lab measurements in CSV or other tabular format)
 2. COBREXA functions are used to convert these to a constraint tree that
-   properly describes the problem at hand
-   - possibly, multiple types and groups of raw data can be soaked into the
-     constraint tree
+   properly describes the problem at hand; the constraint tree structure is
+   then possibly enriched by multiple other kinds of data, such as known&fixed
+   model parameters, experimental measurements, and additional constraints
 3. Analysis functionality of COBREXA is used to solve the system described by
    the constraint tree, and extract useful information from the solutions.
 
@@ -51,6 +51,7 @@ many various purposes:
   - [`simplified_enzyme_constrained_flux_balance_analysis`](@ref)
 - Front-end functions call various **Front-end constraint tree builders** which
   translate various kinds of raw data to the constraint trees, such as:
+  - [`community_composition_balance_constraints`](@ref)
   - [`community_flux_balance_constraints`](@ref)
   - [`enzyme_constrained_flux_balance_constraints`](@ref)
   - [`flux_balance_constraints`](@ref)
@@ -71,8 +72,7 @@ many various purposes:
   - [`scale_bounds`](@ref)
   - [`scale_constraints`](@ref)
   - [`sign_split_variables`](@ref) and [`sign_split_constraints`](@ref)
-    [`squared_sum_error_value`](@ref)
-  - [`sum_value`](@ref), [`squared_sum_value`](@ref) and
+  - [`sum_value`](@ref), [`squared_sum_value`](@ref), and [`squared_sum_error_value`](@ref)
 - Some functions are provided to **join the constraint trees** via interfaces,
   simplifying e.g. the creation of community or multi-organ models,
   - [`flux_balance_constraints`](@ref) can automatically generate interfaces
@@ -80,9 +80,13 @@ many various purposes:
     modeling from the annotations in the FBC models
   - [`interface_constraints`](@ref) joins the "modules" with prepared
     interfaces together
+  - [`community_flux_balance_constraints`](@ref) and
+    [`community_composition_balance_constraints`](@ref) join the "modules" in
+    one of the prepared community-modeling schemes
 - Finally, the **analysis functions** simulate the model in the constraint
   tree mechanistically and extract analysis results:
   - [`constraints_objective_envelope`](@ref)
+  - [`feasibility_threshold`](@ref)
   - [`parsimonious_optimized_values`](@ref)
   - [`sample_constraints`](@ref)
   - [`sample_constraint_variables`](@ref)

@@ -53,14 +53,17 @@ makedocs(
         ansicolor = true,
         canonical = "https://cobrexa.github.io/COBREXA.jl/stable/",
     ),
+    #format = Documenter.LaTeX(platform = "none"),
     linkcheck = false,
     pages = [
-        "Home" => "index.md",
+        "Home" => [
+            "Home" => "index.md"
+            "Core concepts and structure" => "structure.md"
+        ],
         "Examples" => [
             "Contents" => "examples.md"
             find_mds("examples")
         ],
-        "Core concepts and structure" => "structure.md",
         "Parallel, distributed and HPC processing" => [
             "Contents" => "distributed.md"
             find_mds("distributed")
