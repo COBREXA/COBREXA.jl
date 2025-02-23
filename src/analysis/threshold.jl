@@ -24,7 +24,7 @@ returned by function `constraints_at_value` for a given numerical value between
 continues until the size of the interval becomes smaller than `tolerance`; at
 that point the last solution is returned.
 
-Arguments `optimizer` and `settings` are passed to [`optimized_value`](@ref).
+Arguments `optimizer` and `settings` are passed to [`optimized_values`](@ref).
 `output` is a function that restricts the value-specific constraint tree to a
 set of constraints which should be substitued into and returned in the
 resulting value tree.
