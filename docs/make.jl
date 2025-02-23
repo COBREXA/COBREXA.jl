@@ -1,6 +1,6 @@
 
-# Copyright (c) 2023, University of Luxembourg
-# Copyright (c) 2023, Heinrich-Heine University Duesseldorf
+# Copyright (c) 2023-2025, University of Luxembourg
+# Copyright (c) 2023-2025, Heinrich-Heine University Duesseldorf
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,7 +53,6 @@ makedocs(
         ansicolor = true,
         canonical = "https://cobrexa.github.io/COBREXA.jl/stable/",
     ),
-    #format = Documenter.LaTeX(platform = "none"),
     linkcheck = false,
     pages = [
         "Home" => [
