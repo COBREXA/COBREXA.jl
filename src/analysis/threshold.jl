@@ -58,3 +58,5 @@ function feasibility_threshold(
 
     return best
 end
+
+export feasibility_threshold
