@@ -1,6 +1,6 @@
 
-# Copyright (c) 2021-2024, University of Luxembourg
-# Copyright (c) 2021-2024, Heinrich-Heine University Duesseldorf
+# Copyright (c) 2021-2025, University of Luxembourg
+# Copyright (c) 2021-2025, Heinrich-Heine University Duesseldorf
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,12 +37,17 @@ Compatible modules with ready-made interfaces may be created e.g. by
 "module name" identifier and constraint path in the interface (these form 2
 parameters passed to `ignore`). Similarly, `bound` may be used to specify
 bounds for the new interface, if required.
+
+`output_modules` is a function to transform the contraint tree of the assembled
+modules before adding the connection structure; this can be used to e.g. put
+the members into a single subtree with `output_modules = x -> :subtree_name^x`.
 """
 function interface_constraints(
     ps::Pair...;
     default_interface = :interface,
     out_interface = default_interface,
     out_balance = Symbol(out_interface, :_balance),
+    output_modules = identity,
     ignore = (_, _) -> false,
     bound = _ -> nothing,
 )
@@ -83,7 +88,7 @@ function interface_constraints(
 
     # extract the plain networks and add variables for the new interfaces
     constraints =
-        C.ConstraintTree(id => (m.network) for (id, m) in modules) +
+        output_modules(C.ConstraintTree(id => (m.network) for (id, m) in modules)) +
         out_interface^C.variables_ifor((path, _) -> bound(path), interface_sum)
 
     # join everything with the interface balance and return

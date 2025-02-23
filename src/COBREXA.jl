@@ -1,6 +1,6 @@
 
-# Copyright (c) 2021-2024, University of Luxembourg
-# Copyright (c) 2021-2024, Heinrich-Heine University Duesseldorf
+# Copyright (c) 2021-2025, University of Luxembourg
+# Copyright (c) 2021-2025, Heinrich-Heine University Duesseldorf
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ include("analysis/parsimonious.jl")
 include("analysis/sample.jl")
 include("analysis/screen.jl")
 include("analysis/solver.jl")
+include("analysis/threshold.jl")
 include("analysis/variability.jl")
 
 # conversion of various stuff to constraint trees
