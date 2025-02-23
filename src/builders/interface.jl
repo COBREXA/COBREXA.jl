@@ -36,16 +36,18 @@ Compatible modules with ready-made interfaces may be created e.g. by
 `ignore` may be used to selectively ignore parts of interfaces given the
 "module name" identifier and constraint path in the interface (these form 2
 parameters passed to `ignore`). Similarly, `bound` may be used to specify
-bounds for the new interface, if required. `wrap` is a function to transform
-the contraint tree of the assembled modules before adding the connection
-structure; this can be used to e.g. put the members into a single subtree.
+bounds for the new interface, if required.
+
+`output_modules` is a function to transform the contraint tree of the assembled
+modules before adding the connection structure; this can be used to e.g. put
+the members into a single subtree with `output_modules = x -> :subtree_name^x`.
 """
 function interface_constraints(
     ps::Pair...;
     default_interface = :interface,
     out_interface = default_interface,
     out_balance = Symbol(out_interface, :_balance),
-    wrap = identity,
+    output_modules = identity,
     ignore = (_, _) -> false,
     bound = _ -> nothing,
 )
@@ -86,7 +88,7 @@ function interface_constraints(
 
     # extract the plain networks and add variables for the new interfaces
     constraints =
-        wrap(C.ConstraintTree(id => (m.network) for (id, m) in modules)) +
+        output_modules(C.ConstraintTree(id => (m.network) for (id, m) in modules)) +
         out_interface^C.variables_ifor((path, _) -> bound(path), interface_sum)
 
     # join everything with the interface balance and return

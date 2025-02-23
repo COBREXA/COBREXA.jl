@@ -37,7 +37,12 @@ If required, constraint trees may be supplied instead of `AbstracFBCModel`s in
 `interface` is forwarded to [`flux_balance_constraints`](@ref).
 `interface_exchanges` and `interface_biomass` are used to pick up the correct
 interface part to contribute to the community exchanges and community biomass.
-`wrap` is forwarded to internal call of [`interface_constraints`](@ref).
+
+`output_members` is forwarded as `output_modules` to
+[`interface_constraints`](@ref), allowing e.g. to wrap the subtrees of all
+community members in a common subtree, or otherwise transform the trees. For
+example, to put all community members into subtree `members`, use
+`output_members = x -> :members^x`.
 """
 function community_flux_balance_constraints(
     model_abundances,
@@ -46,7 +51,7 @@ function community_flux_balance_constraints(
     interface_exchanges = x -> x.interface.exchanges,
     interface_biomass = x -> x.interface.biomass,
     default_community_exchange_bound = nothing,
-    wrap = identity,
+    output_members = identity,
 )
     @assert length(model_abundances) >= 1 "at least one community member is required"
     @assert isapprox(sum(a for (_, (_, a)) in model_abundances), 1) "community member abundances must sum to 1"
@@ -64,7 +69,7 @@ function community_flux_balance_constraints(
         out_balance = :community_balance,
         bound = x ->
             get(bounds_lookup, String(last(x)), default_community_exchange_bound),
-        wrap,
+        output_modules = output_members,
     )
 
     growth_sums = [
@@ -143,7 +148,7 @@ function community_composition_balance_constraints(
         (Symbol(k) => make_member(k, m) for (k, m) in models);
         out_interface = :community_exchanges,
         out_balance = :community_balance,
-        wrap = x -> :community^x,
+        output_modules = x -> :community^x,
         bound = x ->
             get(bounds_lookup, String(last(x)), default_community_exchange_bound),
     )
