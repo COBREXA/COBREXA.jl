@@ -129,6 +129,6 @@ PerMedCoE project ([permedcoe.eu](https://permedcoe.eu/)) agreement no. 951773.
 If you use COBREXA.jl and want to refer to it in your work, use the following
 citation format (also available as BibTeX in [cobrexa.bib](cobrexa.bib)):
 
-> Miroslav Kratochvíl, Laurent Heirendt, St Elmo Wilken, Taneli Pusa, Sylvain Arreckx, Alberto Noronha, Marvin van Aalst, Venkata P Satagopam, Oliver Ebenhöh, Reinhard Schneider, Christophe Trefois, Wei Gu, *COBREXA.jl: constraint-based reconstruction and exascale analysis*, Bioinformatics, Volume 38, Issue 4, 15 February 2022, Pages 1171–1172, https://doi.org/10.1093/bioinformatics/btab782
+> Miroslav Kratochvíl, St Elmo Wilken, Oliver Ebenhöh, Reinhard Schneider, Venkata P Satagopam, *COBREXA 2: tidy and scalable construction of complex metabolic models*, Bioinformatics, Volume 41, Issue 2, February 2025, btaf056, https://doi.org/10.1093/bioinformatics/btaf056
 
 <img src="docs/src/assets/cobrexa.svg" alt="COBREXA logo" height="64px" style="height:64px; width:auto">   <img src="docs/src/assets/unilu.svg" alt="Uni.lu logo" height="64px" style="height:64px; width:auto">   <img src="docs/src/assets/lcsb.svg" alt="LCSB logo" height="64px" style="height:64px; width:auto">   <img src="docs/src/assets/hhu.svg" alt="HHU logo" height="64px" style="height:64px; width:auto">   <img src="docs/src/assets/qtb.svg" alt="QTB logo" height="64px" style="height:64px; width:auto">   <img src="docs/src/assets/permedcoe.svg" alt="PerMedCoE logo" height="64px" style="height:64px; width:auto">
