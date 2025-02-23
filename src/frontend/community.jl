@@ -53,17 +53,13 @@ function community_flux_balance_constraints(
 
     bounds_lookup = Dict(community_exchange_bounds)
 
+    make_member(k, m, _) = throw(DomainError(m, "unsupported community member type ($k)"))
+    make_member(k, m::A.AbstractFBCModel, a) =
+        make_member(k, flux_balance_constraints(m; interface), a)
+    make_member(_, c::C.ConstraintTree, a) = (c, interface_exchanges(c), a)
+
     constraints = interface_constraints(
-        (
-            Symbol(k) => if m isa A.AbstractFBCModel
-                c = flux_balance_constraints(m; interface)
-                (c, interface_exchanges(c), a)
-            elseif m isa C.ConstraintTree
-                (m, interface_exchanges(m), a)
-            else
-                throw(DomainError(m, "unsupported community member type"))
-            end for (k, (m, a)) in model_abundances
-        );
+        (Symbol(k) => make_member(k, m, a) for (k, (m, a)) in model_abundances);
         out_interface = :community_exchanges,
         out_balance = :community_balance,
         bound = x ->
@@ -138,17 +134,13 @@ function community_composition_balance_constraints(
 
     bounds_lookup = Dict(community_exchange_bounds)
 
+    make_member(k, m) = throw(DomainError(m, "unsupported community member type ($k)"))
+    make_member(k, m::A.AbstractFBCModel) =
+        make_member(k, flux_balance_constraints(m; interface))
+    make_member(_, c::C.ConstraintTree) = (c, interface_exchanges(c))
+
     constraints = interface_constraints(
-        (
-            Symbol(k) => if m isa A.AbstractFBCModel
-                c = flux_balance_constraints(m; interface)
-                (c, interface_exchanges(c))
-            elseif m isa C.ConstraintTree
-                (m, interface_exchanges(m))
-            else
-                throw(DomainError(m, "unsupported community member type"))
-            end for (k, m) in models
-        );
+        (Symbol(k) => make_member(k, m) for (k, m) in models);
         out_interface = :community_exchanges,
         out_balance = :community_balance,
         wrap = x -> :community^x,
