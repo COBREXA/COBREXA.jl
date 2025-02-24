@@ -101,10 +101,10 @@ e_coli_rxn_isozymes
 wt_model = load_model("iML1515.json", A.CanonicalModel.Model)
 
 # As the usual quirk, we loosen the lower bound on glucose intake that is
-# required for plain FBA:
+# required to keep plain FBA solutions realistic:
 wt_model.reactions["EX_glc__D_e"].lower_bound = -1000.0;
 
-# Additionally we allow the models isoleucine and methionine uptake:
+# Additionally we allow isoleucine and methionine uptake by the models:
 wt_model.reactions["EX_ile__L_e"].lower_bound = -1000.0;
 wt_model.reactions["EX_met__L_e"].lower_bound = -1000.0;
 
@@ -112,12 +112,12 @@ wt_model.reactions["EX_met__L_e"].lower_bound = -1000.0;
 # biomass reaction that we are not interested in:
 wt_model.reactions["BIOMASS_Ec_iML1515_WT_75p37M"].annotations["sbo"] = [];
 
-# Let's create these two knockouts-- one incapable of producing isoleucine:
+# Let's create two knockouts-- the first one incapable of producing isoleucine:
 
 ile_model = deepcopy(wt_model)
 delete!(ile_model.reactions, "THRD_L");
 
-# ...and another one without the reaction that is required for producing
+# ...and another one without a reaction that is required for producing
 # methionine:
 
 met_model = deepcopy(wt_model)
