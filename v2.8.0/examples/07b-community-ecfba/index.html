@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Enzyme-constrained communities · COBREXA.jl</title><meta name="title" content="Enzyme-constrained communities · COBREXA.jl"/><meta property="og:title" content="Enzyme-constrained communities · COBREXA.jl"/><meta property="twitter:title" content="Enzyme-constrained communities · COBREXA.jl"/><meta name="description" content="Documentation for COBREXA.jl."/><meta property="og:description" content="Documentation for COBREXA.jl."/><meta property="twitter:description" content="Documentation for COBREXA.jl."/><meta property="og:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/07b-community-ecfba/"/><meta property="twitter:url" content="https://cobrexa.github.io/COBREXA.jl/stable/examples/07b-community-ecfba/"/><link rel="canonical" href="https://cobrexa.github.io/COBREXA.jl/stable/examples/07b-community-ecfba/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img class="docs-light-only" src="../../assets/logo.svg" alt="COBREXA.jl logo"/><img class="docs-dark-only" src="../../assets/logo-dark.svg" alt="COBREXA.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">COBREXA.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><span class="tocitem">Home</span><ul><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../structure/">Core concepts and structure</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../">Contents</a></li><li><a class="tocitem" href="../01-loading-and-saving/">Loading and saving models</a></li><li><a class="tocitem" href="../02a-flux-balance-analysis/">Flux balance analysis (FBA)</a></li><li><a class="tocitem" href="../02b-optimizer-parameters/">Changing optimizer parameters</a></li><li><a class="tocitem" href="../02c-model-modifications/">Making adjustments to the model</a></li><li><a class="tocitem" href="../02d-constraint-modifications/">Making adjustments to the constraint system</a></li><li><a class="tocitem" href="../03a-flux-variability-analysis/">Flux variability analysis (FVA)</a></li><li><a class="tocitem" href="../03b-parsimonious-flux-balance/">Parsimonious flux balance analysis</a></li><li><a class="tocitem" href="../03c-envelopes/">Production envelopes</a></li><li><a class="tocitem" href="../03d-unidirectional/">Split unidirectional reactions in models</a></li><li><a class="tocitem" href="../04-community-models/">Community FBA models</a></li><li><a class="tocitem" href="../04a-composition-models/">Steady community composition models</a></li><li><a class="tocitem" href="../05a-minimization-of-metabolic-adjustment/">Minimization of metabolic adjustment analysis</a></li><li><a class="tocitem" href="../05b-enzyme-constrained-models/">Enzyme constrained models</a></li><li><a class="tocitem" href="../05c-mmdf/">Thermodynamic models</a></li><li><a class="tocitem" href="../05d-loopless-models/">Loopless flux balance analysis (ll-FBA)</a></li><li><a class="tocitem" href="../05e-knockouts/">Gene knockouts</a></li><li><a class="tocitem" href="../05f-cyclefree/">CycleFreeFlux</a></li><li><a class="tocitem" href="../05g-gapfilling/">Gap filling</a></li><li><a class="tocitem" href="../06a-sampling/">Flux sampling</a></li><li><a class="tocitem" href="../06b-screening/">Screening through many model variants</a></li><li><a class="tocitem" href="../07a-srba/">Simplified resource balance analysis</a></li><li class="is-active"><a class="tocitem" href>Enzyme-constrained communities</a><ul class="internal"><li><a class="tocitem" href="#Collecting-data-and-parameters"><span>Collecting data and parameters</span></a></li><li><a class="tocitem" href="#Model-assembly"><span>Model assembly</span></a></li><li><a class="tocitem" href="#Simulating-the-community"><span>Simulating the community</span></a></li></ul></li></ul></li><li><span class="tocitem">Parallel, distributed and HPC processing</span><ul><li><a class="tocitem" href="../../distributed/">Contents</a></li><li><a class="tocitem" href="../../distributed/1_functions/">Parallel processing overview</a></li><li><a class="tocitem" href="../../distributed/2_parallel/">Local parallel processing</a></li><li><a class="tocitem" href="../../distributed/3_slurm/">Working in a HPC environment</a></li></ul></li><li><span class="tocitem">API reference</span><ul><li><a class="tocitem" href="../../reference/">Contents</a></li><li><a class="tocitem" href="../../reference/analysis/">Specialized analysis functions</a></li><li><a class="tocitem" href="../../reference/builders/">Constraint system builders</a></li><li><a class="tocitem" href="../../reference/core/">Core functionality</a></li><li><a class="tocitem" href="../../reference/frontend/">Front-end user interface</a></li><li><a class="tocitem" href="../../reference/misc/">Miscellaneous functions</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Enzyme-constrained communities</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Enzyme-constrained communities</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/COBREXA/COBREXA.jl/blob/master/docs/src/examples/07b-community-ecfba.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Enzyme-constrained-communities"><a class="docs-heading-anchor" href="#Enzyme-constrained-communities">Enzyme-constrained communities</a><a id="Enzyme-constrained-communities-1"></a><a class="docs-heading-anchor-permalink" href="#Enzyme-constrained-communities" title="Permalink"></a></h1><p>This example demonstrates a simple way to create enzyme-constrained community models. We use the genome-scale iML1515 E. coli model to simulate a community of 2 auxotrophic organisms (both of which exhibit no growth in isolation due to the lack of the amino acid), and observe how they can save each other by supplying themselves amino-acids. Such analysis easily extends to more auxotrophes and even communities of several different species.</p><p>The simulations are, very roughly, replicating the logic of the experimental work by <em>Mee, Michael T., et al.  &quot;Syntrophic exchange in synthetic microbial communities.&quot; Proceedings of the National Academy of Sciences 111.20 (2014)</em>.</p><p>As usual, we start by loading packages and downloading models:</p><pre><code class="language-julia hljs">using COBREXA
+import AbstractFBCModels as A
+import JSONFBCModels
+import ConstraintTrees as C
+import HiGHS
+
+download_model(
+    &quot;http://bigg.ucsd.edu/static/models/iML1515.json&quot;,
+    &quot;iML1515.json&quot;,
+    &quot;b0f9199f048779bb08a14dfa6c09ec56d35b8750d2f99681980d0f098355fbf5&quot;,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;iML1515.json&quot;</code></pre><h2 id="Collecting-data-and-parameters"><a class="docs-heading-anchor" href="#Collecting-data-and-parameters">Collecting data and parameters</a><a id="Collecting-data-and-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Collecting-data-and-parameters" title="Permalink"></a></h2><p>Enzyme-constrained models require parameters for protein molar masses and reaction turnover numbers (kcats). COBREXA supplies prepared example data for the iML1515 model; in this section we summarize the loading of the data into Julia structures from the used format. Other formats will work just as well.</p><p>The loading is hidden by default for brevity:</p><details><summary><strong>Loading the model parameters</strong></summary><pre><code class="language-julia hljs">import CSV
+
+data_dir = joinpath(dirname(pathof(COBREXA)), &quot;..&quot;, &quot;docs&quot;, &quot;src&quot;, &quot;examples&quot;, &quot;data&quot;);
+
+e_coli_gp_mass = Dict{String,Float64}(
+    x.gene_product =&gt; x.mass for
+    x in CSV.File(joinpath(data_dir, &quot;e_coli_gp_mass.tsv&quot;), delim = &#39;\t&#39;)
+);
+
+kcat_scale = 3600 / 1e3;
+e_coli_rxn_kcat_isozyme = Dict{String,Isozyme}(
+    x.reaction =&gt; Isozyme(
+        kcat_forward = x.kcat * kcat_scale,
+        kcat_reverse = x.kcat * kcat_scale,
+        gene_product_stoichiometry = Dict(),
+    ) for x in CSV.File(joinpath(data_dir, &quot;e_coli_reaction_kcat.tsv&quot;), delim = &#39;\t&#39;)
+);
+
+e_coli_rxn_isozymes = Dict{String,Dict{String,Isozyme}}();
+for x in CSV.File(joinpath(data_dir, &quot;e_coli_isozyme_gp.tsv&quot;), delim = &#39;\t&#39;)
+    haskey(e_coli_rxn_kcat_isozyme, x.reaction) || continue
+    rxn = get!(e_coli_rxn_isozymes, x.reaction, Dict{String,Isozyme}())
+    iso = get!(rxn, x.isozyme, deepcopy(e_coli_rxn_kcat_isozyme[x.reaction]))
+    iso.gene_product_stoichiometry[x.gene_product] = x.stoichiometry
+end;</code></pre></details><p>In the end, we have gene product weight data (just like in the <a href="../05b-enzyme-constrained-models/">enzyme-constrained model example</a>):</p><pre><code class="language-julia hljs">e_coli_gp_mass</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Float64} with 1517 entries:
+  &quot;b1329&quot; =&gt; 59.9
+  &quot;b3236&quot; =&gt; 32.337
+  &quot;b0688&quot; =&gt; 58.361
+  &quot;b2052&quot; =&gt; 36.141
+  &quot;b0832&quot; =&gt; 33.238
+  &quot;b0586&quot; =&gt; 141.991
+  &quot;b2245&quot; =&gt; 28.916
+  &quot;b1759&quot; =&gt; 15.046
+  &quot;b3772&quot; =&gt; 56.195
+  &quot;b1692&quot; =&gt; 54.58
+  &quot;b3850&quot; =&gt; 21.226
+  &quot;b1006&quot; =&gt; 45.557
+  &quot;b3428&quot; =&gt; 93.173
+  &quot;b0635&quot; =&gt; 70.857
+  &quot;b1387&quot; =&gt; 73.003
+  &quot;b1588&quot; =&gt; 89.987
+  &quot;b2541&quot; =&gt; 28.5
+  &quot;b4478&quot; =&gt; 42.523
+  &quot;b2143&quot; =&gt; 31.54
+  ⋮       =&gt; ⋮</code></pre><p>... as well as isozyme data with kcats:</p><pre><code class="language-julia hljs">e_coli_rxn_isozymes</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Dict{String, Isozyme}} with 2266 entries:
+  &quot;PACOAT&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1396&quot;=&gt;4.0), 33.9551, 33.9551))
+  &quot;Zn2tex&quot;        =&gt; Dict(&quot;iso3&quot;=&gt;Isozyme(Dict(&quot;b1377&quot;=&gt;3.0), 648.0, 648.0), &quot;i…
+  &quot;GUI1&quot;          =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3092&quot;=&gt;1.0), 21.4406, 21.4406))
+  &quot;DXYLK&quot;         =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3564&quot;=&gt;2.0), 28.7528, 28.7528))
+  &quot;CBL1tonex&quot;     =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3005&quot;=&gt;1.0, &quot;b3006&quot;=&gt;4.0, &quot;b39…
+  &quot;FE3DCITtonex&quot;  =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3005&quot;=&gt;3.0, &quot;b3006&quot;=&gt;6.0, &quot;b42…
+  &quot;FACOAL180t2pp&quot; =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1701&quot;=&gt;2.0), 28.4896, 28.4896)…
+  &quot;METSOXR1&quot;      =&gt; Dict(&quot;iso3&quot;=&gt;Isozyme(Dict(&quot;b3781&quot;=&gt;1.0, &quot;b3551&quot;=&gt;1.0), 115…
+  &quot;LIPOtex&quot;       =&gt; Dict(&quot;iso3&quot;=&gt;Isozyme(Dict(&quot;b1377&quot;=&gt;3.0), 648.0, 648.0), &quot;i…
+  &quot;NTD11&quot;         =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b2744&quot;=&gt;1.0), 24.6906, 24.6906)…
+  &quot;GLUNpp&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b2957&quot;=&gt;4.0), 18.2572, 18.2572))
+  &quot;ORNDC&quot;         =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b0693&quot;=&gt;1.0), 130.25, 130.25), …
+  &quot;ALAGLUE&quot;       =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1325&quot;=&gt;1.0), 24.1219, 24.1219))
+  &quot;UAGCVT&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3189&quot;=&gt;1.0), 11.88, 11.88))
+  &quot;I2FE2ST&quot;       =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b2529&quot;=&gt;1.0, &quot;b2528&quot;=&gt;1.0), 11.…
+  &quot;6D6SPA&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3881&quot;=&gt;1.0), 149.289, 149.289))
+  &quot;BMOCOS&quot;        =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b0827&quot;=&gt;2.0), 0.072, 0.072))
+  &quot;GLCURt2rpp&quot;    =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b3093&quot;=&gt;1.0), 648.0, 648.0), &quot;i…
+  &quot;PGSA141&quot;       =&gt; Dict(&quot;iso1&quot;=&gt;Isozyme(Dict(&quot;b1912&quot;=&gt;1.0), 40.7639, 40.7639))
+  ⋮               =&gt; ⋮</code></pre><h2 id="Model-assembly"><a class="docs-heading-anchor" href="#Model-assembly">Model assembly</a><a id="Model-assembly-1"></a><a class="docs-heading-anchor-permalink" href="#Model-assembly" title="Permalink"></a></h2><p>For simplicity, we will work with the &quot;canonical&quot; Julia-structured view of the iML1515:</p><pre><code class="language-julia hljs">wt_model = load_model(&quot;iML1515.json&quot;, A.CanonicalModel.Model)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AbstractFBCModels.CanonicalModel.Model(
+  reactions = Dict{String, AbstractFBCModels.CanonicalModel.Reaction}(&quot;PACOAT&quot; …
+  metabolites = Dict{String, AbstractFBCModels.CanonicalModel.Metabolite}(&quot;hphh…
+  genes = Dict{String, AbstractFBCModels.CanonicalModel.Gene}(&quot;b1329&quot; =&gt; Abstra…
+  couplings = Dict{String, AbstractFBCModels.CanonicalModel.Coupling}(),
+)
+</code></pre><p>As the usual quirk, we loosen the lower bound on glucose intake that is required for plain FBA:</p><pre><code class="language-julia hljs">wt_model.reactions[&quot;EX_glc__D_e&quot;].lower_bound = -1000.0;</code></pre><p>Additionally we allow the models isoleucine and methionine uptake:</p><pre><code class="language-julia hljs">wt_model.reactions[&quot;EX_ile__L_e&quot;].lower_bound = -1000.0;
+wt_model.reactions[&quot;EX_met__L_e&quot;].lower_bound = -1000.0;</code></pre><p>...and for good manners, we also remove the biomass annotation from the biomass reaction that we are not interested in:</p><pre><code class="language-julia hljs">wt_model.reactions[&quot;BIOMASS_Ec_iML1515_WT_75p37M&quot;].annotations[&quot;sbo&quot;] = [];</code></pre><p>Let&#39;s create these two knockouts– one incapable of producing isoleucine:</p><pre><code class="language-julia hljs">ile_model = deepcopy(wt_model)
+delete!(ile_model.reactions, &quot;THRD_L&quot;);</code></pre><p>...and another one without the reaction that is required for producing methionine:</p><pre><code class="language-julia hljs">met_model = deepcopy(wt_model)
+delete!(met_model.reactions, &quot;HSST&quot;);</code></pre><p>For brevity, let&#39;s make a shortcut that creates enzyme-constrained FBA system from the model together with a proper interface for community building:</p><pre><code class="language-julia hljs">ecfba_constraints(m, capacity) = enzyme_constrained_flux_balance_constraints(
+    m,
+    reaction_isozymes = e_coli_rxn_isozymes,
+    gene_product_molar_masses = e_coli_gp_mass,
+    interface = :sbo;
+    capacity,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ecfba_constraints (generic function with 1 method)</code></pre><p>We can now create the community by creating each model&#39;s constraint tree with an interface with <a href="../../reference/frontend/#COBREXA.enzyme_constrained_flux_balance_constraints-Union{Tuple{AbstractFBCModels.AbstractFBCModel}, Tuple{R}} where R&lt;:Real"><code>enzyme_constrained_flux_balance_constraints</code></a>, and connecting them via <a href="../../reference/frontend/#COBREXA.community_flux_balance_constraints"><code>community_flux_balance_constraints</code></a>. We have to pick the model abundances for cFBA, so we pick 1:1 abundance ratio. We also have to pick the capacities for the enzyme-constrained models (these will be properly diluted by the community FBA formulation), and specify that the community is not allowed to exchange either of our two selected amino acids externally (the individual models might cheat the auxotrophe community setting by consuming these).</p><pre><code class="language-julia hljs">community_constraints = community_flux_balance_constraints(
+    [
+        &quot;ile_ko&quot; =&gt; (ecfba_constraints(ile_model, 100.0), 0.5),
+        &quot;met_ko&quot; =&gt; (ecfba_constraints(met_model, 100.0), 0.5),
+    ],
+    [&quot;EX_ile__L_e&quot; =&gt; 0.0, &quot;EX_met__L_e&quot; =&gt; 0.0],
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.ConstraintTree with 6 elements:
+  :community_balance   =&gt; ConstraintTrees.ConstraintTree(#= 331 elements =#)
+  :community_biomass   =&gt; ConstraintTrees.Constraint(ConstraintTrees.LinearValu…
+  :community_exchanges =&gt; ConstraintTrees.ConstraintTree(#= 331 elements =#)
+  :equal_growth        =&gt; ConstraintTrees.ConstraintTree(#= 1 element =#)
+  :ile_ko              =&gt; ConstraintTrees.ConstraintTree(#= 13 elements =#)
+  :met_ko              =&gt; ConstraintTrees.ConstraintTree(#= 13 elements =#)</code></pre><h2 id="Simulating-the-community"><a class="docs-heading-anchor" href="#Simulating-the-community">Simulating the community</a><a id="Simulating-the-community-1"></a><a class="docs-heading-anchor-permalink" href="#Simulating-the-community" title="Permalink"></a></h2><p>Since the community constraints created above form a completely normal optimization problem, we can optimize them as usual via <a href="../../reference/analysis/#COBREXA.optimized_values-Tuple{ConstraintTrees.ConstraintTree}"><code>optimized_values</code></a>; picking the <code>community_biomass</code> value as an objective:</p><pre><code class="language-julia hljs">res = optimized_values(
+    community_constraints,
+    objective = community_constraints.community_biomass.value,
+    optimizer = HiGHS.Optimizer,
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">ConstraintTrees.Tree{Float64} with 6 elements:
+  :community_balance   =&gt; ConstraintTrees.Tree{Float64}(#= 331 elements =#)
+  :community_biomass   =&gt; 0.230488
+  :community_exchanges =&gt; ConstraintTrees.Tree{Float64}(#= 331 elements =#)
+  :equal_growth        =&gt; ConstraintTrees.Tree{Float64}(#= 1 element =#)
+  :ile_ko              =&gt; ConstraintTrees.Tree{Float64}(#= 13 elements =#)
+  :met_ko              =&gt; ConstraintTrees.Tree{Float64}(#= 13 elements =#)</code></pre><p>We can observe that the community indeed grows, although not as quickly as the WT model normally would:</p><pre><code class="language-julia hljs">res.community_biomass</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.2304879809596633</code></pre><p>One may also observe the &quot;global&quot; community exchanges:</p><pre><code class="language-julia hljs">sort(collect(res.community_exchanges), by = last)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">331-element Vector{Pair{Symbol, Union{Float64, ConstraintTrees.Tree{Float64}}}}:
+  :EX_glc__D_e =&gt; -11.45938376478452
+      :EX_o2_e =&gt; -10.09733248430452
+     :EX_nh4_e =&gt; -2.4892506028859476
+      :EX_pi_e =&gt; -0.22233008936155146
+     :EX_so4_e =&gt; -0.05804148336526241
+       :EX_k_e =&gt; -0.04498964046745957
+     :EX_mg2_e =&gt; -0.0019994832348250793
+     :EX_fe2_e =&gt; -0.0019022173068601014
+     :EX_fe3_e =&gt; -0.001799650155333051
+     :EX_ca2_e =&gt; -0.0011996899408950475
+               ⋮
+ :EX_xylu__L_e =&gt; 0.0
+    :EX_meoh_e =&gt; 4.6097596191932663e-7
+  :EX_dxylnt_e =&gt; 0.00010279763950800903
+     :EX_co2_e =&gt; 0.45749610377308664
+     :EX_for_e =&gt; 0.9776511883414105
+     :EX_pyr_e =&gt; 1.4998199654895021
+  :EX_5dglcn_e =&gt; 8.893365393706606
+       :EX_h_e =&gt; 13.490554529094084
+     :EX_h2o_e =&gt; 16.93633191576877</code></pre><p>Appropriately, we can check that the individual community members exchange the expected amino acids (the individual values are scaled to the individual members&#39; biomasses; in the community view these values would be halved by the 0.5 abundances):</p><pre><code class="language-julia hljs">[
+    res.met_ko.fluxes.EX_ile__L_e res.met_ko.fluxes.EX_met__L_e
+    res.ile_ko.fluxes.EX_ile__L_e res.ile_ko.fluxes.EX_met__L_e
+]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×2 Matrix{Float64}:
+  0.0669634  -0.0354746
+ -0.0669634   0.0354746</code></pre><p>We can see that isoleucine is indeed moving into the isoleucine knockout, and methionine into the methionine knockout. (The signs follow the usual exchange convention where negative values mean uptake and positive values mean secretion.)</p><p>Finally, one might be interested in finding the optimal community composition for the auxotrophes. <a href="../04-community-models/">The example on community building</a> describes a common way to find the optimal abundance ratios via screening.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../07a-srba/">« Simplified resource balance analysis</a><a class="docs-footer-nextpage" href="../../distributed/">Contents »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.1 on <span class="colophon-date" title="Thursday 27 February 2025 10:08">Thursday 27 February 2025</span>. Using Julia version 1.11.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
