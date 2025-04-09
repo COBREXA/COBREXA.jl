@@ -154,6 +154,9 @@ end
 #md # !!! tip "Turnover number units"
 #md #     Take care with the units of the turnover numbers. In literature they are usually reported in 1/s. However, flux units are typically mmol/gDW/h, suggesting to rescale the turnover numbers to 1/h in order to use the conventional flux units.
 
+#md # !!! tip "Missing turnover numbers"
+#md #     In case the turnover numbers are missing for a single direction of the reaction catalysis, we can use `nothing` instead of the turnover number. This will prevent generation of any enzyme capacity constraints for the corresponding reaction direction.
+
 # ## Enzyme molar masses
 
 # We also require the mass of each enzyme, to properly weight the contribution
