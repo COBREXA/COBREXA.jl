@@ -39,11 +39,10 @@ for example in examples
 end
 
 # a helper for sourcing the documentation files from directories
-find_mds(path) =
-    joinpath.(
-        Ref(path),
-        filter(x -> endswith(x, ".md"), readdir(joinpath(@__DIR__, "src", path))),
-    )
+find_mds(path) = joinpath.(
+    Ref(path),
+    filter(x -> endswith(x, ".md"), readdir(joinpath(@__DIR__, "src", path))),
+)
 
 # build the docs
 makedocs(
@@ -80,7 +79,7 @@ makedocs(
 # extra fun: failing programs (such as plotting libraries) may generate core
 # dumps that contain the dumped environment strings, which in turn contain
 # github auth tokens. These certainly need to be avoided.
-examples_names = [n[begin:end-3] for n in examples_basenames]
+examples_names = [n[begin:(end-3)] for n in examples_basenames]
 ipynb_names = examples_names .* ".ipynb"
 examples_allowed_files = vcat("index.html", ipynb_names)
 @info "allowed files:" examples_allowed_files
