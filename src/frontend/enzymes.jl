@@ -21,6 +21,12 @@ A simple struct storing information about the isozyme composition, including
 subunit stoichiometry and turnover numbers. Use with
 [`enzyme_constrained_flux_balance_analysis`](@ref).
 
+If either of the turnover numbers is `nothing`, no bounds are added for that
+direction; i.e., the reaction is assumed not to require enzymes to proceed in
+that direction. If you want to disable the reaction in the given direction
+instead, either use `0` as a turnover number, or better put bounds directly on
+reaction flux.
+
 # Fields
 $(TYPEDFIELDS)
 """
@@ -32,11 +38,11 @@ Base.@kwdef mutable struct IsozymeT{T<:Real}
     gene_product_stoichiometry::Dict{String,T}
 
     "Turnover number for this isozyme catalyzing the forward direction of the
-    reaction."
+    reaction, or `nothing` if isozyme is not needed."
     kcat_forward::Maybe{T} = nothing
 
     "Turnover number for this isozyme catalyzing the reverse direction of the
-    reaction."
+    reaction, or `nothing` if isozyme is not needed."
     kcat_reverse::Maybe{T} = nothing
 end
 

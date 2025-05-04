@@ -105,7 +105,7 @@ function sample_chain_achr(
                 sample[:, i] .+= lambda .* dir
             end
         end
-        result[:, n*(iter_idx-1)+1:iter_idx*n] .= sample
+        result[:, (n*(iter_idx-1)+1):(iter_idx*n)] .= sample
     end
 
     return collect(result')

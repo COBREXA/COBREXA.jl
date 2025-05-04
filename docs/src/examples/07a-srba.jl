@@ -186,7 +186,7 @@ function with_translation_variables(ec_constraints::C.ConstraintTree)
     # exchange reactions in `ec_constraints`.)
     resources = C.variables(
         keys = Symbol.(
-            collect(union(amino_acids, keys(energy_stoichiometry), keys(biomass)))
+            collect(union(amino_acids, keys(energy_stoichiometry), keys(biomass))),
         ),
     )
     (cs, rs) =
