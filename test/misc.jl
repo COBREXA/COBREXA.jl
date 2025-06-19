@@ -122,7 +122,7 @@ end
     @test x.universal_flux_bounds.a.bound isa C.EqualTo
     @test isempty(x.universal_flux_bounds.b)
     vs = C.variables(keys = [:a, :b], bounds = [C.EqualTo(123), Switch(1, 2)])
-    @test_throws DomainError gap_filling_constraints(
+    @test_throws MethodError gap_filling_constraints(
         system = vs,
         stoichiometry = stoi,
         universal_fluxes = vs,
