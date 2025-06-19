@@ -168,7 +168,7 @@ Run the gap-filling analysis on a constraint system specified by
 gap_filling_analysis(args...; kwargs...) = frontend_optimized_values(
     gap_filling_constraints,
     args...;
-    objective = x -> x.n_filled.value,
+    objective = x -> x.cost_filled.value,
     sense = Minimal,
     kwargs...,
 )
