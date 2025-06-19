@@ -99,24 +99,7 @@ function gap_filling_constraints(;
         :system => joined.system,
         :universal_fluxes => joined.universal.fluxes,
         :universal_flux_bounds => C.zip(joined.universal.fluxes, joined.fill_flags) do x, b
-            if x.bound isa C.Between
-                C.ConstraintTree(
-                    :lower => C.Constraint(
-                        x.value - x.bound.lower * b.value,
-                        C.Between(0, Inf),
-                    ),
-                    :upper => C.Constraint(
-                        x.value - x.bound.upper * b.value,
-                        C.Between(-Inf, 0),
-                    ),
-                )
-            elseif x.bound isa C.EqualTo
-                C.Constraint(x.value - x.bound.equal_to * b.value, 0)
-            elseif isnothing(x.bound)
-                C.ConstraintTree()
-            else
-                throw(DomainError(x.bound, "unsupported flux bound"))
-            end
+            value_scaled_bound_constraint(x.value, x.bound, b.value)
         end,
         :stoichiometry =>
             C.merge(joined.stoichiometry, joined.universal.stoichiometry) do a, b
