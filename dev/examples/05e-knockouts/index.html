@@ -27,21 +27,21 @@ ko_dict[&quot;b3738&quot;]</code></pre><pre class="documenter-example-output"><c
     gene_knockouts(model, tuple.(keys(ko_dict), &quot;b3919&quot;), optimizer = HiGHS.Optimizer)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">137-element Vector{Pair{Tuple{String, String}}}:
  (&quot;b3236&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590238
  (&quot;b1621&quot;, &quot;b3919&quot;) =&gt; 0.704036947859024
- (&quot;b1241&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
+ (&quot;b1241&quot;, &quot;b3919&quot;) =&gt; 0.704036947859023
  (&quot;b2276&quot;, &quot;b3919&quot;) =&gt; nothing
- (&quot;b3925&quot;, &quot;b3919&quot;) =&gt; 0.7040369478589996
- (&quot;b0979&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
- (&quot;b2296&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
- (&quot;b4232&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
+ (&quot;b3925&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590236
+ (&quot;b0979&quot;, &quot;b3919&quot;) =&gt; 0.704036947859023
+ (&quot;b2296&quot;, &quot;b3919&quot;) =&gt; 0.704036947859024
+ (&quot;b4232&quot;, &quot;b3919&quot;) =&gt; 0.704036947859023
  (&quot;b2282&quot;, &quot;b3919&quot;) =&gt; nothing
  (&quot;b2283&quot;, &quot;b3919&quot;) =&gt; nothing
                     ⋮
- (&quot;b0903&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
- (&quot;b1723&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
- (&quot;b0810&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
+ (&quot;b0903&quot;, &quot;b3919&quot;) =&gt; 0.704036947859024
+ (&quot;b1723&quot;, &quot;b3919&quot;) =&gt; 0.704036947859023
+ (&quot;b0810&quot;, &quot;b3919&quot;) =&gt; 0.704036947859024
  (&quot;b0356&quot;, &quot;b3919&quot;) =&gt; 0.704036947859023
  (&quot;b2277&quot;, &quot;b3919&quot;) =&gt; nothing
- (&quot;b1276&quot;, &quot;b3919&quot;) =&gt; 0.7040369478589996
- (&quot;b4153&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590237
+ (&quot;b1276&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590248
+ (&quot;b4153&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590234
  (&quot;b2279&quot;, &quot;b3919&quot;) =&gt; nothing
- (&quot;b0726&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590169</code></pre><p>Now, how many genes are critical given <code>b3919</code> is already missing?</p><pre><code class="language-julia hljs">critical_without_b3919 = count(isnothing, last.(knockouts_with_b3919))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">23</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05d-loopless-models/">« Loopless flux balance analysis (ll-FBA)</a><a class="docs-footer-nextpage" href="../05f-cyclefree/">CycleFreeFlux »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.2 on <span class="colophon-date" title="Sunday 4 May 2025 21:20">Sunday 4 May 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ (&quot;b0726&quot;, &quot;b3919&quot;) =&gt; 0.7040369478590233</code></pre><p>Now, how many genes are critical given <code>b3919</code> is already missing?</p><pre><code class="language-julia hljs">critical_without_b3919 = count(isnothing, last.(knockouts_with_b3919))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">23</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../05d-loopless-models/">« Loopless flux balance analysis (ll-FBA)</a><a class="docs-footer-nextpage" href="../05f-cyclefree/">CycleFreeFlux »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.12.0 on <span class="colophon-date" title="Thursday 19 June 2025 12:27">Thursday 19 June 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
