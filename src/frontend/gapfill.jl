@@ -1,5 +1,5 @@
 
-# Copyright (c) 2024, University of Luxembourg
+# Copyright (c) 2024-2025, University of Luxembourg
 # Copyright (c) 2024, Heinrich-Heine University Duesseldorf
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
