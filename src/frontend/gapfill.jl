@@ -135,6 +135,9 @@ function gap_filling_constraints(;
             (i, kf) in enumerate(known_fills)
         )...,
         :n_filled => C.Constraint(
+            C.sum((v.value for (k, v) in joined.fill_flags), init = zero(C.LinearValue)),
+        ),
+        :cost_filled => C.Constraint(
             C.sum(
                 (flux_cost(k) * v.value for (k, v) in joined.fill_flags),
                 init = zero(C.LinearValue),
