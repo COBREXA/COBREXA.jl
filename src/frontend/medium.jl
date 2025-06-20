@@ -17,23 +17,26 @@
 function medium_optimization_constraints(
     model::A.AbstractFBCModel,
     objective_target::Float64;
-    exchange_fluxes::Maybe{Vector{String}} = nothing,
+    exchange_reactions::Maybe{Vector{String}} = nothing,
     exchange_reaction_cost = _ -> 1.0,
     max_cost = Inf,
-    known_fills::Vector{C.Tree{Float64}} = C.Tree{Float64}[],
+    known_flags::Vector{C.Tree{Float64}} = C.Tree{Float64}[],
     interface::Maybe{Symbol} = :identifier_prefixes,
     interface_name = :interface,
+    kwargs...,
 )
     m = flux_balance_constraints(model; interface, interface_name, kwargs...)
     m.objective.bound = C.Between(objective_target, Inf)
 
-    gap_filling_constraints(
+    medium_optimization_constraints(
         m,
-        isnothing(exchange_fluxes) ? m[interface_name].exchanges :
-        C.ConstraintTree(Symbol(str) => m.fluxes[Symbol(str)] for str in exchange_fluxes);
+        isnothing(exchange_reactions) ? m[interface_name].exchanges :
+        C.ConstraintTree(
+            Symbol(str) => m.fluxes[Symbol(str)] for str in exchange_reactions
+        );
         exchange_cost = sym -> exchange_reaction_cost(String(sym)),
         max_cost,
-        known_fills,
+        known_flags,
     )
 end
 
@@ -42,31 +45,31 @@ function medium_optimization_constraints(
     exchanges::C.ConstraintTree;
     exchange_cost = _ -> 1.0,
     max_cost = Inf,
-    known_fills::Vector{C.Tree{Float64}} = C.Tree{Float64}[],
+    known_flags::Vector{C.Tree{Float64}} = C.Tree{Float64}[],
 )
     joined =
         C.ConstraintTree(:system => constraints, :exchanges => exchanges) +
-        :fill_flags^C.variables_for(exchanges) do _
+        :medium_flags^C.variables_for(exchanges) do _
             Switch(0, 1)
         end
 
     return C.ConstraintTree(
         :system => joined.system,
-        :exchange_fill_bounds => zip(joined.exchanges, joined.fill_flags) do x, b
+        :exchange_fill_bounds => C.zip(joined.exchanges, joined.medium_flags) do x, b
             value_scaled_bound_constraint(x.value, x.bound, b.value)
         end,
-        :fill_flags => joined.fill_flags,
+        :medium_flags => joined.medium_flags,
         (
-            Symbol(:known_fills_, i) =>
-                gap_filling_known_fill_constraint(joined.fill_flags, kf) for
-            (i, kf) in enumerate(known_fills)
+            Symbol(:known_medium_, i) =>
+                gap_filling_known_fill_constraint(joined.medium_flags, kf) for
+            (i, kf) in enumerate(known_flags)
         )...,
-        :n_filled => C.Constraint(
-            C.sum((v.value for (k, v) in joined.fill_flags), init = zero(C.LinearValue)),
+        :medium_size => C.Constraint(
+            C.sum((v.value for (k, v) in joined.medium_flags), init = zero(C.LinearValue)),
         ),
-        :cost_filled => C.Constraint(
+        :medium_cost => C.Constraint(
             C.sum(
-                (flux_cost(k) * v.value for (k, v) in joined.fill_flags),
+                (exchange_cost(k) * v.value for (k, v) in joined.medium_flags),
                 init = zero(C.LinearValue),
             ),
             C.Between(0, max_cost),
@@ -74,10 +77,14 @@ function medium_optimization_constraints(
     )
 end
 
-medium_optimization_analysis(args..., kwargs...) = frontend_optimized_values(
+export medium_optimization_constraints
+
+medium_optimization_analysis(args...; kwargs...) = frontend_optimized_values(
     medium_optimization_constraints,
     args...;
-    objective = x -> x.medium_cost,
+    objective = x -> x.medium_cost.value,
     sense = Minimal,
     kwargs...,
 )
+
+export medium_optimization_analysis
