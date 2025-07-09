@@ -64,6 +64,13 @@ Modules = [COBREXA]
 Pages = ["src/frontend/gapfill.jl"]
 ```
 
+## Medium optimization
+
+```@autodocs
+Modules = [COBREXA]
+Pages = ["src/frontend/medium.jl"]
+```
+
 ## Knockout models
 
 ```@autodocs

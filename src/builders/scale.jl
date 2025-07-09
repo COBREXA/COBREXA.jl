@@ -54,7 +54,7 @@ constraints.
 Additional overloads may be implemented to handle custom kinds of bounds.
 
 This overload scales an equality constraint; producing a single constraint in
-the form `x-bound*scale == 0`.
+the form `x - bound * scale == 0`.
 """
 value_scaled_bound_constraint(x::C.Value, b::C.EqualTo, scale::C.Value) =
     C.Constraint(x - b.equal_to * scale, 0)
@@ -65,7 +65,7 @@ $(TYPEDSIGNATURES)
 Overload of [`value_scaled_bound_constraint`](@ref) for interval bounds.
 
 This produces up to 2 constraints:
-- `lower` bound in the form `x + lower_bound * scale >= 0`
+- `lower` bound in the form `x - lower_bound * scale >= 0`
 - `upper` bound in the form `x - upper_bound * scale <= 0`
 """
 function value_scaled_bound_constraint(x::C.Value, b::C.Between, scale::C.Value)

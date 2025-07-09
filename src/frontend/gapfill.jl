@@ -63,7 +63,7 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Make a gap-fillign system from a non-solving `system` with a separated
+Make a gap-filling system from a non-solving `system` with a separated
 `stoichiometry`, filling in possible fluxes from `universal_fluxes` that are
 balanced with `universal_stoichiometry`
 
