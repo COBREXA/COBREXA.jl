@@ -67,6 +67,13 @@ end
     @test typeof(x.a.bound) == C.Between
     @test x.a.bound.lower == -10.0
     @test x.a.bound.upper == 10.0
+    @test isnothing(greater_or_equal_interval(nothing))
+    for b in [Switch(-5, 5), C.EqualTo(-5)]
+        x = greater_or_equal_interval(b)
+        @test typeof(x) == C.Between
+        @test x.lower == -5
+        @test x.upper == Inf
+    end
 end
 
 @testset "Failing parsimonious objectives" begin
