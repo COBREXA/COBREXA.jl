@@ -27,6 +27,7 @@
 # For the demonstration, we use the toy E. coli model:
 
 using COBREXA
+import ConstraintTrees as C #src
 
 download_model(
     "http://bigg.ucsd.edu/static/models/e_coli_core.json",
@@ -82,7 +83,7 @@ l2_result = parsimonious_optimized_values(
     output = c.in_exchanges,
 )
 
-@test all(values(C.zip(result, l2_result) do a, b #src
+@test all(values(C.zip(result, l2_result, Bool) do a, b #src
     isapprox(a, b, atol = TEST_TOLERANCE) #src
 end)) #src
 
