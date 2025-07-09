@@ -27,7 +27,7 @@
 # "minimal" nutrient combinations that can support its growth.
 #
 #md # !!! warning "Minimal vs. smallest"
-#md #     Medium optimization identifies a set of exchange reaction of minimal *size*, i.e., the smallest possible count of exchange reactions active. This does not correspond to the smallest or most efficient exchange flux that is achievable -- to identify minimal fluxes, use [parsimonious analysis](03b-parsimonious-flux-balance.md).
+#md #     Medium optimization identifies a set of exchange reaction of minimal *size*, i.e., the smallest possible *count* of exchange reactions active in the uptake direction. This does not correspond to the smallest or most efficient exchange flux that is achievable -- to identify minimal fluxes, use a [parsimonious analysis](03b-parsimonious-flux-balance.md).
 
 using COBREXA
 
@@ -50,15 +50,20 @@ fba_result.objective
 
 # Medium optimization is implemented in [`medium_optimization_analysis`](@ref).
 #
-# The function needs to know a way to identify the exchange reactions; by
-# default it uses [`flux_balance_constraints`](@ref) with parameter `interface
-# = :identifier_prefixes`, and finds the exchanges via the generated interface.
-# If one aims to optimize a different set of exchanges, it is possible to
-# specify these via argument `exchange_reactions`.
+# The function assumes the **negative flux** through exchanges is the
+# metabolite uptake direction (which is a common assumption in models). The
+# optimization minimizes the total count of the exchange reactions that are
+# running in the uptake direction.
+#
+# Accordingly, the function needs to know a way to identify the exchange
+# reactions; by default it uses [`flux_balance_constraints`](@ref) with
+# parameter `interface = :identifier_prefixes`, and finds the exchanges from
+# the generated interface. If one aims to optimize a different set of
+# exchanges, it is possible to specify these via argument `exchange_reactions`.
 
 x = medium_optimization_analysis(
     model,
-    fba_result.objective * 0.999,
+    fba_result.objective * 0.9,
     optimizer = HiGHS.Optimizer,
 )
 
@@ -66,13 +71,34 @@ x = medium_optimization_analysis(
 
 medium = [k for (k, v) in x.medium_flags if v != 0]
 
-@test length(medium) == 7 #src
+@test length(medium) == 4 #src
+
+# If one wishes to find a different medium, it is possible to supply "known"
+# flags; in turn, this combination will be avoided.
 
 y = medium_optimization_analysis(
     model,
-    fba_result.objective * 0.1,
+    fba_result.objective * 0.9,
+    optimizer = HiGHS.Optimizer,
+    known_flags = [x.medium_flags],
+);
+println(y)
+
+@test isnothing(y) #src
+
+# Turns out that for the toy model, there is no other feasible medium that
+# could support the growth rate! To compensate, we may relax our requirements
+# on the model a little and see if it can grow with a different configuration:
+
+y = medium_optimization_analysis(
+    model,
+    fba_result.objective * 0.2,
     optimizer = HiGHS.Optimizer,
     known_flags = [x.medium_flags],
 )
 
-# TODO limit "medium" to intakes only
+# Indeed, we got another medium; showing that the model may exhibit some growth
+# even without oxygen:
+medium2 = [k for (k, v) in y.medium_flags if v != 0]
+
+@test length(medium2) == 3 #src

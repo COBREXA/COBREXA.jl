@@ -1,6 +1,6 @@
 
-# Copyright (c) 2021-2024, University of Luxembourg
-# Copyright (c) 2021-2024, Heinrich-Heine University Duesseldorf
+# Copyright (c) 2021-2025, University of Luxembourg
+# Copyright (c) 2021-2025, Heinrich-Heine University Duesseldorf
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,3 +69,20 @@ the value of `b`.
 less_or_equal_constraint(a, b) = difference_constraint(a, b, C.Between(0, Inf))
 
 export less_or_equal_constraint
+
+"""
+$(TYPEDSIGNATURES)
+
+Interval of values that are greater or equal to values that are permitted by
+the bound. Effectively a bound for all `(x+a)` where `a` is non-negative and
+`x` comes from the original `bound`.
+"""
+greater_or_equal_interval(bound::C.Between) = C.Between(bound.lower, Inf)
+
+greater_or_equal_interval(bound::C.EqualTo) = C.Between(bound.equal_to, Inf)
+
+greater_or_equal_interval(bound::Switch) = C.Between(min(bound.a, bound.b), Inf)
+
+greater_or_equal_interval(_::Nothing) = nothing
+
+export greater_or_equal_interval
