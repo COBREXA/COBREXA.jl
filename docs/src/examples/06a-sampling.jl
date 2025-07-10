@@ -50,6 +50,6 @@ s = flux_sample(
 
 # The result is a tree of vectors of sampled states for each value; the order
 # of the values in these vectors is fixed. You can thus e.g. create a good
-# matrix for plotting the sample as 2D scatterplot:
+# matrix for plotting the sample as 2D scatter plot:
 
 [s.O2t s.CO2t]

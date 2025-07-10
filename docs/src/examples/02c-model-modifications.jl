@@ -33,7 +33,7 @@
 #
 # Here we demonstrate the first, "modeling" approach. The main advantage of
 # this approach is that the modified model is still a FBC model, and we can
-# export, save and share it via the AbstractFBCModels interace. The main
+# export, save and share it via the AbstractFBCModels interface. The main
 # disadvantage is that the "common" FBC model interface does not easily express
 # various complicated constructions (communities, reaction coupling, enzyme
 # constraints, etc.) -- see the [example about modifying the

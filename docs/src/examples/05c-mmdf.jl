@@ -21,9 +21,9 @@ using COBREXA
 # Here we will solve the max min driving force analysis problem using the
 # glycolysis pathway of *E. coli*. In essence, the method attempts to find
 # metabolite concentrations (NB: not fluxes) that maximize the smallest
-# thermodynamic driving force through each reaction. See Noor, et al., "Pathway
-# thermodynamics highlights kinetic obstacles in central metabolism.", PLoS
-# computational biology, 2014, for more details.
+# thermodynamic driving force through each reaction. More details are available
+# from *Noor, et al., "Pathway thermodynamics highlights kinetic obstacles in
+# central metabolism.", PLoS computational biology, 2014*.
 
 # To do this, we will first need a model that includes glycolysis, which we can
 # download if it is not already present.

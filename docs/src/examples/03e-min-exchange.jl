@@ -76,7 +76,7 @@ result = parsimonious_optimized_values(
 l2_result = parsimonious_optimized_values(
     c;
     objective = c.objective.value,
-    parsimonious_objective = sum_value(c.in_exchanges),
+    parsimonious_objective = squared_sum_value(c.in_exchanges), # <-- objective changed
     objective_value,
     tolerances,
     optimizer = HiGHS.Optimizer,

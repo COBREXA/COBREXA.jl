@@ -55,7 +55,7 @@ limited_ecoli.reactions["CYTBD"].upper_bound = 10.0
 
 # ## Finding parsimonious solutions
 
-# Becuase we are interested in realistic flux distributions, we have to use an
+# Because we are interested in realistic flux distributions, we have to use an
 # analysis method which gives one -- in this case, the parsimonious FBA will do
 # just right. For later comparison, we first get the optimal parsimonious flux
 # distribution in the perturbed model:

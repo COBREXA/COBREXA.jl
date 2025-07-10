@@ -16,21 +16,21 @@
 
 # # Gap filling
 #
-# Gapfilling is used to find easiest additions to the models that would make
+# Gap-filling is used to find easiest additions to the models that would make
 # them feasible and capable of growth.
 #
 # Typically, an infeasible model ("with gaps") is used together with an
 # universal model (which contains "everything"), and the algorithm attempts to
 # find the minimal amount of reactions from the universal model that make the
-# gappy model happy. In turn, the gapfilling optimization problem becomes a
+# gappy model happy. In turn, the gap-filling optimization problem becomes a
 # MILP.
 #
-# Gapfilling is sometimes used to produce "viable" genome-scale
+# Gap-filling is sometimes used to produce "viable" genome-scale
 # reconstructions from partial ones, but without additional manual intervention
-# the gapfilling results are almost never biologically valid. A good use of
-# gapfilling is to find problems in a model that cause infeasibility as
+# the gap-filling results are almost never biologically valid. A good use of
+# gap-filling is to find problems in a model that cause infeasibility as
 # follows: First the modeller makes a set of (unrealistic) universal reactions
-# that supply or remove metabolites, and after gapfilling, metabolites that had
+# that supply or remove metabolites, and after gap-filling, metabolites that had
 # to be supplied or removed to make the model feasible mark possible problems,
 # thus guiding the modeller towards correct solution.
 
@@ -63,7 +63,7 @@ end
 flux_balance_analysis(infeasible_model, optimizer = HiGHS.Optimizer) |> println
 
 # To avoid very subtle semantic issues, we are going to remove the ATP
-# maintenance pseudoreaction from the universal model:
+# maintenance pseudo-reaction from the universal model:
 universal_model = convert(CM.Model, model)
 delete!(universal_model.reactions, "ATPM")
 
@@ -102,10 +102,10 @@ x2 = gap_filling_analysis(
 
 other_filled_reactions = [k for (k, v) in x2.fill_flags if v != 0]
 
-#md # !!! warning "Why is the gapfilling algorithm adding seemingly unneeded reactions?"
+#md # !!! warning "Why is the gap-filling algorithm adding seemingly unneeded reactions?"
 #md #     By default, COBREXA does not do any "cleaning" on the universal model; all reactions that are present in that model will be potentially utilized in the new model, and all of them will need to respect their original bounds in the universal model. That becomes an issue with **reactions that are bounded to non-zero flux** (such as the `ATPM` reaction in the E. coli "core" model) -- since their flux is required to be non-zero in any feasible model solution, they will also need to be in the fill set, because otherwise their flux would be zero.
 #md #
-#md #     As the simplest solution, all realistic uses of gapfilling should carefully check the set of universal reactions, and ideally exclude all exchanges and pseudoreactions.
+#md #     As the simplest solution, all realistic uses of gap-filling should carefully check the set of universal reactions, and ideally exclude all exchanges and pseudo-reactions.
 
 # ## Model debugging: which metabolite is missing?
 #
@@ -128,7 +128,7 @@ for mid in keys(magic_model.metabolites)
     )
 end
 
-# Gapfilling now points to the metabolites that need to be somehow taken care
+# Gap-filling now points to the metabolites that need to be somehow taken care
 # of by the modeller in order for the model to become feasible:
 
 xm = gap_filling_analysis(infeasible_model, magic_model, 0.05, optimizer = HiGHS.Optimizer)

@@ -98,7 +98,7 @@ end
 
 # ## Annotating the results
 
-# For reasons of tidyness, it is adviseable to annotate all values with their
+# For reasons of tidiness, it is advisable to annotate all values with their
 # actual meaning directly in the arrays.
 #
 # With `screen`, the simplest (and usually sufficiently effective) way to do
