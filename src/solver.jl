@@ -168,6 +168,21 @@ variable_vector(opt_model::J.Model) = J.value.(opt_model[:x])
 export variable_vector
 
 """
+$(TYPEDSIGNATURES)
+
+Tell JuMP to use the given `values` as starting primal values for the variables
+in the model created by [`optimization_model`](@ref). Good variable vectors can
+be obtained via [`variable_vector`](@ref).
+
+Internally this broadcasts JuMP's `set_start_value` over the variables of the
+model.
+"""
+set_start_variable_vector!(opt_model::J.Model, values) =
+    J.set_start_value.(opt_model[:x], values)
+
+export set_start_variable_vector!
+
+"""
     Minimal
 
 Objective sense for finding the minimal value of the objective.
