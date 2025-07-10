@@ -92,7 +92,7 @@ println(y)
 
 y = medium_optimization_analysis(
     model,
-    fba_result.objective * 0.2,
+    fba_result.objective * 0.2,   # <-- uses a a lower constant here
     optimizer = HiGHS.Optimizer,
     known_flags = [x.medium_flags],
 )
