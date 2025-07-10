@@ -16,9 +16,9 @@
 
 # # Loopless flux balance analysis (ll-FBA)
 
-# Here we wil add loopless constraints to a flux balance model to ensure that
-# the resultant solution is thermodynamically consistent. As before, we will use
-# the core *E. coli* model, which we can download using
+# Here, we show how to add loopless constraints to a flux balance model to
+# ensure that the resultant solution is thermodynamically consistent. As
+# before, we use the core *E. coli* model, which we can download using
 # [`download_model`](@ref):
 
 using COBREXA
@@ -30,7 +30,7 @@ download_model(
 )
 
 # Additionally to COBREXA and the JSON model format package. We will also need a
-# solver which can solve mixed-interger linear programs, such as HiGHS.
+# solver which can solve mixed-integer linear programs, such as HiGHS.
 
 import JSONFBCModels
 import HiGHS

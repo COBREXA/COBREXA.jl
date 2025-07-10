@@ -37,7 +37,7 @@ import HiGHS
 model = load_model("e_coli_core.json")
 
 # The [`objective_production_envelope`](@ref) function finds the variability of
-# the given reactons and returns a multidimensional matrix with exact number of
+# the given reactions and returns a multidimensional matrix with exact number of
 # `breaks` in each dimension (positioned in a linear lattice). Here we examine
 # the inter-dependency of oxygen and carbon dioxide exchanges on a matrix of
 # 5×5 individual "conditions" that form the envelope:

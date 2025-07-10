@@ -138,6 +138,6 @@ end |> String, "...")
 
 # As with [`load_model`](@ref), there is some overhead and uncertainty
 # associated with [`save_converted_model`](@ref) guessing the model type from
-# extension. For that reason, it is adviseable to rely on the guessing
+# extension. For that reason, it is advisable to rely on the guessing
 # functionality only in interactive use in REPL, and avoid it in automated
 # scriptage altogether.

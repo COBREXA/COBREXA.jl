@@ -62,7 +62,7 @@ c *=
         signed = c.fluxes,
     )
 
-# We can solve this system as usual and obvserve the results as usual
+# We can solve this system as usual and observe the results as usual
 
 x = optimized_values(c, objective = c.objective.value, optimizer = HiGHS.Optimizer)
 

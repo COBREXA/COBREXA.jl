@@ -47,7 +47,7 @@ model = load_model("e_coli_core.json")
 # ## Reaction turnover numbers
 
 # Enzyme constrained models require reaction turnover numbers, which are often
-# isozyme specfic. Many machine learning tools, or experimental data sets, can
+# isozyme-specific. Many machine learning tools, or experimental data sets, can
 # be used to estimate these parameters.
 
 #md # ```@raw html
