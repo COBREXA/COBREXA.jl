@@ -57,6 +57,7 @@ makedocs(
         "Home" => [
             "Home" => "index.md"
             "Core concepts and structure" => "structure.md"
+            "Optimizer configuration" => "optimizers.md"
         ],
         "Examples" => [
             "Contents" => "examples.md"
