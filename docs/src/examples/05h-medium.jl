@@ -73,6 +73,9 @@ medium = [k for (k, v) in x.medium_flags if v != 0]
 
 @test length(medium) == 4 #src
 
+#md # !!! tip "Prevent solver precision issues"
+#md #     With many solvers, the internal tolerance settings may allow a small flux to slip through a exchange reaction that is marked "off", making the medium optimization quite imprecise. It is adviseable to [tighten the numeric tolerance of the solver](../optimizers.md) to at least `1e-7`.
+#
 # If one wishes to find a different medium, it is possible to supply "known"
 # flags; in turn, this combination will be avoided.
 

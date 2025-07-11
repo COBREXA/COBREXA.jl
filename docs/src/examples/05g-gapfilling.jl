@@ -86,6 +86,9 @@ filled_reactions = [k for (k, v) in x.fill_flags if v != 0]
 
 @test length(filled_reactions) == 1 #src
 
+#md # !!! tip "Prevent solver precision issues"
+#md #     With many solvers, the internal tolerance settings may allow a small flux to slip through an "unused" universal reaction reaction, making the binary decision on the presence of the given reaction extremely imprecise. It is adviseable to [tighten the numeric tolerance of the solver](../optimizers.md) to at least `1e-7`.
+#
 # If we want to try to generate another solution, we have to explicitly ask the
 # system to avoid the previous solution. That is done via setting the argument
 # `known_fill`. We can also set the `max_cost` to avoid finding too benevolent

@@ -1,5 +1,5 @@
 
-# Copyright (c) 2021-2024, University of Luxembourg                         #src
+# Copyright (c) 2021-2025, University of Luxembourg                         #src
 # Copyright (c) 2021-2024, Heinrich-Heine University Duesseldorf            #src
 #                                                                           #src
 # Licensed under the Apache License, Version 2.0 (the "License");           #src
@@ -64,5 +64,5 @@ one_percent_close = flux_variability_analysis(
     objective_bound = relative_tolerance_bound(0.99),
 )
 
-#md # !!! tip "Speed up FVA with parallel processing"
-#md #     By default, FVA is parallelized on all workers that are available in the worker pool of the `Distributed` package, which may speed up the computation considerably. See the [parallel processing documentation](../distributed.md) for more details.
+#md # !!! tip "Speed up the FVA computation"
+#md #     By default, FVA is parallelized on all workers that are available in the worker pool of the `Distributed` package, which may speed up the computation considerably. See the [parallel processing documentation](../distributed.md) for more details, and remember to optimize your [solver attributes](../optimizers.md) to support "hot starts" that may cache a large part of the iterated FVA computation.
