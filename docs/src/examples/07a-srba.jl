@@ -316,7 +316,7 @@ end
 
 # With the above functions, assembling a resource-balanced model amounts to
 # adding new variables and connecting them with the rest of the
-# enzyme-constrained model. We assemble a model for growth value of 0.6
+# enzyme-constrained model. We assemble a model for growth value of 0.9
 # gDW/gDWh:
 rb_constraints = with_translation_variables(ec_constraints)
 rb_constraints *= translation_constraints(
