@@ -22,11 +22,14 @@ quadratic (L2) parsimonious objective present under key
 `parsimonious_objective`. Best used via
 [`quadratic_parsimonious_flux_balance_analysis`](@ref).
 
-Keyword arguments are forwarded to [`flux_balance_constraints`](@ref). 
+Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
 
 See [`linear_parsimonious_flux_balance_constraints`](@ref) for an alternative.
 """
-function quadratic_parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
+function quadratic_parsimonious_flux_balance_constraints(
+    model::A.AbstractFBCModel;
+    kwargs...,
+)
     constraints = flux_balance_constraints(model; kwargs...)
 
     constraints *

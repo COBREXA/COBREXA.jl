@@ -40,10 +40,9 @@ $(TYPEDSIGNATURES)
 
 A constraint tree of variables with positive contributions to the values in `cs`.
 """
-unsigned_positive_contribution_variables(cs::C.ConstraintTree) =
-    C.variables_for(cs) do c
-        positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf)))
-    end
+unsigned_positive_contribution_variables(cs::C.ConstraintTree) = C.variables_for(cs) do c
+    positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf)))
+end
 
 export unsigned_positive_contribution_variables
 
@@ -52,10 +51,9 @@ $(TYPEDSIGNATURES)
 
 A constraint tree of variables with negative contributions to the values in `cs`.
 """
-unsigned_negative_contribution_variables(cs::C.ConstraintTree) =
-    C.variables_for(cs) do c
-        positive_bound_contribution(-something(c.bound, C.Between(-Inf, Inf)))
-    end
+unsigned_negative_contribution_variables(cs::C.ConstraintTree) = C.variables_for(cs) do c
+    positive_bound_contribution(-something(c.bound, C.Between(-Inf, Inf)))
+end
 
 
 export unsigned_negative_contribution_variables
@@ -69,13 +67,12 @@ signed ones, while acting as positive contributions.
 unsigned_positive_contribution_constraints(
     cs::C.ConstraintTree,
     negative::C.ConstraintTree,
-) =
-    C.zip(cs, negative) do c, n
-        C.Constraint(
-            c.value + n.value,
-            positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf))),
-        )
-    end
+) = C.zip(cs, negative) do c, n
+    C.Constraint(
+        c.value + n.value,
+        positive_bound_contribution(something(c.bound, C.Between(-Inf, Inf))),
+    )
+end
 
 export unsigned_positive_contribution_constraints
 
@@ -88,13 +85,12 @@ signed ones, while acting as negative contributions.
 unsigned_negative_contribution_constraints(
     cs::C.ConstraintTree,
     positive::C.ConstraintTree,
-) =
-    C.zip(cs, positive) do c, p
-        C.Constraint(
-            p.value - c.value,
-            positive_bound_contribution(-something(c.bound, C.Between(-Inf, Inf))),
-        )
-    end
+) = C.zip(cs, positive) do c, p
+    C.Constraint(
+        p.value - c.value,
+        positive_bound_contribution(-something(c.bound, C.Between(-Inf, Inf))),
+    )
+end
 
 export unsigned_negative_contribution_constraints
 
@@ -137,9 +133,8 @@ sign_split_constraints(;
     positive::C.ConstraintTree,
     negative::C.ConstraintTree,
     signed::C.ConstraintTree,
-) =
-    C.zip(positive, negative, signed, C.Constraint) do p, n, s
-        equal_value_constraint(s.value + n.value, p.value)
-    end
+) = C.zip(positive, negative, signed, C.Constraint) do p, n, s
+    equal_value_constraint(s.value + n.value, p.value)
+end
 
 export sign_split_constraints

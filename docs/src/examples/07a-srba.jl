@@ -203,14 +203,13 @@ end
 sum_values(x...) = C.sum(x..., init = zero(C.LinearValue));
 
 # ...and another helper for adding values in constraint trees together:
-add_trees(ts...) =
-    C.preduce(ts, init = C.ConstraintTree()) do t1, t2
-        z(::Missing) = zero(C.LinearValue)
-        z(x) = C.value(x)
-        return C.merge(t1, t2) do c1, c2
-            C.Constraint(z(c1) + z(c2))
-        end
-    end;
+add_trees(ts...) = C.preduce(ts, init = C.ConstraintTree()) do t1, t2
+    z(::Missing) = zero(C.LinearValue)
+    z(x) = C.value(x)
+    return C.merge(t1, t2) do c1, c2
+        C.Constraint(z(c1) + z(c2))
+    end
+end;
 
 # Since we have to solve the problem for multiple growth rates to be able to
 # scan for optimum, we will wrap the growth-dependent part in a reusable

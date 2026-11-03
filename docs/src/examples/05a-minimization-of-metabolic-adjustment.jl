@@ -60,7 +60,10 @@ limited_ecoli.reactions["CYTBD"].upper_bound = 10.0
 # just right. For later comparison, we first get the optimal parsimonious flux
 # distribution in the perturbed model:
 
-solution = quadratic_parsimonious_flux_balance_analysis(limited_ecoli, optimizer = Clarabel.Optimizer)
+solution = quadratic_parsimonious_flux_balance_analysis(
+    limited_ecoli,
+    optimizer = Clarabel.Optimizer,
+)
 
 # Now, how much is the flux going to differ if we assume the bacterium did only
 # minimal adjustment from the previous state with unlimited CYTBD?

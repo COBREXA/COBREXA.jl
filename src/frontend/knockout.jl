@@ -34,14 +34,13 @@ gene_knockout_constraints(
     fluxes::C.ConstraintTree,
     knockout_genes,
     model::A.AbstractFBCModel,
-) =
-    knockout_constraints(fluxes) do rid
-        maybemap(
-            !,
-            A.reaction_gene_products_available(model, string(rid), !in(knockout_genes)),
-            false,
-        )
-    end
+) = knockout_constraints(fluxes) do rid
+    maybemap(
+        !,
+        A.reaction_gene_products_available(model, string(rid), !in(knockout_genes)),
+        false,
+    )
+end
 
 """
 $(TYPEDSIGNATURES)

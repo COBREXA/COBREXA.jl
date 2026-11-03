@@ -40,7 +40,8 @@ model = load_model("e_coli_core.json")
 # The pFBA is, in its most basic form, implemented in function
 # [`quadratic_parsimonious_flux_balance_analysis`](@ref):
 
-solution = quadratic_parsimonious_flux_balance_analysis(model; optimizer = Clarabel.Optimizer)
+solution =
+    quadratic_parsimonious_flux_balance_analysis(model; optimizer = Clarabel.Optimizer)
 
 #
 
