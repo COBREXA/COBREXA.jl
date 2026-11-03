@@ -23,10 +23,9 @@ some constraint systems, esp. the MILP and QP ones.
 
 See also [`scale_constraints`](@ref).
 """
-scale_bounds(tree::C.ConstraintTree, factor) =
-    C.map(tree) do c
-        isnothing(c.bound) ? c : C.Constraint(value = c.value, bound = factor * c.bound)
-    end
+scale_bounds(tree::C.ConstraintTree, factor) = C.map(tree) do c
+    isnothing(c.bound) ? c : C.Constraint(value = c.value, bound = factor * c.bound)
+end
 
 export scale_bounds
 
@@ -37,10 +36,9 @@ Linearly scale all constraints in a constraint tree by the `factor`.
 
 See also [`scale_bounds`](@ref).
 """
-scale_constraints(tree::C.ConstraintTree, factor) =
-    C.map(tree) do c
-        c * factor
-    end
+scale_constraints(tree::C.ConstraintTree, factor) = C.map(tree) do c
+    c * factor
+end
 
 export scale_constraints
 

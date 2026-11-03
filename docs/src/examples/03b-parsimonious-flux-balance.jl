@@ -16,9 +16,9 @@
 
 # # Parsimonious flux balance analysis
 
-# Here, we use [`parsimonious_flux_balance_analysis`](@ref) (pFBA) to find the
-# optimal flux distribution in the *E. coli* "core" model. In essence, pFBA
-# first uses FBA to find an optimal objective value for the model, and then
+# Here, we use [`quadratic_parsimonious_flux_balance_analysis`](@ref) (pFBA) to
+# find the optimal flux distribution in the *E. coli* "core" model. In essence,
+# pFBA first uses FBA to find an optimal objective value for the model, and then
 # minimizes the squared distance of the flux from the zero (i.e., minimizes its
 # L2 norm). As the main benefit, this gives a unique (and possibly more
 # realistic) solution to the model.
@@ -37,10 +37,11 @@ import Clarabel
 import JSONFBCModels
 model = load_model("e_coli_core.json")
 
-# The pFBA is, in its most default form, implemented in function
-# [`parsimonious_flux_balance_analysis`](@ref):
+# The pFBA is, in its most basic form, implemented in function
+# [`quadratic_parsimonious_flux_balance_analysis`](@ref):
 
-solution = parsimonious_flux_balance_analysis(model; optimizer = Clarabel.Optimizer)
+solution =
+    quadratic_parsimonious_flux_balance_analysis(model; optimizer = Clarabel.Optimizer)
 
 #
 
@@ -69,7 +70,7 @@ solution.fluxes
 
 import HiGHS
 
-solution = parsimonious_flux_balance_analysis(
+solution = quadratic_parsimonious_flux_balance_analysis(
     model;
     optimizer = HiGHS.Optimizer, # HiGHS is used only for LP here
     parsimonious_optimizer = Clarabel.Optimizer, # Clarabel is great for solving QPs

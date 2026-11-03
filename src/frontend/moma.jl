@@ -50,7 +50,7 @@ function metabolic_adjustment_minimization_constraints(
     reference_model::A.AbstractFBCModel;
     kwargs...,
 )
-    reference_constraints = parsimonious_flux_balance_constraints(reference_model)
+    reference_constraints = quadratic_parsimonious_flux_balance_constraints(reference_model)
     reference_fluxes = parsimonious_optimized_values(
         reference_constraints;
         objective = reference_constraints.objective.value,
@@ -75,7 +75,7 @@ in the sense of squared-sum distance. The minimized squared distance (the
 objective) is present in the result tree as `minimal_adjustment_objective`.
 
 If the second argument is a reference model, it is solved using a
-[`parsimonious_flux_balance_analysis`](@ref) with the optimizer and settings
+[`quadratic_parsimonious_flux_balance_analysis`](@ref) with the optimizer and settings
 parameters for the 2 steps set by keyword arguments prefixed by `reference_`.
 
 This is often used for models with smaller feasible region than the reference

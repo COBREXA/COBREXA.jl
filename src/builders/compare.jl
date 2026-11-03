@@ -43,10 +43,9 @@ value of `a`.
 
 Names in the output `ConstraintTree` match the names in the `tree`.
 """
-all_equal_constraints(a, tree::C.ConstraintTree) =
-    C.map(tree) do b
-        equal_value_constraint(a, b)
-    end
+all_equal_constraints(a, tree::C.ConstraintTree) = C.map(tree) do b
+    equal_value_constraint(a, b)
+end
 
 export all_equal_constraints
 

@@ -48,9 +48,8 @@ creating large trees only for for value representation purposes, which should
 not directly constraint anything (and thus should not put additional stress on
 the constraint solver).
 """
-remove_bounds(cs::C.ConstraintTree) =
-    C.map(cs) do c
-        C.Constraint(c.value, nothing)
-    end
+remove_bounds(cs::C.ConstraintTree) = C.map(cs) do c
+    C.Constraint(c.value, nothing)
+end
 
 export remove_bounds
