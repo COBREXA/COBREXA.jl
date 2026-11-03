@@ -75,7 +75,7 @@ in the sense of squared-sum distance. The minimized squared distance (the
 objective) is present in the result tree as `minimal_adjustment_objective`.
 
 If the second argument is a reference model, it is solved using a
-[`quadratic_parsimonious_flux_balance_constraints`](@ref) with the optimizer and settings
+[`quadratic_parsimonious_flux_balance_analysis`](@ref) with the optimizer and settings
 parameters for the 2 steps set by keyword arguments prefixed by `reference_`.
 
 This is often used for models with smaller feasible region than the reference

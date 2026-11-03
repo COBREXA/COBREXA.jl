@@ -20,10 +20,11 @@ $(TYPEDSIGNATURES)
 A constraint system like from [`flux_balance_constraints`](@ref), but with the
 quadratic (L2) parsimonious objective present under key
 `parsimonious_objective`. Best used via
-[`quadratic_parsimonious_flux_balance_analysis`](@ref) or
-[`linear_parsimonious_flux_balance_analysis`](@ref).
+[`quadratic_parsimonious_flux_balance_analysis`](@ref).
 
-Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
+Keyword arguments are forwarded to [`flux_balance_constraints`](@ref). 
+
+See [`linear_parsimonious_flux_balance_constraints`](@ref) for an alternative.
 """
 function quadratic_parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
     constraints = flux_balance_constraints(model; kwargs...)
@@ -71,9 +72,9 @@ export quadratic_parsimonious_flux_balance_analysis
 """
 $(TYPEDSIGNATURES)
 
-Like [`parsimonious_flux_balance_constraints`](@ref), but uses a L1 metric for
-solving the parsimonious problem. The `parsimonious_objective` constraint is
-thus linear.
+Like [`quadratic_parsimonious_flux_balance_constraints`](@ref), but uses a L1
+metric for solving the parsimonious problem. The `parsimonious_objective`
+constraint is thus linear.
 
 Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
 """

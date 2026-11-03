@@ -30,7 +30,7 @@ be completely free of internal cycles, which enables the thermodynamic
 consistency. To get the cycle-free flux, you can use
 [`loopless_flux_balance_analysis`](@ref) (computationally demanding, but gives
 thermodynamically consistent solutions),
-[`quadratic_parsimonious_flux_balance_constraints`](@ref) or
+[`quadratic_parsimonious_flux_balance_analysis`](@ref) or
 [`linear_parsimonious_flux_balance_analysis`](@ref) (which is computationally
 simple, but the consistency is not guaranteed).
 
