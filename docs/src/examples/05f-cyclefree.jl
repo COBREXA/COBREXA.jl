@@ -49,7 +49,7 @@ some_flux =
 
 import ConstraintTrees as C
 
-cs = linear_quadratic_parsimonious_flux_balance_constraints(model)
+cs = linear_parsimonious_flux_balance_constraints(model)
 
 cs *=
     :fixed_exchanges^C.ConstraintTree(
