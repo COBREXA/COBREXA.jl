@@ -18,25 +18,29 @@
 $(TYPEDSIGNATURES)
 
 A constraint system like from [`flux_balance_constraints`](@ref), but with the
-parsimonious objective present under key `parsimonious_objective`. Best used
-via [`parsimonious_flux_balance_analysis`](@ref).
+quadratic (L2) parsimonious objective present under key
+`parsimonious_objective`. Best used via
+[`quadratic_parsimonious_flux_balance_analysis`](@ref) or
+[`linear_parsimonious_flux_balance_analysis`](@ref).
 
 Keyword arguments are forwarded to [`flux_balance_constraints`](@ref).
 """
-function parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
+function quadratic_parsimonious_flux_balance_constraints(model::A.AbstractFBCModel; kwargs...)
     constraints = flux_balance_constraints(model; kwargs...)
 
     constraints *
     :parsimonious_objective^C.Constraint(squared_sum_value(constraints.fluxes))
 end
 
-export parsimonious_flux_balance_constraints
+export quadratic_parsimonious_flux_balance_constraints
+
+@deprecate parsimonious_flux_balance_constraints quadratic_parsimonious_flux_balance_constraints
 
 """
 $(TYPEDSIGNATURES)
 
 Compute a parsimonious flux solution for the `model`, using the constraints
-given by [`parsimonious_flux_balance_constraints`](@ref).
+given by [`quadratic_parsimonious_flux_balance_constraints`](@ref).
 
 In short, the objective value of the parsimonious solution should be the same
 as the one from [`flux_balance_analysis`](@ref), except the squared sum of
@@ -47,7 +51,7 @@ energy" one, which is arguably more realistic.
 Solver configuration arguments are forwarded to
 [`parsimonious_optimized_values`](@ref).
 """
-parsimonious_flux_balance_analysis(
+quadratic_parsimonious_flux_balance_analysis(
     model::A.AbstractFBCModel;
     tolerances = relative_tolerance_bound.(1 .- [0, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2]),
     kwargs...,
@@ -60,7 +64,9 @@ parsimonious_flux_balance_analysis(
     kwargs...,
 )
 
-export parsimonious_flux_balance_analysis
+export quadratic_parsimonious_flux_balance_analysis
+
+@deprecate parsimonious_flux_balance_analysis quadratic_parsimonious_flux_balance_analysis
 
 """
 $(TYPEDSIGNATURES)
